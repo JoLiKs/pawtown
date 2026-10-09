@@ -13,6 +13,7 @@ export type Item = {
 	Color: Color3,
 	Color2: Color3,
 	Order: number,
+	Rep: number?, -- не продаётся: награда за репутацию Кленовой улицы этого уровня
 }
 
 local ShopData = {}
@@ -92,7 +93,25 @@ ShopData.List = {
 		Color2 = c3(230, 70, 90),
 		Order = 8,
 	},
+	{
+		Id = "hat_maple",
+		Slot = "Hat",
+		Name = "Maple Leaf Hat",
+		Price = 1,
+		Color = c3(230, 110, 40),
+		Color2 = c3(250, 200, 60),
+		Order = 9,
+		Rep = 3,
+	},
 } :: { Item }
+
+-- Цена с учётом скидки за репутацию улицы (уровень DISCOUNT_LEVEL+: -DISCOUNT_PCT%)
+function ShopData.price(item: Item, streetRepLevel: number): number
+	if streetRepLevel >= 2 then
+		return math.max(1, math.floor(item.Price * 0.85 + 0.5))
+	end
+	return item.Price
+end
 
 ShopData.ById = {} :: { [string]: Item }
 for _, it in ipairs(ShopData.List) do

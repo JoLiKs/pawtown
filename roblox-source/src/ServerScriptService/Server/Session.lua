@@ -19,6 +19,11 @@ export type PlayerSession = {
 	Cooldowns: { [string]: number },
 	LastEmote: { Id: string, Time: number }?,
 	DashUntil: number,
+	LeapUntil: number, -- снежный барс: окно большого прыжка
+	HiddenUntil: number, -- лиса: «невидима» (в кусте и немного после)
+	SightUntil: number, -- хрустальный кролик: видит тайники
+	Trial: { Id: string, Index: number, Start: number, Ends: number, Spark: BasePart? }?,
+	LastVisit: number,
 	OnRoof: boolean,
 	Zone: string,
 	AirJumps: number,
@@ -44,6 +49,11 @@ function Session.create(player: Player): PlayerSession
 		Cooldowns = {},
 		LastEmote = nil,
 		DashUntil = 0,
+		LeapUntil = 0,
+		HiddenUntil = 0,
+		SightUntil = 0,
+		Trial = nil,
+		LastVisit = 0,
 		OnRoof = false,
 		Zone = "",
 		AirJumps = 0,

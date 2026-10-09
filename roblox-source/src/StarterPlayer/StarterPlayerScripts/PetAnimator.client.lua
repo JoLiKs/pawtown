@@ -90,6 +90,16 @@ local CARRY = {
 		Color = Color3.fromRGB(230, 230, 60),
 		Shape = Enum.PartType.Ball,
 	},
+	Parcel = {
+		Size = Vector3.new(0.9, 0.6, 0.7),
+		Color = Color3.fromRGB(190, 140, 90),
+		Shape = Enum.PartType.Block,
+	},
+	Glasses = {
+		Size = Vector3.new(0.8, 0.25, 0.2),
+		Color = Color3.fromRGB(60, 60, 80),
+		Shape = Enum.PartType.Block,
+	},
 }
 
 local function updateCarry(m: Model, r: any)
@@ -147,7 +157,13 @@ local function animatePet(m: Model, r: any, t: number)
 	local swing = math.sin(ph) * 0.7 * moving
 	local rootCF = CFrame.new(0, math.abs(math.sin(ph)) * 0.12 * moving + math.sin(t * 2) * 0.02, 0)
 	local neck = A(math.sin(t * 1.7 + r.Phase) * 0.05, math.sin(t * 0.9 + r.Phase) * 0.12, 0)
-	local tail = A(0, math.sin(t * 7) * 0.35, 0)
+	-- хвост: спокойное покачивание в покое, быстрее на бегу
+	local tail =
+		A(math.sin(t * 1.3 + r.Phase) * 0.08, math.sin(t * (2.2 + moving * 5)) * (0.22 + moving * 0.15), 0)
+	-- уши: редкое «подёргивание» (раз в ~3 с), у бегущего — прижаты назад
+	local tw = (t + r.Phase) % 3.1
+	local twitch = if tw < 0.22 then math.sin(tw / 0.22 * math.pi) * 0.45 else 0
+	local earL, earR = A(-0.15 * moving, 0, twitch), A(-0.15 * moving, 0, -twitch * 0.4)
 	local legs =
 		{ LegFL = A(swing, 0, 0), LegBR = A(swing, 0, 0), LegFR = A(-swing, 0, 0), LegBL = A(-swing, 0, 0) }
 	local wing = 0
@@ -175,6 +191,7 @@ local function animatePet(m: Model, r: any, t: number)
 		neck = A(0.25, 0, 0)
 		tail = A(0, 0.3, 0)
 		wing = 0
+		earL, earR = A(0.3, 0, 0), A(0.3, 0, 0)
 	end
 	-- действие (еда, нюх, отряхивание)
 	local act, at = parseStamp(m:GetAttribute("Action"))
@@ -186,6 +203,13 @@ local function animatePet(m: Model, r: any, t: number)
 			neck = A(0.5, math.sin(da * 10) * 0.3, 0)
 		elseif act == "Shake" then
 			rootCF *= A(0, 0, math.sin(da * 30) * 0.35 * (1 - da / 1.6))
+		elseif act == "Roll" and da < 0.7 then
+			-- перекат корги-рыцаря со щитом: кувырок вперёд
+			rootCF *= CFrame.new(0, 0.4 * math.sin(da / 0.7 * math.pi), 0) * A(
+				-(da / 0.7) * math.pi * 2,
+				0,
+				0
+			)
 		end
 	end
 	-- эмоции
@@ -205,6 +229,28 @@ local function animatePet(m: Model, r: any, t: number)
 			neck = A(0.55, math.sin(de * 12) * 0.35, 0)
 		elseif emo == "Roll" then
 			rootCF *= A(0, 0, k * math.pi * 2)
+		end
+	end
+	-- комбо-эмоции друзей (FriendsLogic.COMBOS): у обоих одновременно
+	local combo, ct = parseStamp(m:GetAttribute("Combo"))
+	local dc = os.clock() - ct
+	if combo and dc < 2 then
+		local k = dc / 2
+		local hop = math.abs(math.sin(dc * 9)) * 0.6
+		if combo == "HappyDance" then
+			rootCF *= CFrame.new(0, hop, 0) * A(0, k * math.pi * 4, 0)
+			tail = A(0, math.sin(t * 24) * 0.7, 0)
+		elseif combo == "PlayFight" then
+			rootCF *= CFrame.new(0, -0.2 + hop * 0.5, 0) * A(-0.35, math.sin(dc * 8) * 0.4, 0)
+		elseif combo == "Duet" or combo == "Echo" then
+			neck = A(-0.5, math.sin(dc * 6) * 0.3, if combo == "Echo" then 0.35 else 0)
+			rootCF *= A(0, 0, math.sin(dc * 5) * 0.15)
+		elseif combo == "DoubleRoll" then
+			rootCF *= A(0, 0, k * math.pi * 4)
+		elseif combo == "NoseBoop" then
+			neck = A(0.3, 0, 0) * CFrame.new(0, 0, -0.25 * math.abs(math.sin(dc * 6)))
+		elseif combo == "Zoomies" then
+			rootCF *= CFrame.new(0, hop * 0.4, 0) * A(0, k * math.pi * 8, 0)
 		end
 	end
 	-- трюки
@@ -228,12 +274,26 @@ local function animatePet(m: Model, r: any, t: number)
 			rootCF *= A(0, k * math.pi * 4, 0)
 		end
 	end
+	-- лиса в кусте: полупрозрачна (себе — 0.5, другим — почти не видно)
+	local hidden = m:GetAttribute("Hidden") == true
+	if hidden ~= (r.Hidden == true) then
+		r.Hidden = hidden
+		local own = m == game:GetService("Players").LocalPlayer.Character
+		local ltm = if hidden then (if own then 0.5 else 0.85) else 0
+		for _, d in ipairs(m:GetDescendants()) do
+			if d:IsA("BasePart") and d.Name ~= "HumanoidRootPart" then
+				d.LocalTransparencyModifier = ltm
+			end
+		end
+	end
 	setT(J.Root, rootCF)
 	setT(J.Neck, neck)
 	setT(J.Tail, tail)
 	for name, cf in pairs(legs) do
 		setT(J[name], cf)
 	end
+	setT(J.EarL, earL)
+	setT(J.EarR, earR)
 	setT(J.WingL, A(0, 0, -wing))
 	setT(J.WingR, A(0, 0, wing))
 end

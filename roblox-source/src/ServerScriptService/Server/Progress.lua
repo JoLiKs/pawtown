@@ -1,6 +1,7 @@
 --!strict
 --[[
 	Progress — единая выдача наград: опыт (с множителем настроения), лакомства (Treats), привязанность, репутация.
+	Звёзды перерождений (RebirthLogic.mult) постоянно увеличивают опыт и лакомства.
 	Повышение уровня: очки талантов, возрастная стадия (масштаб рига), эффект LevelUp.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -9,6 +10,7 @@ local Shared = ReplicatedStorage.Shared
 local Locale = require(Shared.Locale)
 local NeedsLogic = require(Shared.NeedsLogic)
 local Progression = require(Shared.Progression)
+local RebirthLogic = require(Shared.RebirthLogic)
 local Remotes = require(Shared.Remotes)
 local SpeciesData = require(Shared.SpeciesData)
 
@@ -21,6 +23,7 @@ local Progress = {}
 -- Вызывается при смене возрастной стадии (PlayerService перестраивает риг)
 Progress.onAgeChanged = nil :: ((Player) -> ())?
 Progress.onLevel = nil :: ((Player, number) -> ())?
+Progress.onRep = nil :: ((Player, string) -> ())?
 
 function Progress.xp(player: Player, amount: number): number
 	local data = DataService.get(player)
@@ -28,7 +31,7 @@ function Progress.xp(player: Player, amount: number): number
 		return 0
 	end
 	local mood = NeedsLogic.mood(data.Needs)
-	local gain = math.floor(amount * NeedsLogic.xpMult(mood) + 0.5)
+	local gain = math.floor(amount * NeedsLogic.xpMult(mood) * RebirthLogic.mult(data) + 0.5)
 	local oldAge = Progression.age(data.Level)
 	local level, xp, gained = Progression.addXp(data.Level, data.Xp, gain)
 	data.Level = level
@@ -57,7 +60,7 @@ function Progress.treats(player: Player, amount: number): number
 	if not data or amount <= 0 then
 		return 0
 	end
-	local mult = if NeedsLogic.glowing(data.Needs) then 1.1 else 1
+	local mult = (if NeedsLogic.glowing(data.Needs) then 1.1 else 1) * RebirthLogic.mult(data)
 	local gain = math.floor(amount * mult + 0.5)
 	data.Treats += gain
 	data.TotalTreats += gain
@@ -99,6 +102,9 @@ function Progress.rep(player: Player, district: string, amount: number)
 	local after = Progression.repLevel(data.Rep[district])
 	if after > before then
 		Notify.send(player, Locale.m("toast.rep_up", { place = "place." .. district, n = after }), "reward")
+		if Progress.onRep then
+			task.spawn(Progress.onRep, player, district)
+		end
 	end
 	State.markCore(player)
 end

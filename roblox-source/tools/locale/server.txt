@@ -15,7 +15,7 @@ toast.age_up | You grew up: {age}! | Ты подрос: {age}!
 toast.rep_up | {place} reputation: level {n} | Репутация, {place}: уровень {n}
 toast.reward | {what}: +{t} treats, +{x} XP | {what}: +{t} лакомств, +{x} опыта
 toast.next_step | Next: {step} | Дальше: {step}
-toast.chapter_done | Chapter 1 complete! More chapters are coming. | Глава 1 пройдена! Новые главы скоро.
+toast.chapter_done | All chapters complete! More are coming. | Все главы пройдены! Новые скоро.
 toast.gift_item | {who} gave you a gift: {item}! | {who} дарит тебе подарок: {item}!
 toast.gift_treats | {who} gave you {n} treats! | {who} дарит тебе {n} лакомств!
 age.Baby | Baby | Малыш
@@ -167,3 +167,104 @@ talent.locked | Learn the first talent of the branch first | Сначала из
 talent.no_points | No talent points | Нет очков талантов
 tag.pet | Lv {n} {species} | Ур. {n} · {species}
 tag.new | waiting for a family | ждёт семью
+
+# v0.2 — «Ночь Искр» и способности редких видов
+rebirth.need_path | This species is on another path | Этот вид — на другом пути
+rebirth.trial_done | Trial already passed | Испытание уже пройдено
+rebirth.need_adult | Only adult pets can take the trial | Испытание — только для взрослых питомцев
+rebirth.not_ready | Not all requirements are met yet | Ещё не все условия выполнены
+rebirth.trial_started | Trial started: catch {n} sparks in {sec} seconds! | Испытание началось: поймай {n} искр за {sec} секунд!
+rebirth.trial_failed | Time is up. Try the trial again! | Время вышло. Попробуй испытание снова!
+rebirth.trial_done_title | Species trial | Испытание вида
+rebirth.trial_passed | Trial passed! The {species} path is open. | Испытание пройдено! Путь «{species}» открыт.
+rebirth.trial_running | Finish your trial first | Сначала закончи испытание
+rebirth.done | Reborn as {species}! Rebirth stars: {n} | Ты переродился: {species}! Звёзд перерождений: {n}
+rebirth.dev_done | Dev: requirements met | Разраб.: условия выполнены
+place.Shrine | Spark Shrine | Алтарь Искр
+prompt.shrine | Spark Night | Ночь Искр
+obj.shrine | Spark Shrine | Алтарь Искр
+prompt.bin | Rummage | Порыться
+obj.bin | Trash bin | Мусорный бак
+prompt.shed | Pick the lock | Открыть замок
+obj.shed | Locked shed | Запертый сарай
+prompt.stash | Trade trinkets | Обменять безделушки
+obj.den | Raccoon den | Логово енота
+prompt.cache | Take | Забрать
+obj.cache | Crystal cache | Хрустальный тайник
+prompt.snatch | Snatch | Стащить
+msg.snatch_seen | You were seen! Hide in a bush first | Тебя заметили! Сначала спрячься в кусте
+msg.snatch_wait | They are watching their snacks now | Сейчас за угощением следят
+msg.snatched | Snatched: {item}! +{n} treats | Стащено: {item}! +{n} лакомств
+loot.Sandwich | sandwich | бутерброд
+loot.Sock | sock | носок
+loot.Letter | letter | письмо
+loot.Cookie | cookie | печенье
+msg.only_raccoon | Only a raccoon can open this | Это откроет только енот
+msg.unlock_empty | Nothing new here yet | Тут пока ничего нового
+msg.unlocked | Found +{n} treats and {k} {k|trinket|trinkets|trinkets} | Найдено: +{n} лакомств и {k} {k|безделушка|безделушки|безделушек}
+msg.stash_full | +{n} treats (stash is full) | +{n} лакомств (тайник полон)
+msg.stash_empty | Your stash is empty | Тайник пуст
+msg.stash_traded | Traded {k} trinkets: +{n} treats | Обмен {k} безделушек: +{n} лакомств
+msg.cache_hidden | Use Crystal sight to find the cache | Найди тайник Хрустальным зрением
+msg.cache_empty | This cache is empty for now | Тайник пока пуст
+msg.cache_found | Crystal cache: +{n} treats | Хрустальный тайник: +{n} лакомств
+msg.no_dogs | No park dogs nearby | Рядом нет собак парка
+msg.dogs_follow | {n} {n|dog follows|dogs follow|dogs follow} you! Lead them to the shelter | За тобой {n|идёт|идут|идут} {n} {n|собака|собаки|собак}! Отведи их в приют
+msg.dog_home | A dog found a home | Собака нашла дом
+msg.sight_found | Crystal sight: {n} {n|secret|secrets|secrets} | Хрустальное зрение: {n} {n|секрет|секрета|секретов}
+speech.noticed | Hey! I see you! | Эй! Я тебя вижу!
+speech.snatched | Wait... where is my snack? | Стоп… где мой перекус?
+speech.keeper_dog | Thank you, brave knight! | Спасибо, храбрый рыцарь!
+
+# v0.2 — глава 2 «Соседи» и награды репутации
+toast.chapter_done_n | Chapter {n} complete! | Глава {n} пройдена!
+quest.c2_meet | Meet the neighbours on Maple Street | Познакомься с соседями на Кленовой улице
+quest.c2_mail | Say hi to Pete the mailman | Поздоровайся с почтальоном Петей
+quest.c2_parcel | Find Pete's lost parcel | Найди потерянную посылку Пети
+quest.c2_choice | Decide what to do with the parcel | Реши, что делать с посылкой
+quest.c2_glasses | Find Mrs. Elm's glasses in her flowerbed | Найди очки миссис Вязовой
+quest.c2_cheer | Cheer up Mr. Buttercup with an emote | Развесели мистера Лютикова эмоцией
+quest.c2_party | Join the Maple Street party | Приходи на праздник Кленовой улицы
+npc.Elm | Mrs. Elm | Миссис Вязова
+npc.Buttercup | Mr. Buttercup | Мистер Лютиков
+speech.Elm.hi | Oh, what a sweet little thing! | Ой, какая прелесть!
+speech.Buttercup.hi | Hmph. Keep off my lawn. | Хм. По газону не бегать.
+speech.elm_lost | I can't find my glasses anywhere... | Не могу найти свои очки…
+speech.elm_glasses | My glasses! Thank you, dear! | Мои очки! Спасибо, милый!
+speech.buttercup_grumpy | Nothing can cheer me up today. | Сегодня меня ничто не развеселит.
+speech.buttercup_smile | Heh... alright, that was cute. | Хе… ладно, это было мило.
+speech.mail_lost | Oh no, I lost a parcel somewhere on the street! | Ой-ой, я потерял посылку где-то на улице!
+speech.mail_thanks | You found it! You are a hero! | Нашлась! Ты настоящий герой!
+speech.mail_sad | Hmm, has anyone seen a parcel? | Хм, никто не видел посылку?
+prompt.neighbour | Say hi | Поздороваться
+prompt.pick_parcel | Pick up | Взять
+prompt.pick_glasses | Pick up | Взять
+obj.parcel | Lost parcel | Потерянная посылка
+obj.glasses | Glasses | Очки
+place.Party | Maple Street party | Праздник Кленовой улицы
+prompt.shortcut | Take the shortcut | Пройти тропинкой
+obj.shortcut | Neighbours' shortcut | Тропинка соседей
+msg.no_choice | Find the parcel first | Сначала найди посылку
+msg.choice_return | Pete is so happy! Street reputation +{n} | Петя так рад! Репутация улицы +{n}
+msg.choice_keep | Squeak squeak! Street reputation {n} | Пи-пи! Репутация улицы {n}
+msg.rep_cosmetic | Maple Street thanks you: {item}! | Кленовая улица благодарит тебя: {item}!
+msg.shortcut_locked | The neighbours open this path at street reputation {n} | Соседи откроют тропинку при репутации улицы {n}
+msg.shortcut_used | Through the hedges! | Сквозь живую изгородь!
+msg.got_parcel | You carry the parcel | Ты несёшь посылку
+msg.got_glasses | You carry the glasses carefully | Ты осторожно несёшь очки
+msg.rep_only | This is a reputation reward | Это награда за репутацию
+
+# v0.2 — друзья
+msg.friend_not_here | That player is not on this server | Этого игрока нет на сервере
+msg.friend_already | You are already friends | Вы уже друзья
+msg.friend_full | Your friend list is full | Список друзей полон
+msg.friend_request | {player} wants to be your friend! Open Friends to answer | {player} хочет дружить! Ответь в разделе «Друзья»
+msg.friend_sent | Friend request sent to {player} | Заявка отправлена: {player}
+msg.friend_no_request | That request has expired | Заявка устарела
+msg.friend_added | {player} is now your friend! | {player} теперь твой друг!
+msg.friend_removed | Removed from friends | Убран из друзей
+msg.friend_only | You can only visit friends | В гости — только к друзьям
+msg.visit_busy | Finish what you are doing first | Сначала закончи начатое
+msg.visit_wait | Wait {n} s before the next visit | Подожди {n} с до следующего визита
+msg.visit_arrived | {player} came to visit you! | {player} пришёл к тебе в гости!
+msg.visit_to | Visiting {player} | В гостях у {player}

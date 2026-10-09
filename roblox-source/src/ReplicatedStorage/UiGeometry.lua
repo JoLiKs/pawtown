@@ -79,9 +79,9 @@ function UiGeometry.panelRect(lay: Lay, k: number, minH: number?, area: Rect?): 
 	if area and lay.Mode ~= "wide" then
 		w = math.min(area.W, if lay.Mode == "landscape" then UiGeometry.LAND_MAX_W else area.W)
 		h = area.H
+		-- окно не выходит за безопасную область (не закрывает трекер, кнопки и прыжок)
 		w, h =
-			math.max(w, math.min(UiGeometry.MIN_W, lay.W - 16)),
-			math.max(h, math.min(UiGeometry.MIN_H, lay.H - 16))
+			math.max(w, math.min(UiGeometry.MIN_W, area.W)), math.max(h, math.min(UiGeometry.MIN_H, area.H))
 		local cx = area.X + area.W / 2
 		return { X = math.floor(cx - w / 2), Y = math.floor(area.Y), W = math.floor(w), H = math.floor(h) }
 	end

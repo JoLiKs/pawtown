@@ -5,13 +5,13 @@
     "kind": "rojo"
   },
   "scripts": {
-    "total": 67,
-    "transpiled": 67,
+    "total": 79,
+    "transpiled": 79,
     "failed": [],
-    "lines": 12876
+    "lines": 17720
   },
   "globals": {
-    "used": 33,
+    "used": 34,
     "supported": [
       "CFrame",
       "Color3",
@@ -29,6 +29,7 @@
       "game",
       "ipairs",
       "math",
+      "next",
       "os",
       "pairs",
       "pcall",
@@ -92,6 +93,7 @@
       "string.split",
       "string.sub",
       "string.upper",
+      "table.clear",
       "table.clone",
       "table.concat",
       "table.find",
@@ -108,7 +110,9 @@
   },
   "services": {
     "supported": [
+      "ContentProvider",
       "DataStoreService",
+      "Debris",
       "HttpService",
       "Lighting",
       "LocalizationService",
@@ -116,6 +120,7 @@
       "ReplicatedFirst",
       "ReplicatedStorage",
       "RunService",
+      "SoundService",
       "TweenService",
       "UserInputService",
       "Workspace"
@@ -124,9 +129,12 @@
   },
   "instanceClasses": {
     "supported": [
+      "Attachment",
       "BillboardGui",
+      "ColorCorrectionEffect",
       "Folder",
       "Frame",
+      "Highlight",
       "Humanoid",
       "Model",
       "Part",
@@ -134,6 +142,9 @@
       "RemoteEvent",
       "RemoteFunction",
       "ScreenGui",
+      "Sound",
+      "SoundGroup",
+      "SpecialMesh",
       "TextLabel",
       "UICorner",
       "UIGradient",
@@ -158,14 +169,17 @@
       "FillDirection.Vertical",
       "Font.FredokaOne",
       "Font.GothamBold",
+      "HighlightDepthMode.AlwaysOnTop",
       "HorizontalAlignment.Center",
       "HumanoidDisplayDistanceType.None",
       "HumanoidRigType.R15",
       "KeyCode.E",
       "KeyCode.F",
       "KeyCode.Q",
+      "KeyCode.R",
       "KeyCode.Space",
       "LineJoinMode.Round",
+      "Material",
       "Material.Asphalt",
       "Material.Concrete",
       "Material.Fabric",
@@ -184,6 +198,7 @@
       "RaycastFilterType.Exclude",
       "SortOrder.LayoutOrder",
       "SurfaceType.Smooth",
+      "TextTruncate.AtEnd",
       "TextXAlignment.Center",
       "TextXAlignment.Left",
       "TextXAlignment.Right",
@@ -192,6 +207,10 @@
       "ZIndexBehavior.Sibling"
     ],
     "unsupported": [
+      "AssetFetchStatus.Failure",
+      "AssetFetchStatus.Success",
+      "AssetFetchStatus.TimedOut",
+      "MeshType.Sphere",
       "ScrollBarInset.ScrollBar"
     ]
   },

@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Shared
 
+local AudioData = require(Shared.AudioData)
 local NeedsLogic = require(Shared.NeedsLogic)
 local Progression = require(Shared.Progression)
 local QuestData = require(Shared.QuestData)
@@ -58,9 +59,10 @@ function State.build(player: Player): any?
 		Carrying = s and s.Carrying or "",
 		Sleeping = s ~= nil and s.SleepUntil > os.clock(),
 		Lang = data.Settings.Lang,
+		Audio = AudioData.normalize(data.Settings.Audio),
 		FriendsCount = (function()
 			local n = 0
-			for _ in pairs(data.Friends or {}) do
+			for _ in pairs(data.FriendList or {}) do
 				n += 1
 			end
 			return n

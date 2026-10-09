@@ -3,14 +3,16 @@
 	Migrations — миграции сохранений между версиями шаблона. Чистая функция над таблицей (покрыта тестами).
 	v1 (сборка разработки 0.0.x): Coins вместо Treats, потребности без Health, Bond массивом.
 	v2 (MVP 0.1): Treats, Needs.Health, Bond = { Dad, Grandma, Kid }, Story, Daily, Cosmetics.
+	v3 (0.2): перерождение (Stars, Lineage, Trials), тайник енота (Stash), список друзей (FriendList), выборы (Choices).
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local AudioData = require(ReplicatedStorage.Shared.AudioData)
 local NeedsLogic = require(ReplicatedStorage.Shared.NeedsLogic)
 local SpeciesData = require(ReplicatedStorage.Shared.SpeciesData)
 
 local Migrations = {}
 
-Migrations.CURRENT = 2
+Migrations.CURRENT = 3
 
 local function bad(v: any): boolean
 	return type(v) ~= "number" or v ~= v or v < 0 or v == math.huge
@@ -29,6 +31,23 @@ function Migrations.run(data: { [string]: any }): boolean
 			data.Bond = { Dad = arr[1] or 0, Grandma = arr[2] or 0, Kid = arr[3] or 0 }
 		end
 		data.Version = 2
+		changed = true
+	end
+	if version < 3 then
+		data.Stars = if type(data.Stars) == "number" then data.Stars else 0
+		data.Lineage = if type(data.Lineage) == "table" then data.Lineage else {}
+		if type(data.Species) == "string" and data.Species ~= "" then
+			data.Lineage[data.Species] = true
+		end
+		data.Trials = if type(data.Trials) == "table" then data.Trials else {}
+		data.Stash = if type(data.Stash) == "table" then data.Stash else { Trinkets = 0, Total = 0 }
+		data.FriendList = if type(data.FriendList) == "table" then data.FriendList else {}
+		data.Choices = if type(data.Choices) == "table" then data.Choices else {}
+		data.Version = 3
+		changed = true
+	end
+	if data.Stars ~= nil and bad(data.Stars) then
+		data.Stars = 0
 		changed = true
 	end
 	-- потребности: всегда нормализуем (битые значения, отсутствующее здоровье)
@@ -51,6 +70,18 @@ function Migrations.run(data: { [string]: any }): boolean
 		data.Settings.Lang = "auto"
 		changed = true
 	end
+	-- v0.2: звуковые настройки (музыка / звуки / громкость) — всегда в нормальном виде
+	local audio = AudioData.normalize(data.Settings.Audio)
+	local prevAudio = data.Settings.Audio
+	if
+		type(prevAudio) ~= "table"
+		or prevAudio.Music ~= audio.Music
+		or prevAudio.Sfx ~= audio.Sfx
+		or prevAudio.MusicVol ~= audio.MusicVol
+	then
+		changed = true
+	end
+	data.Settings.Audio = audio
 	for _, key in ipairs({ "Treats", "Xp", "TotalTreats" }) do
 		if data[key] ~= nil and bad(data[key]) then
 			data[key] = 0

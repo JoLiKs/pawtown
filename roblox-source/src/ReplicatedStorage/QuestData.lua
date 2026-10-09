@@ -1,6 +1,6 @@
 --!strict
 --[[
-	QuestData — глава 1 «Новый дом» и ежедневные задания.
+	QuestData — глава 1 «Новый дом», глава 2 «Соседи» и ежедневные задания.
 	Шаг главы: Kind — событие (QuestService.event(player, kind, key)), Need — сколько раз (или разных key при Distinct).
 	Награды: Treats + Xp. Тексты — ключи локализации quest.<Id> / quest.<Id>.hint.
 ]]
@@ -26,10 +26,56 @@ QuestData.CHAPTER1 = {
 	{ Id = "c1_dream", Kind = "dream", Need = 1, Treats = 80, Xp = 120, Target = "Bed" },
 } :: { Step }
 
-QuestData.ById = {} :: { [string]: Step }
-for _, s in ipairs(QuestData.CHAPTER1) do
-	QuestData.ById[s.Id] = s
+-- Глава 2 «Соседи» (начинается сама после главы 1): соседи Кленовой улицы, почтальон и потерянная посылка,
+-- выбор (вернуть посылку / оставить пищалку себе) влияет на репутацию улицы.
+QuestData.CHAPTER2 = {
+	{
+		Id = "c2_meet",
+		Kind = "greet_neighbour",
+		Need = 2,
+		Distinct = true,
+		Treats = 25,
+		Xp = 60,
+		Target = "Neighbours",
+	},
+	{ Id = "c2_mail", Kind = "greet_mailman", Need = 1, Treats = 15, Xp = 40, Target = "Mailman" },
+	{ Id = "c2_parcel", Kind = "parcel", Need = 1, Treats = 20, Xp = 60, Target = "Parcel" },
+	{ Id = "c2_choice", Kind = "choice", Need = 1, Treats = 0, Xp = 60, Target = "Mailman" },
+	{ Id = "c2_glasses", Kind = "glasses", Need = 1, Treats = 35, Xp = 80, Target = "Glasses" },
+	{ Id = "c2_cheer", Kind = "cheer", Need = 1, Treats = 30, Xp = 80, Target = "Buttercup" },
+	{ Id = "c2_party", Kind = "party", Need = 1, Treats = 100, Xp = 150, Target = "Party" },
+} :: { Step }
+
+QuestData.CHAPTERS = { QuestData.CHAPTER1, QuestData.CHAPTER2 }
+
+function QuestData.chapter(n: number): { Step }
+	return QuestData.CHAPTERS[n] or {}
 end
+
+QuestData.ById = {} :: { [string]: Step }
+for _, ch in ipairs(QuestData.CHAPTERS) do
+	for _, s in ipairs(ch) do
+		QuestData.ById[s.Id] = s
+	end
+end
+
+-- Выбор главы 2: что сделать с найденной посылкой. RepPts — репутация Кленовой улицы.
+QuestData.CHOICES = {
+	c2_parcel = {
+		{ Id = "return", RepPts = 30, Treats = 10 },
+		{ Id = "keep", RepPts = -10, Treats = 45 },
+	},
+}
+
+-- Награды за репутацию Кленовой улицы (уровни Progression.repLevel)
+QuestData.REP_REWARDS = {
+	{ Level = 1, Kind = "Shortcut" }, -- тропинка соседей: короткий путь от дома в парк
+	{ Level = 2, Kind = "Discount", Pct = 15 }, -- скидка в бутике
+	{ Level = 3, Kind = "Cosmetic", Item = "hat_maple" }, -- кленовая шляпа (не продаётся)
+}
+QuestData.DISCOUNT_LEVEL = 2
+QuestData.DISCOUNT_PCT = 15
+QuestData.SHORTCUT_LEVEL = 1
 
 -- Ежедневные задания: каждый день 5 из пула (детерминированно по дню и игроку)
 export type Daily = {

@@ -24,8 +24,8 @@ species.jump | Jump | Прыжок
 species.rare_title | Rare and legendary species | Редкие и легендарные виды
 species.rare_desc | On a Spark Night a grown pet can be reborn as a rare species. They can't be bought - only earned by playing. | В Ночь Искр взрослый питомец может переродиться в редкий вид. Их нельзя купить - только заслужить игрой.
 hud.level | Lv {n} · {age} | Ур. {n} · {age}
-hud.chapter | Chapter 1 · step {i}/{total} | Глава 1 · шаг {i}/{total}
-hud.chapter_done | Chapter 1 complete | Глава 1 пройдена
+hud.chapter | Chapter {c} · step {i}/{total} | Глава {c} · шаг {i}/{total}
+hud.chapter_done | All chapters complete | Все главы пройдены
 hud.free_play | Explore Lumen Hills and do daily tasks | Исследуй Люмен-Хиллс и выполняй задания дня
 hud.daily | Daily tasks: {n}/{total} | Задания дня: {n}/{total}
 mood.Happy | Happy | Счастлив
@@ -66,7 +66,7 @@ talents.points | Talent points: {n} | Очки талантов: {n}
 branch.Nose | Nose | Нюх
 branch.Agility | Agility | Ловкость
 branch.Charm | Charm | Обаяние
-rebirth.intro | Reach the requirements to be reborn on a Spark Night. Coming in a future update! | Выполни условия, чтобы переродиться в Ночь Искр. Появится в следующих обновлениях!
+rebirth.intro | On a Spark Night an adult pet can be reborn as a rare species. Follow a path from your species, pass its trial at level 50 with 20 memory shards and a loving family. | В Ночь Искр взрослый питомец может переродиться редким видом. Иди по пути своего вида, пройди испытание на 50 уровне, собрав 20 осколков памяти и заслужив любовь семьи.
 rebirth.soon | Coming soon | Скоро
 tier.Rare | Rare | Редкий
 tier.Legendary | Legendary | Легендарный
@@ -104,3 +104,90 @@ cut.dream.1 | You fall asleep... and the stars begin to fall. | Ты засып�
 cut.dream.2 | On a lonely hill a black cat with starry eyes is waiting. | На одиноком холме ждёт чёрный кот со звёздными глазами.
 cut.dream.3 | Midnight Cat: "Your spark got lost on Starfall night. Find your memories." | Полуночный Кот: «Твоя искра потерялась в ночь Звездопада. Найди свои воспоминания».
 cut.dream.4 | Chapter 1 complete. The story continues in the next update! | Глава 1 пройдена. История продолжится в следующем обновлении!
+
+# v0.2 — «Ночь Искр»
+rebirth.keep | You keep: friends, cosmetics, home and family bond, reputation, shards and one talent. Level resets: you become a baby again. | Останется: друзья, косметика, дом и привязанность семьи, репутация, осколки и один талант. Уровень сбросится: снова станешь малышом.
+rebirth.change | Change | Сменить
+rebirth.inherit | Inherited talent: {talent} | Наследуемый талант: {talent}
+rebirth.none | none | нет
+rebirth.path | {tier} path from: {from} | {tier}: путь из — {from}
+rebirth.trial | Start trial | Начать испытание
+rebirth.trial_ok | Trial passed | Испытание пройдено
+rebirth.trial_running_btn | Trial in progress | Испытание идёт
+rebirth.reborn | Be reborn | Переродиться
+rebirth.dev | Dev: meet requirements (Studio) | Разраб.: выполнить условия (Studio)
+rebirth.stars | Rebirth stars: {n}/{max} (+{pct}% XP and treats) | Звёзды перерождений: {n}/{max} (+{pct}% опыта и лакомств)
+rebirth.trial_progress | Trial of the {species}: sparks {n}/{total}, {sec} s left | Испытание ({species}): искры {n}/{total}, осталось {sec} с
+req.Path | Path | Путь
+req.Age | Adult | Взрослый
+req.Trial | Species trial | Испытание вида
+req.Path.ok | Path open | Путь открыт
+req.Path.no | Wrong path: play as a listed species first | Не тот путь: сначала стань видом из списка
+req.Trial.ok | Species trial passed | Испытание вида пройдено
+req.Trial.no | Species trial not passed yet | Испытание вида ещё не пройдено
+req.Age.ok | Adult | Взрослый
+req.Age.no | Must be an adult | Нужно стать взрослым
+fx.trial_spark | Spark caught! | Искра поймана!
+cut.reborn.1 | The sparks gather around you... | Искры собираются вокруг тебя…
+cut.reborn.2 | A new body, the same heart. | Новое тело — то же сердце.
+cut.reborn.3 | Your family still knows you. Welcome back, little one! | Семья узнаёт тебя. С возвращением, малыш!
+
+# v0.2 — глава 2 «Соседи»
+panel.Choice | What will you do? | Что ты сделаешь?
+quests.chapter2 | Chapter 2: Neighbours | Глава 2: Соседи
+quests.rep_reward.Shortcut | Street rep {n}: neighbours' shortcut to the park | Репутация улицы {n}: тропинка соседей в парк
+quests.rep_reward.Discount | Street rep {n}: {pct}% off in the boutique | Репутация улицы {n}: скидка {pct}% в бутике
+quests.rep_reward.Cosmetic | Street rep {n}: Maple Leaf Hat | Репутация улицы {n}: кленовая шляпа
+shop.rep_reward | Street rep {n} reward | Награда за репутацию {n}
+shop.discount | {n} (was {old}) | {n} (было {old})
+shop.rep_locked | Earn it with reputation | Только за репутацию
+choice.parcel.title | The lost parcel | Потерянная посылка
+choice.parcel.text | You found Pete's lost parcel. It squeaks when you bite it... there is a squeaky toy inside! | Ты нашёл потерянную посылку почтальона Пети. Если её куснуть, она пищит… внутри игрушка-пищалка!
+choice.parcel.return | Bring it back to Pete | Вернуть Пете
+choice.parcel.keep | Keep the squeaky toy | Оставить пищалку себе
+choice.parcel.return.effect | Maple Street will remember: +{rep} reputation, +{n} treats | Кленовая улица запомнит: +{rep} репутации, +{n} лакомств
+choice.parcel.keep.effect | Fun for you: +{n} treats, but {rep} street reputation | Весело тебе: +{n} лакомств, но {rep} репутации улицы
+cut.ch2.1 | A new day on Maple Street. | Новый день на Кленовой улице.
+cut.ch2.2 | The neighbours want to meet the new pet! | Соседи хотят познакомиться с новым питомцем!
+cut.ch2.3 | And the mailman looks worried... | А почтальон выглядит встревоженным…
+
+# v0.2 — друзья
+panel.Friends | Friends | Друзья
+friends.requests | Friend requests | Заявки в друзья
+friends.wants | wants to be your friend | хочет дружить
+friends.accept | Accept | Принять
+friends.decline | Decline | Отклонить
+friends.here | Players here ({n}) | Игроки на сервере ({n})
+friends.here_none | Nobody else is on this server yet. | На сервере пока никого нет.
+friends.player | Player | Игрок
+friends.is_friend | Your friend | Твой друг
+friends.add | Add | Добавить
+friends.sent | Sent | Отправлено
+friends.visit | Visit | В гости
+friends.remove | Remove | Убрать
+friends.list | My friends ({n}/{max}) | Мои друзья ({n}/{max})
+friends.none | No friends yet. Add players you meet! | Пока нет друзей. Добавляй игроков, которых встретишь!
+friends.online | On this server · friendship {n} | На этом сервере · дружба {n}
+friends.offline | Not on this server · friendship {n} | Не на этом сервере · дружба {n}
+friends.combos | Friend combos | Комбо с друзьями
+friends.combos_hint | Stand close to a friend and do these emotes together within 3 seconds: | Встаньте рядом с другом и сделайте эти эмоции вместе в течение 3 секунд:
+combo.HappyDance | Happy dance | Танец радости
+combo.PlayFight | Play fight | Шуточная драка
+combo.Duet | Duet | Дуэт
+combo.DoubleRoll | Double roll | Двойной кувырок
+combo.NoseBoop | Nose boop | Носик к носику
+combo.Zoomies | Zoomies | Носимся кругами
+combo.Echo | Echo | Эхо
+fx.combo | Friend combo! | Комбо с другом!
+
+# v0.2 — звук
+settings.sound | Sound | Звук
+settings.music_on | Music: on | Музыка: вкл
+settings.music_off | Music: off | Музыка: выкл
+settings.sfx_on | Sounds: on | Звуки: вкл
+settings.sfx_off | Sounds: off | Звуки: выкл
+settings.volume | Music volume {n}% | Громкость музыки {n}%
+settings.music_playing | Music is playing | Музыка играет
+settings.music_loading | Music is loading... | Музыка загружается...
+settings.music_error | Music is unavailable right now | Музыка сейчас недоступна
+settings.sound_note | "Sounds: off" also mutes footsteps and other character sounds. | «Звуки: выкл» глушит и шаги, и другие звуки персонажей.

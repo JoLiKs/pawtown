@@ -74,3 +74,26 @@ Starfall Dog | Пёс Звездопада
 Treasure Hunter | Кладоискатель
 Wider timing window in tricks. | Шире окно попадания в трюках.
 Wise night flyer. | Мудрый ночной летун.
+Bush stealth | Скрытность в кустах
+Hide in bushes: nobody notices you. | Прячься в кустах: тебя никто не заметит.
+Snatch | Стащить
+Sneak out of a bush and snatch a treat from a person. | Выскочи из куста и стащи угощение у человека.
+Huge leap | Огромный прыжок
+A giant leap forward and up. | Гигантский прыжок вперёд и вверх.
+Roof sprint | Спринт по крышам
+Sprint across rooftops even faster. | Ещё быстрее по крышам.
+Shield roll | Перекат со щитом
+Roll forward behind your shield. | Перекат вперёд под защитой щита.
+Lead the pack | Вожак стаи
+Park dogs follow you. Lead them to the shelter. | Собаки парка идут за тобой. Отведи их в приют.
+Crystal sight | Хрустальное зрение
+See secrets through walls. | Видит секреты сквозь стены.
+Nimble paws | Ловкие лапки
+Open locked sheds and trash bins. | Открывает запертые сараи и мусорные баки.
+Stash | Тайник
+Keep trinkets in your den and trade them for treats. | Храни безделушки в логове и меняй их на лакомства.
+Long flight | Долгий полёт
+Five wing flaps and a slow, long glide. | Пять взмахов и долгое плавное планирование.
+Night vision | Ночное зрение
+See clearly at night; shards glow. | Ясно видит ночью; осколки светятся.
+Maple Leaf Hat | Кленовая шляпа

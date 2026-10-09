@@ -66,8 +66,14 @@ local function makeTemplate(): Data
 		Friends = {}, -- [userId] = очки дружбы
 		Stats = {}, -- счётчики
 		Best = { Agility = 0 }, -- лучшие результаты мини-игр (секунды; 0 — нет)
-		Rebirths = 0, -- «Звёздная ночь» (v0.2+)
-		Settings = { Lang = "auto" },
+		Rebirths = 0, -- «Ночь Искр»: сколько раз перерождался
+		Stars = 0, -- звёзды перерождений (постоянный бонус опыта/лакомств, RebirthLogic.mult)
+		Lineage = {}, -- [speciesId] = true — все виды, которыми был питомец (путь к редким видам)
+		Trials = {}, -- [speciesId] = true — пройденные испытания вида
+		Stash = { Trinkets = 0, Total = 0 }, -- тайник енота
+		FriendList = {}, -- [tostring(userId)] = { Name, Since } — список друзей (до Config.FRIEND_LIST_MAX)
+		Choices = {}, -- выборы в сюжете (глава 2): [id] = вариант
+		Settings = { Lang = "auto", Audio = { Music = true, Sfx = true, MusicVol = 0.6 } },
 		Joined = os.time(),
 		LastSeen = os.time(),
 	}

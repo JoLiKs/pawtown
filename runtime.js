@@ -4604,7 +4604,7 @@ defClass('BasePart', 'PVInstance', { noCreate: true, events: ['Touched', 'TouchE
   Size: P(v3(4, 1, 2), { check: (v) => { if (!hasPos(v)) throw rtError('Unable to assign property Size. Vector3 expected, got ' + C.tnameForErr(v)); return v; } }),
   Color: new Color3(0.63, 0.635, 0.64),
   BrickColor: P(undefined, { get: (i) => new D.BrickColor(D.brickNearest(i.props.Color)), set: (i, v) => i.setProp('Color', v.color3()) }),
-  Material: En('Material','Plastic'), Transparency: 0, Reflectance: 0, Anchored: false, CanCollide: true, CanTouch: true, CanQuery: true, CastShadow: true, Massless: false, Locked: false,
+  Material: En('Material','Plastic'), Transparency: 0, LocalTransparencyModifier: 0, Reflectance: 0, Anchored: false, CanCollide: true, CanTouch: true, CanQuery: true, CastShadow: true, Massless: false, Locked: false,
   Velocity: P(undefined, { get: (i) => i.props.AssemblyLinearVelocity, set: (i, v) => i.setProp('AssemblyLinearVelocity', v) }),
   AssemblyLinearVelocity: v3(0, 0, 0), AssemblyAngularVelocity: v3(0, 0, 0),
   RotVelocity: P(undefined, { get: (i) => i.props.AssemblyAngularVelocity, set: (i, v) => i.setProp('AssemblyAngularVelocity', v) }),
@@ -6892,12 +6892,14 @@ const MATS = {
   Plastic: [0.5, 0], SmoothPlastic: [0.35, 0], Neon: [0.4, 0], Glass: [0.1, 0.1], Metal: [0.35, 0.7], DiamondPlate: [0.35, 0.7], CorrodedMetal: [0.6, 0.5], Foil: [0.2, 0.9], Wood: [0.8, 0], WoodPlanks: [0.8, 0], Grass: [1, 0], Sand: [1, 0], Concrete: [0.95, 0], Brick: [0.9, 0], Cobblestone: [0.95, 0], Slate: [0.85, 0], Marble: [0.3, 0], Granite: [0.6, 0], Pebble: [0.95, 0], Ice: [0.1, 0.1], Fabric: [1, 0], Rock: [0.95, 0], Basalt: [0.95, 0], Snow: [0.9, 0], Mud: [1, 0], Ground: [1, 0], LeafyGrass: [1, 0], Salt: [0.9, 0], Limestone: [0.9, 0], Asphalt: [0.9, 0], Pavement: [0.9, 0], ForceField: [0.3, 0], Air: [1, 0],
 };
 function mkWedge(THREE) {
-  // right-angle wedge: slope going up toward -Z? Roblox WedgePart: sloped face from the top-back to the bottom-front
+  // right-angle wedge (Roblox WedgePart): vertical face at the back (+Z), slope from the top-back edge to the bottom-front edge
   const g = new THREE.BufferGeometry();
   const v = [-0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5];
   // vertices: 0..3 bottom, 4,5 top-back edge
   const idx = [0, 2, 1, 0, 3, 2, 0, 1, 5, 0, 5, 4, 3, 4, 5, 3, 5, 2, 0, 4, 3, 1, 2, 5];
-  const pos = []; for (const i of idx) pos.push(v[i * 3], v[i * 3 + 1], v[i * 3 + 2]);
+  // как в Roblox: высокое ребро сзади (+Z), скат смотрит вперёд-вверх (нормаль ~ (0, Size.Z, -Size.Y)) —
+  // зеркалим по Z и разворачиваем треугольники, чтобы нормали остались наружу
+  const pos = []; for (let t = 0; t < idx.length; t += 3) for (const i of [idx[t], idx[t + 2], idx[t + 1]]) pos.push(v[i * 3], v[i * 3 + 1], -v[i * 3 + 2]);
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals();
   return g;
 }
@@ -6942,6 +6944,7 @@ class World3D {
   onAttach(i) {
     if (i.isA('BasePart') && i.className !== 'Terrain' && this.inWs(i)) { this.dirty.add(i); }
     else if (i.isA('Light') && this.inWs(i)) this.lights.set(i, null);
+    else if (i.className === 'SpecialMesh' && this.meshKind(i)) { if (i.parent && i.parent.isA && i.parent.isA('BasePart')) this.dirty.add(i.parent); }
     else if (i.className === 'ParticleEmitter' || i.className === 'Beam' || i.className === 'Trail' || i.className === 'Decal' || i.className === 'Texture' || i.className === 'SpecialMesh' || i.className === 'Highlight' || i.className === 'Sky') {
       const key = i.className; if (!this.warned.has(key)) { this.warned.add(key); I.noteUnsupported(key + ' (not rendered)'); ENV.log('warn', 'r2w', `[unsupported] ${key} is accepted but not rendered by the 3D emulator`); }
     }
@@ -6952,7 +6955,11 @@ class World3D {
     this.dirty.delete(i);
     if (this.lights.has(i)) { const l = this.lights.get(i); if (l) this.scene.remove(l); this.lights.delete(i); }
   }
+  // SpecialMesh: Sphere (эллипсоид по размеру детали) и Cylinder (вдоль Y, как в Roblox) с Scale — рисуются; прочие — нет
+  meshKind(sm) { const t = sm.props.MeshType && sm.props.MeshType.name; return t === 'Sphere' || t === 'Cylinder' ? t : null; }
+  specialMesh(part) { for (const c of part.children) if (c.className === 'SpecialMesh' && this.meshKind(c)) return c; return null; }
   onProp(i, k) {
+    if (i.className === 'SpecialMesh' && i.parent && i.parent.isA && i.parent.isA('BasePart')) { this.dirty.add(i.parent); return; }
     if (i.isA('BasePart')) { if (this.meshes.has(i) || this.dirty.has(i) || this.inWs(i)) this.dirty.add(i); }
     else if (i.isA('Light')) this.lightDirty = true;
     else if (i.className === 'Lighting' || i.className === 'Atmosphere') this.envDirty = true;
@@ -6960,20 +6967,23 @@ class World3D {
   material(part) {
     const THREE = this.THREE, p = part.props;
     const c = p.Color; const mat = p.Material ? p.Material.name : 'Plastic';
-    const key = `${c.r.toFixed(3)},${c.g.toFixed(3)},${c.b.toFixed(3)}|${mat}|${p.Transparency}|${p.Reflectance}`;
+    const tr = 1 - (1 - (p.Transparency || 0)) * (1 - (p.LocalTransparencyModifier || 0)); // как в Roblox: локальная прозрачность клиента
+    const key = `${c.r.toFixed(3)},${c.g.toFixed(3)},${c.b.toFixed(3)}|${mat}|${tr}|${p.Reflectance}`;
     let m = this.matCache.get(key);
     if (m) return m;
     const [rough, metal] = MATS[mat] || MATS.Plastic;
     const color = new THREE.Color(c.r, c.g, c.b);
     if (mat === 'Neon') m = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.9, roughness: 0.4, metalness: 0 });
     else m = new THREE.MeshStandardMaterial({ color, roughness: Math.max(0, rough - p.Reflectance * 0.4), metalness: Math.min(1, metal + p.Reflectance * 0.5) });
-    if (p.Transparency > 0 || mat === 'Glass' || mat === 'ForceField' || mat === 'Ice') { m.transparent = true; m.opacity = mat === 'Glass' && p.Transparency === 0 ? 0.45 : Math.max(0.02, 1 - p.Transparency); m.depthWrite = p.Transparency < 0.5; }
+    if (tr > 0 || mat === 'Glass' || mat === 'ForceField' || mat === 'Ice') { m.transparent = true; m.opacity = mat === 'Glass' && tr === 0 ? 0.45 : Math.max(0.02, 1 - tr); m.depthWrite = tr < 0.5; }
     this.matCache.set(key, m);
     return m;
   }
   geomFor(part) {
     const sh = part.props.Shape;
     if (part.className === 'WedgePart') return this.geoms.wedge;
+    const sm = this.specialMesh(part);
+    if (sm) { if (!this.geoms.cylY) { this.geoms.cylY = new this.THREE.CylinderGeometry(0.5, 0.5, 1, 24); } return this.meshKind(sm) === 'Sphere' ? this.geoms.sphere : this.geoms.cylY; }
     if (part.className === 'MeshPart' || part.className === 'UnionOperation') { if (!this.warned.has('mesh')) { this.warned.add('mesh'); I.noteUnsupported('MeshPart/UnionOperation geometry (drawn as a box)'); ENV.log('warn', 'r2w', '[unsupported] MeshPart/UnionOperation geometry is drawn as a box'); } return this.geoms.box; }
     if (sh && sh.name === 'Ball') return this.geoms.sphere;
     if (sh && sh.name === 'Cylinder') return this.geoms.cyl;
@@ -6989,12 +6999,13 @@ class World3D {
     if (!m) {
       const mesh = new THREE.Mesh(geo, this.material(part)); mesh.matrixAutoUpdate = false; mesh.castShadow = true; mesh.receiveShadow = true; mesh.userData.part = part;
       this.scene.add(mesh); m = { mesh, key: null, geo }; this.meshes.set(part, m);
-      if (part.name === 'Head' || part.props.Name === 'Head') this.addFace(mesh);
+      if ((part.name === 'Head' || part.props.Name === 'Head') && geo === this.geoms.box && !(part.attrs && part.attrs.get('NoFace'))) this.addFace(mesh);
     }
-    if (m.geo !== geo) { m.mesh.geometry = geo; m.geo = geo; }
-    const key = `${p.Color.r},${p.Color.g},${p.Color.b},${p.Material && p.Material.name},${p.Transparency},${p.Reflectance}`;
+    if (m.geo !== geo) { m.mesh.geometry = geo; m.geo = geo; if (m.mesh.userData.face) { m.mesh.userData.face = false; m.key = null; } }
+    const key = `${p.Color.r},${p.Color.g},${p.Color.b},${p.Material && p.Material.name},${p.Transparency},${p.LocalTransparencyModifier || 0},${p.Reflectance}`;
     if (m.key !== key) { m.key = key; m.mesh.material = this.material(part); m.mesh.visible = p.Transparency < 1; m.mesh.castShadow = p.CastShadow !== false && p.Transparency < 0.5; }
-    const cf = p.CFrame, s = p.Size, r = cf.r;
+    const cf = p.CFrame, r = cf.r; let s = p.Size;
+    const sm = this.specialMesh(part); if (sm && sm.props.Scale) { const k = sm.props.Scale; s = { x: s.x * k.x, y: s.y * k.y, z: s.z * k.z }; }
     m.mesh.matrix.set(r[0] * s.x, r[1] * s.y, r[2] * s.z, cf.x, r[3] * s.x, r[4] * s.y, r[5] * s.z, cf.y, r[6] * s.x, r[7] * s.y, r[8] * s.z, cf.z, 0, 0, 0, 1);
     m.mesh.matrixWorldNeedsUpdate = true;
     m.mesh.updateMatrixWorld(true);
@@ -7087,7 +7098,9 @@ class World3D {
     if (hrp) { const c = hrp.props.CFrame; const t = new THREE.Vector3(c.x, c.y + 1.5, c.z); cam.focus.lerp(t, Math.min(1, dt * 16)); if (cam.focus.distanceTo(t) > 30) cam.focus.copy(t); }
     const hum = ch && ch.findChild('Humanoid');
     const cy = Math.cos(cam.pitch), sy = Math.sin(cam.pitch);
-    let dist = cam.dist;
+    // как в Roblox: Player.CameraMin/MaxZoomDistance ограничивают отдаление
+    if (pl) { const mx = pl.props.CameraMaxZoomDistance, mn = pl.props.CameraMinZoomDistance; if (typeof mx === 'number') cam.maxDist = mx; if (typeof mn === 'number') cam.minDist = mn; }
+    let dist = Math.max(cam.minDist, Math.min(cam.maxDist, cam.dist));
     // camera collision
     const dir = [Math.sin(cam.yaw) * cy, sy, Math.cos(cam.yaw) * cy];
     if (hrp && dist > 1) {

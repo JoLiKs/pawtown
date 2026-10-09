@@ -14,6 +14,15 @@ local Hud = require(Modules:WaitForChild("Hud"))
 
 ClientState.init()
 Toasts.init(gui)
+-- звук: ошибка модуля (или ассетов) никогда не ломает интерфейс
+do
+	local ok: boolean, err: any = pcall(function()
+		require(Modules:WaitForChild("Music")).init(gui)
+	end)
+	if not ok then
+		warn("[Music] init failed: " .. tostring(err))
+	end
+end
 
 local panels = {}
 local openPanel
@@ -28,6 +37,8 @@ panels.Talents = require(Modules:WaitForChild("TalentsPanel")).init(gui, openReb
 panels.SparkNight = require(Modules:WaitForChild("RebirthPanel")).init(gui)
 panels.Settings = require(Modules:WaitForChild("SettingsPanel")).init(gui)
 panels.Emotes = require(Modules:WaitForChild("EmotesPanel")).init(gui)
+panels.Choice = require(Modules:WaitForChild("ChoicePanel")).init(gui)
+panels.Friends = require(Modules:WaitForChild("FriendsPanel")).init(gui)
 local Bath = require(Modules:WaitForChild("BathGame")).init(gui)
 
 openPanel = function(name: string, force: boolean?)

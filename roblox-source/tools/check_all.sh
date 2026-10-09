@@ -14,6 +14,7 @@ run() { "$@" || { echo "!! FAILED: $*"; fail=1; }; }
 step "1/7 StyLua (формат)";            run "$STYLUA" --check src tests
 step "2/7 Selene (линт)";              run "$SELENE" src
 step "2b/7 Локализация: захардкоженные строки интерфейса"; run python3 tools/check_strings.py
+run bash -c '! grep -rnE "\.(Text|PlaceholderText) = L\.kn?\(" src || { echo "marker L.k assigned directly: use L.bind(inst, \"Text\", L.k(...))"; exit 1; }'
 step "3/7 Rojo sourcemap";             run "$ROJO" sourcemap default.project.json -o sourcemap.json
 step "4/7 luau-lsp analyze (типы + синтаксис всех файлов)"
 if [ -f "$T/globalTypes.d.luau" ]; then DEFS="$T/globalTypes.d.luau"; else DEFS="globalTypes.d.luau"; fi
@@ -24,7 +25,7 @@ step "5b/7 Игровой интеграционный сценарий в эм�
 R2W_DIR=${R2W_DIR:-/workspace/roblox2web}
 if command -v node >/dev/null && [ -d "$R2W_DIR/rbx" ]; then R2W_DIR=$R2W_DIR run node tests/game/run.js 260; else echo "пропущено: нет node или roblox2web (задайте R2W_DIR)"; fi
 if [ "${UI_TEST:-0}" = 1 ] && [ -d "$R2W_DIR/rbx" ]; then
-  step "5c/7 Chromium UI-тест (UI_TEST=1)"; R2W_DIR=$R2W_DIR run bash tests/browser/build_ui_site.sh; R2W_DIR=$R2W_DIR run python3 tests/browser/test_game_ui.py
+  step "5c/7 Chromium UI-тест (UI_TEST=1)"; R2W_DIR=$R2W_DIR run bash tests/browser/build_ui_site.sh; R2W_DIR=$R2W_DIR run python3 tests/browser/test_game_ui.py; R2W_DIR=$R2W_DIR run python3 tests/browser/test_v02_ui.py
 fi
 step "6/7 Сборка .rbxlx без Rojo";     run python3 tools/build_rbxlx.py
 step "7/7 Валидация .rbxlx (XML + сверка с эталоном rojo build)"

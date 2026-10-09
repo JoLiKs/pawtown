@@ -55,6 +55,8 @@ local function boot(label, opts)
 		"WorldData",
 		"SpeciesData",
 		"RebirthLogic",
+		"FriendsLogic",
+		"AudioData",
 		"DayNight",
 		"UiGeometry",
 	}) do
@@ -265,18 +267,207 @@ test(
 				end
 			end
 		end
-		check(R.AVAILABLE == false, "rebirth is 'coming soon' in v0.1")
+		check(R.AVAILABLE == true and R.available("Fox") and not R.available("MidnightCat"), "rare only")
 		local data = {
+			Species = "Dog",
 			Level = 30,
 			Talents = { KeenNose = 3, TreasureHunter = 1 },
 			Shards = { a = true, b = true },
 			Bond = { Dad = 50 },
 			Tricks = { Sit = { Best = 3 } },
+			Lineage = {},
+			Trials = {},
 		}
 		local list, all = R.check(data, "Fox")
-		check(#list == 3 and not all, "Fox: 3 requirements, not all met")
-		check(list[1].Key == "Level" and list[1].Ok, "level requirement met")
+		check(#list == 7 and not all, "Fox: path + 5 common + Nose, not all met")
+		check(list[1].Key == "Path" and list[1].Ok, "Dog -> Fox path open")
+		check(list[2].Key == "Age" and list[2].Ok, "adult at 30")
+		check(list[3].Key == "Level" and not list[3].Ok and list[3].Need == 50, "level 50 needed")
 		check(R.stat(data, "Gold") == 1 and R.stat(data, "Bond") == 50, "stats")
+		check(not R.pathOk(data, "SnowLeopard") and not R.pathOk(data, "Owl"), "Dog has no cat/parrot path")
+		data.Lineage.Cat = true
+		check(R.pathOk(data, "SnowLeopard"), "lineage opens path")
+		for _, sp in ipairs(Sp.List) do
+			if sp.Tier == "Rare" then
+				check(sp.From ~= nil and #sp.From > 0, sp.Id .. " has path")
+				check(S0.WorldData.Trials[sp.Id] ~= nil, sp.Id .. " has trial")
+				check(#Sp.Abilities[sp.Abilities[1]].Name > 0, sp.Id .. " ability")
+			end
+		end
+	end
+)
+
+test(
+	"RebirthLogic: ускоренные условия, перерождение, что сохраняется, звёзды и наследуемый талант",
+	function()
+		local R, P = S0.RebirthLogic, S0.Progression
+		local data = {
+			Species = "Cat",
+			Level = 12,
+			Xp = 5,
+			Talents = { LightPaws = 2 },
+			Shards = { s_home = true },
+			Bond = { Dad = 10, Grandma = 10, Kid = 10 },
+			Tricks = {},
+			Rep = { Street = 33, Park = 7 },
+			Cosmetics = { Owned = { BlueCollar = true }, Equipped = { Collar = "BlueCollar" } },
+			Friends = { ["42"] = 5 },
+			FriendList = { ["42"] = { Name = "Ann", Since = 1 } },
+			Lineage = {},
+			Trials = {},
+			Needs = {},
+			Rebirths = 0,
+			Stars = 0,
+		}
+		local ok0 = R.canTrial(data, "SnowLeopard")
+		check(not ok0, "trial needs adult")
+		check(select(2, R.check(data, "SnowLeopard")) == false, "not ready")
+		R.fastTrack(data, "SnowLeopard")
+		local list, all = R.check(data, "SnowLeopard")
+		check(all, "fast-track meets all requirements")
+		for _, r in ipairs(list) do
+			check(r.Ok, "req ok " .. r.Key)
+		end
+		check(R.stat(data, "Shards") >= 20 and data.Level >= 50, "20 shards, level 50")
+		check(not R.apply(data, "Owl", nil), "wrong path refused")
+		check(not R.apply(data, "SnowLeopard", "KeenNose"), "cannot inherit unlearned talent")
+		local ok = R.apply(data, "SnowLeopard", "LightPaws")
+		check(ok, "rebirth applied")
+		check(data.Species == "SnowLeopard" and data.Level == 1 and data.Xp == 0, "level reset")
+		check(P.age(data.Level) == "Baby", "baby again")
+		check(data.Lineage.Cat and data.Lineage.SnowLeopard, "lineage kept")
+		check(data.Rebirths == 1 and R.stars(data) == 1, "star +1")
+		check(math.abs(R.mult(data) - 1.1) < 1e-9, "+10% bonus")
+		check(data.Rep.Street == 33 and data.Cosmetics.Owned.BlueCollar, "rep and cosmetics kept")
+		check(data.FriendList["42"] ~= nil and data.Friends["42"] == 5, "friends kept")
+		check(R.stat(data, "Shards") >= 20, "shards kept")
+		check(data.Bond.Dad >= 70, "family bond kept")
+		local inhRank = P.rank(data.Talents, "LightPaws")
+		check(inhRank >= 2, "inherited talent rank kept")
+		check(P.spent(data.Talents) == 0, "inherited talent is free")
+		check(P.rank(data.Talents, "SpringLegs") == 0, "other talents reset")
+		check(not data.Trials.SnowLeopard, "trial consumed")
+		for _ = 1, 10 do
+			data.Stars += 1
+		end
+		check(R.stars(data) == R.MAX_STARS, "stars capped")
+	end
+)
+
+test("FriendsLogic: список друзей, лимит, комбо", function()
+	local F = S0.FriendsLogic
+	local d = { FriendList = {} }
+	check(F.canAdd(d, 5, 1, 2), "can add")
+	check(not F.canAdd(d, 1, 1, 2), "not self")
+	F.add(d, 5, "Ann", 100)
+	check(F.isFriend(d, 5) and d.FriendList["5"].Name == "Ann", "added")
+	check(not F.canAdd(d, 5, 1, 2), "no duplicates")
+	F.add(d, 6, "Bob", 100)
+	local ok, why = F.canAdd(d, 7, 1, 2)
+	check(not ok and why == "msg.friend_full", "limit")
+	check(F.remove(d, 5) and not F.isFriend(d, 5), "removed")
+	check(F.comboFor("Wag", "Wag") == "HappyDance", "same emote combo")
+	check(
+		F.comboFor("PlayBow", "Wag") == "Zoomies" and F.comboFor("Wag", "PlayBow") == "Zoomies",
+		"symmetric"
+	)
+	check(F.comboFor("Roll", "Sniff") == nil, "no combo")
+	for _, c in ipairs(F.COMBOS) do
+		check(S0.LocaleEn.Strings["combo." .. c.Id] ~= nil, "combo key " .. c.Id)
+	end
+end)
+
+test(
+	"Звук: AudioData (настройки, ID, день/ночь, кроссфейд, загрузка с повтором), ID в Config, голоса видов",
+	function()
+		local A, Config = S0.AudioData, S0.Config
+		local d = A.normalize(nil)
+		check(d.Music == true and d.Sfx == true and d.MusicVol == 0.6, "defaults")
+		local junk = A.normalize({ Music = "yes", Sfx = 0, MusicVol = 0 / 0, Extra = 1 })
+		check(
+			junk.Music == true and junk.Sfx == true and junk.MusicVol == 0.6 and junk.Extra == nil,
+			"junk cleaned"
+		)
+		check(
+			A.normalize({ MusicVol = 7 }).MusicVol == 1 and A.normalize({ MusicVol = 0.33 }).MusicVol == 0.3,
+			"volume"
+		)
+		local a = A.set(d, "Sfx", false)
+		check(a and a.Sfx == false and d.Sfx == true, "set returns copy")
+		check(
+			A.set(d, "Music", 1) == nil and A.set(d, "MusicVol", 2) == nil and A.set(d, "Lang", "en") == nil,
+			"validation"
+		)
+		check(A.soundId(0) == nil and A.soundId(1.5) == nil and A.soundId("1") == nil, "no id")
+		check(A.soundId(80019631737532) == "rbxassetid://80019631737532", "big id")
+		check(
+			A.musicTarget(false, true, true) == "Day" and A.musicTarget(true, true, true) == "Night",
+			"day/night"
+		)
+		check(
+			A.musicTarget(true, true, false) == "Day" and A.musicTarget(false, false, true) == "Night",
+			"fallback"
+		)
+		check(A.musicTarget(true, false, false) == nil, "silence")
+		local mix, t = 0, 0
+		while mix < 1 and t < 100 do
+			mix = A.fadeStep(mix, 1, 0.1, Config.MUSIC.FADE)
+			t += 0.1
+		end
+		check(math.abs(t - Config.MUSIC.FADE) < 0.15, "fade length")
+		check(math.abs(A.gain(0.5, 1, 1) ^ 2 * 2 - 1) < 1e-6, "equal power")
+		-- загрузка: TimedOut — бесконечные повторы, Failure — сломан после MAX_FAILURES подряд, успех сбрасывает
+		local h = A.newHealth()
+		for _ = 1, 10 do
+			check(A.loadResult(h, "MUSIC_DAY", "TimedOut") == "retry", "timeout retries")
+		end
+		check(
+			A.loadResult(h, "BARK", "Failure") == "retry" and A.loadResult(h, "BARK", "Success") == "ok",
+			"reset"
+		)
+		local res
+		for _ = 1, A.MAX_FAILURES do
+			res = A.loadResult(h, "MEOW", "Failure")
+		end
+		check(res == "broken", "broken after failures")
+		check(A.reportFailure(h, "MEOW", "x") and not A.reportFailure(h, "MEOW", "x"), "logged once")
+		check(A.isFailed(h, "MEOW") and not A.tryPlay(h, "MEOW", 0), "broken not played")
+		check(
+			A.tryPlay(h, "HOOT", 10) and not A.tryPlay(h, "HOOT", 11) and A.tryPlay(h, "HOOT", 14),
+			"play throttle"
+		)
+		-- ID звуков (загружены через Open Cloud) и голос каждого вида
+		for _, k in ipairs({
+			"MUSIC_DAY",
+			"MUSIC_NIGHT",
+			"BARK",
+			"MEOW",
+			"SQUEAK",
+			"CHIRP",
+			"HOOT",
+			"PICKUP",
+			"QUEST_DONE",
+		}) do
+			local v = Config.SOUNDS[k]
+			check(type(v) == "number" and A.soundId(v) ~= nil, "Config.SOUNDS." .. k)
+		end
+		for _, sp in ipairs(S0.SpeciesData.List) do
+			local v = Config.VOICES[sp.Id]
+			check(
+				v ~= nil and Config.SOUNDS[v.Key] ~= nil and v.Speed > 0.5 and v.Speed < 2,
+				"voice " .. sp.Id
+			)
+		end
+		-- миграция: нет настроек звука / мусор — нормальный вид
+		local data = { Settings = { Lang = "ru", Audio = { Music = "x", MusicVol = 5 } } }
+		S0.Migrations.run(data)
+		check(data.Settings.Audio.Music == true and data.Settings.Audio.MusicVol == 1, "migration audio")
+		local data2 = { Settings = { Lang = "en" } }
+		S0.Migrations.run(data2)
+		check(
+			data2.Settings.Audio and data2.Settings.Audio.Sfx == true and data2.Settings.Lang == "en",
+			"migration adds audio"
+		)
 	end
 )
 
@@ -338,7 +529,8 @@ test("Migrations: v1 -> v2 и починка битых данных", function(
 	}
 	local changed = M.run(d)
 	check(changed, "changed")
-	check(d.Version == 2 and d.Treats == 77 and d.Coins == nil, "coins -> treats")
+	check(d.Version == 3 and d.Treats == 77 and d.Coins == nil, "coins -> treats")
+	check(type(d.Lineage) == "table" and type(d.Trials) == "table" and d.Stars == 0, "v3 rebirth fields")
 	check(d.Bond.Dad == 10 and d.Bond.Kid == 30, "bond array -> map")
 	check(d.Needs.Hunger == 50 and d.Needs.Health == 100, "needs normalized")
 	check(d.Species == "", "unknown species reset to choice")
@@ -494,8 +686,10 @@ test(
 			needName(it.Name, it.Id)
 			check(en["shop.slot." .. it.Slot] ~= nil, "slot key " .. it.Slot)
 		end
-		for _, s in ipairs(S0.QuestData.CHAPTER1) do
-			check(en["quest." .. s.Id] ~= nil, "quest key " .. s.Id)
+		for _, ch in ipairs(S0.QuestData.CHAPTERS) do
+			for _, s in ipairs(ch) do
+				check(en["quest." .. s.Id] ~= nil, "quest key " .. s.Id)
+			end
 		end
 		for _, d in ipairs(S0.QuestData.DAILY_POOL) do
 			check(en["daily." .. d.Id] ~= nil, "daily key " .. d.Id)

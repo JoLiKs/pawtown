@@ -31,6 +31,9 @@ SocialService.EMOTES = { "Wag", "Sniff", "Voice", "PlayBow", "Roll", "Mimic" }
 
 local pairCd: { [string]: number } = {}
 
+-- Внешние подписчики на эмоции (сюжет: «развесели соседа»; друзья: комбо). fn(player, emoteId, pos)
+SocialService.emoteHooks = {} :: { (Player, string, Vector3) -> () }
+
 local function pairKey(a: number, b: number): string
 	return if a < b then a .. ":" .. b else b .. ":" .. a
 end
@@ -105,8 +108,10 @@ function SocialService.init()
 		-- почтальон и семья радуются
 		local mp = FamilyService.mailmanPos()
 		if mp and (mp - pos).Magnitude <= 16 then
-			FamilyService.say("Mailman", "speech.mail_hi")
-			QuestService.event(player, "greet_mailman")
+			FamilyService.greetMailman(player)
+		end
+		for _, hook in ipairs(SocialService.emoteHooks) do
+			task.spawn(hook, player, id, pos)
 		end
 		local member = FamilyService.nearestMember(pos, 14)
 		if member and Session.cooldown(player, "emotelove", 20) then

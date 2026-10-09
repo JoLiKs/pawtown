@@ -13,7 +13,7 @@ local NeedsLogic = require(Shared:WaitForChild("NeedsLogic"))
 local SpeciesData = require(Shared:WaitForChild("SpeciesData"))
 local WorldData = require(Shared:WaitForChild("WorldData"))
 
-local Actions = require(script.Parent.Actions)
+local Abilities = require(script.Parent.Abilities)
 local ClientState = require(script.Parent.ClientState)
 local Layout = require(script.Parent.Layout)
 local Theme = require(script.Parent.Theme)
@@ -115,7 +115,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		AutoButtonColor = false,
 		BackgroundColor3 = Theme.Bg,
 		BackgroundTransparency = 0.12,
-		Size = UDim2.fromOffset(300, 92),
+		Size = UDim2.fromOffset(300, 102),
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.new(1, -10, 0, 10),
 		Parent = root,
@@ -132,10 +132,12 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		Position = UDim2.fromOffset(42, 8),
 		Parent = tracker,
 	})
+	-- шаг — не больше двух строк (длинный текст обрезается многоточием, не налезает на «Задания дня»)
 	local tStep = Ui.text({
 		Name = "Step",
 		TextSize = 18,
-		Size = UDim2.new(1, -20, 0, 40),
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		Size = UDim2.new(1, -20, 0, 42),
 		Position = UDim2.fromOffset(10, 34),
 		TextYAlignment = Enum.TextYAlignment.Top,
 		Parent = tracker,
@@ -155,7 +157,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 	------------------------------------------------------------------ кнопки разделов
 	local menu = New(
 		"Frame",
-		{ Name = "Menu", BackgroundTransparency = 1, Size = UDim2.fromOffset(58, 58 * 5 + 32), Parent = root }
+		{ Name = "Menu", BackgroundTransparency = 1, Size = UDim2.fromOffset(58, 58 * 6 + 40), Parent = root }
 	)
 	local menuList = Ui.list(menu, 8)
 	local buttons = {}
@@ -164,6 +166,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		{ "Talents", "Talent", Theme.Purple },
 		{ "Shop", "Shop", Theme.Pink },
 		{ "Emotes", "Emote", Theme.Orange },
+		{ "Friends", "Friends", Theme.Green },
 		{ "Settings", "Settings", Theme.BgLight },
 	}) do
 		buttons[def[1]] = Ui.iconButton({
@@ -194,7 +197,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			Size = 66,
 			Parent = abilities,
 			OnClick = function()
-				Actions.call("Ability", id)
+				Abilities.use(id)
 			end,
 		})
 		local key = Ui.text({
@@ -215,8 +218,14 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		b.Visible = false
 		abilityButtons[id] = { Button = b, Key = key }
 	end
+	-- активные способности: основная (Q) и вторая (F) — по SpeciesData.Primary / Secondary
 	abilityButton("Sniff", "Sniff", Color3.fromRGB(150, 110, 70))
 	abilityButton("Dash", "Dash", Color3.fromRGB(90, 190, 140))
+	abilityButton("HugeLeap", "Jump", Color3.fromRGB(150, 180, 230))
+	abilityButton("ShieldRoll", "Shield", Color3.fromRGB(220, 170, 70))
+	abilityButton("CommandDogs", "Friends", Color3.fromRGB(200, 130, 80))
+	abilityButton("CrystalSight", "Eye", Color3.fromRGB(120, 170, 250))
+	abilityButton("NightVision", "Energy", Color3.fromRGB(90, 110, 170))
 
 	------------------------------------------------------------------ сон
 	local sleepVeil = New("Frame", {
@@ -284,13 +293,13 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			layoutNeeds(true)
 			tracker.AnchorPoint = Vector2.new(0, 0)
 			tracker.Position = UDim2.fromOffset(10, 100)
-			tracker.Size = UDim2.fromOffset(W - 20, 92)
-			needs.Position = UDim2.fromOffset(10, 200)
+			tracker.Size = UDim2.fromOffset(W - 20, 102)
+			needs.Position = UDim2.fromOffset(10, 210)
 			needs.Size = UDim2.fromOffset(W - 20, 58)
 			menu.AnchorPoint = Vector2.new(1, 0.5)
 			menu.Position = UDim2.new(1, -8, 0.56, 0)
 			menuList.FillDirection = Enum.FillDirection.Vertical
-			menu.Size = UDim2.fromOffset(58, 58 * 5 + 32)
+			menu.Size = UDim2.fromOffset(58, 58 * 6 + 40)
 			abilities.AnchorPoint = Vector2.new(1, 1)
 			abilities.Position = UDim2.new(1, -8, 1, -190)
 			abilities.Size = UDim2.fromOffset(70, 70)
@@ -298,12 +307,12 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			layoutNeeds(false)
 			tracker.AnchorPoint = Vector2.new(1, 0)
 			tracker.Position = UDim2.new(1, -10, 0, 10)
-			tracker.Size = UDim2.fromOffset(300, 92)
+			tracker.Size = UDim2.fromOffset(300, 102)
 			needs.Position = UDim2.fromOffset(10, 100)
 			menu.AnchorPoint = Vector2.new(0.5, 1)
 			menu.Position = UDim2.new(0.5, 0, 1, -8)
 			menuList.FillDirection = Enum.FillDirection.Horizontal
-			menu.Size = UDim2.fromOffset(58 * 5 + 32, 58)
+			menu.Size = UDim2.fromOffset(58 * 6 + 40, 58)
 			abilities.AnchorPoint = Vector2.new(1, 1)
 			abilities.Position = UDim2.new(1, -16, 1, -170)
 			abilities.Size = UDim2.fromOffset(70, 70)
@@ -311,12 +320,12 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			layoutNeeds(false)
 			tracker.AnchorPoint = Vector2.new(1, 0)
 			tracker.Position = UDim2.new(1, -10, 0, 10)
-			tracker.Size = UDim2.fromOffset(300, 92)
+			tracker.Size = UDim2.fromOffset(300, 102)
 			needs.Position = UDim2.fromOffset(10, 100)
 			menu.AnchorPoint = Vector2.new(1, 0.5)
 			menu.Position = UDim2.new(1, -10, 0.55, 0)
 			menuList.FillDirection = Enum.FillDirection.Vertical
-			menu.Size = UDim2.fromOffset(58, 58 * 5 + 32)
+			menu.Size = UDim2.fromOffset(58, 58 * 6 + 40)
 			abilities.AnchorPoint = Vector2.new(0.5, 1)
 			abilities.Position = UDim2.new(0.5, 0, 1, -14)
 			abilities.Size = UDim2.fromOffset(150, 70)
@@ -329,8 +338,9 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 				area = { X = 8, Y = top, W = lay.W - 16 - 66 * k, H = lay.H - top - 150 }
 			else
 				local left = 248 * k
-				-- справа внизу — кнопка прыжка Roblox (~110 px): окно её не перекрывает
-				area = { X = left, Y = 8, W = lay.W - left - 120, H = lay.H - 8 - 74 * k }
+				-- справа — трекер главы (300 px дизайна) и ниже кнопка прыжка Roblox: окно не заходит под них
+				local right = math.max(120, (300 + 20) * k)
+				area = { X = left, Y = 8, W = lay.W - left - right - 8, H = lay.H - 8 - 74 * k }
 			end
 			Layout.setPanelArea(area)
 		else
@@ -370,7 +380,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		-- трекер
 		local story = core.Story or {}
 		if story.Id and story.Id ~= "" then
-			tTitle.Text = L.t("hud.chapter", { i = story.Index, total = story.Total })
+			tTitle.Text = L.t("hud.chapter", { c = story.Chapter or 1, i = story.Index, total = story.Total })
 			local stepText = L.t("quest." .. story.Id)
 			if (story.Need or 0) > 1 then
 				stepText ..= string.format(" (%d/%d)", story.P or 0, story.Need)
@@ -391,8 +401,14 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		tDaily.Visible = chosen
 		menu.Visible = chosen
 		talentDot.Visible = (core.TalentFree or 0) > 0
-		abilityButtons.Sniff.Button.Visible = SpeciesData.has(core.Species, "Sniff")
-		abilityButtons.Dash.Button.Visible = SpeciesData.has(core.Species, "Dash")
+		local spec = SpeciesData.ById[core.Species]
+		for id, ab in pairs(abilityButtons) do
+			local primary = spec ~= nil and spec.Primary == id
+			local secondary = spec ~= nil and spec.Secondary == id
+			ab.Button.Visible = primary or secondary
+			ab.Key.Text = if secondary then "F" else "Q" -- l10n-ok (клавиши)
+			ab.Button.LayoutOrder = if secondary then 2 else 1
+		end
 		sleepVeil.Visible = core.Sleeping == true
 		relayout(Layout.get())
 	end)

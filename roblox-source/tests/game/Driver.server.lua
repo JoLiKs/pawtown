@@ -18,12 +18,16 @@ local QuestData = require(Shared.QuestData)
 
 local DataService = require(Server.DataService)
 local Session = require(Server.Session)
+local State = require(Server.State)
 local AntiExploit = require(Server.AntiExploit)
 local Interact = require(Server.Interact)
 local QuestService = require(Server.QuestService)
 local DayNightService = require(Server.DayNightService)
 local PlayerService = require(Server.PlayerService)
 local Movement = require(Server.Movement)
+local RareAbilities = require(Server.RareAbilities)
+local WorldBuilder = require(Server.WorldBuilder)
+local RebirthLogic = require(Shared.RebirthLogic)
 
 local function check(name, cond, msg)
 	if cond then
@@ -237,7 +241,57 @@ check("sleep: night skipped to morning", not DayNightService.isNight(), DayNight
 check("dream: teleported to dream island", root().Position.Y > 40, tostring(root().Position))
 task.wait(12)
 check("dream: back in bed", root().Position.Y < 20)
-check("quest: chapter 1 complete", step() == nil and data.Story.Step > #QuestData.CHAPTER1, tostring(step()))
+check(
+	"quest: chapter 1 complete -> chapter 2",
+	step() == "c2_meet" and data.Story.Chapter == 2,
+	tostring(step())
+)
+
+-- ===================================================================== 7b. Глава 2 «Соседи»
+local uid = tostring(player.UserId)
+ok, msg = usePrompt("Neighbour", "Elm")
+ok, msg = usePrompt("Neighbour", "Buttercup")
+check("ch2: met both neighbours", step() == "c2_mail", step())
+ok, msg = usePrompt("Mailman")
+check("ch2: mailman lost a parcel", step() == "c2_parcel", step())
+task.wait(1.5)
+ok, msg = usePrompt("PickStory", "Parcel:" .. uid)
+check("ch2: parcel found", ok and step() == "c2_choice" and Session.get(player).Carrying == "Parcel", msg)
+local rep0 = data.Rep.Street
+r = call("StoryChoice", "c2_parcel", "fly")
+check("ch2: bad choice refused", r.ok == false)
+r = call("StoryChoice", "c2_parcel", "return")
+check(
+	"ch2: returned parcel -> street reputation",
+	r.ok and data.Rep.Street == rep0 + 30 and data.Choices.c2_parcel == "return" and step() == "c2_glasses",
+	r.msg
+)
+task.wait(1.5)
+ok, msg = usePrompt("PickStory", "Glasses:" .. uid)
+ok, msg = usePrompt("Neighbour", "Elm")
+check("ch2: glasses returned to Mrs. Elm", step() == "c2_cheer", step())
+moveTo(WorldData.Story2.Buttercup + Vector3.new(3, 0, 4))
+r = call("Emote", "Wag")
+task.wait(0.3)
+check("ch2: Mr. Buttercup cheered up", step() == "c2_party", step())
+moveTo(WorldData.Story2.Party)
+task.wait(1.5)
+check("ch2: street party -> chapter 2 complete", step() == nil, tostring(step()))
+ok, msg = usePrompt("Shortcut", "A")
+check(
+	"rep reward: shortcut to the park",
+	ok and (root().Position - WorldData.Story2.Shortcut.B).Magnitude < 10,
+	tostring(msg) .. " " .. tostring(root().Position)
+)
+local ShopData = require(Shared.ShopData)
+local Progress = require(Server.Progress)
+Progress.rep(player, "Street", 200)
+task.wait(1.2)
+check("rep reward: maple hat granted", data.Cosmetics.Owned.hat_maple == true)
+check(
+	"rep reward: boutique discount",
+	ShopData.price(ShopData.ById.hat_crown, 3) < ShopData.ById.hat_crown.Price
+)
 
 -- ===================================================================== 8. Способности собаки
 r = call("Ability", "Sniff")
@@ -267,9 +321,12 @@ check(
 	"shop: cosmetic on the rig",
 	player.Character:FindFirstChild("HatBase", true) ~= nil or #player.Character:GetDescendants() > 0
 )
-check("shop: treats spent", data.Treats == 500 - 80, data.Treats)
+local paid = ShopData.price(ShopData.ById.hat_party, require(Shared.Progression).repLevel(data.Rep.Street))
+check("shop: treats spent (street discount)", paid == 68 and data.Treats == 500 - paid, data.Treats)
 r = call("Buy", "hat_party")
-check("shop: no double buy", r.ok == false and data.Treats == 420)
+check("shop: no double buy", r.ok == false and data.Treats == 500 - paid)
+r = call("Buy", "hat_maple")
+check("shop: reputation hat is not for sale", r.ok == false)
 r = call("Equip", "Hat", "")
 check("shop: unequip", r.ok and data.Cosmetics.Equipped.Hat == "")
 r = call("Equip", "Hat", "hat_crown")
@@ -360,6 +417,139 @@ check(
 	root().Position.Y > y0 + 2,
 	root().Position.Y - y0
 )
+
+-- ===================================================================== 13b. Ночь Искр и редкие виды
+r = call("DevFastTrack", "Raccoon")
+check("rebirth: dev fast-track absent outside Studio", r.ok == false, r.msg)
+data.Species = "Rabbit"
+RebirthLogic.fastTrack(data, "CrystalRabbit")
+data.Trials.CrystalRabbit = nil
+r = call("Rebirth", "CrystalRabbit", "LightPaws")
+check("rebirth: refused without the trial", r.ok == false, r.msg)
+r = call("TrialStart", "CrystalRabbit")
+check("trial: started", r.ok and Session.get(player).Trial ~= nil, r.msg)
+for _, pt in ipairs(WorldData.Trials.CrystalRabbit.Points) do
+	moveTo(pt - Vector3.new(0, 1.5, 0))
+	task.wait(0.4)
+end
+check(
+	"trial: all sparks caught",
+	data.Trials.CrystalRabbit == true,
+	Session.get(player).Trial and Session.get(player).Trial.Index
+)
+local treats0 = data.Treats
+r = call("Rebirth", "CrystalRabbit", "LightPaws")
+task.wait(0.6)
+check(
+	"rebirth: Crystal Rabbit, baby, star, inherited talent",
+	r.ok
+		and data.Species == "CrystalRabbit"
+		and data.Level == 1
+		and data.Stars == 1
+		and data.Talents.Inherit == "LightPaws",
+	r.msg
+)
+check("rebirth: rig rebuilt", player.Character:GetAttribute("Species") == "CrystalRabbit")
+r = call("Ability", "CrystalSight")
+check("crystal sight: secrets found", r.ok, r.msg)
+ok, msg = usePrompt("Cache", "c_bush")
+check("crystal cache: opened after sight", ok and data.Treats > treats0, msg)
+
+data.Species = "Raccoon"
+PlayerService.respawnInPlace(player)
+task.wait(0.4)
+ok, msg = usePrompt("Unlock", "bin1")
+check("raccoon: bin opened, trinket stashed", ok and data.Stash.Trinkets == 1, msg)
+ok, msg = usePrompt("Unlock", "shed1")
+check("raccoon: shed lock picked", ok and data.Stash.Trinkets == 3, msg)
+ok, msg = usePrompt("Stash")
+check("raccoon: stash traded", ok and data.Stash.Trinkets == 0 and data.Stash.Total == 3, msg)
+
+data.Species = "Fox"
+PlayerService.respawnInPlace(player)
+task.wait(0.4)
+local mailRoot = Workspace.World.NPC:FindFirstChild("Mailman"):FindFirstChild("HumanoidRootPart")
+local bushNear, bd = nil, math.huge
+for _, b in ipairs(WorldBuilder.bushes) do
+	local d = (b - mailRoot.Position).Magnitude
+	if d < bd then
+		bushNear, bd = b, d
+	end
+end
+moveTo(bushNear)
+task.wait(0.7)
+check("fox: hidden in a bush", player.Character:GetAttribute("Hidden") == true)
+local sp = findPrompt("Snatch", "Mailman")
+moveTo(mailRoot.Position + Vector3.new(2, 0, 0))
+ok, msg = Interact.dispatch(player, sp)
+check("fox: snatched from the mailman", ok, msg)
+task.wait(0.3)
+moveTo(mailRoot.Position + Vector3.new(2, 0, 0))
+task.wait(4.5)
+ok, msg = Interact.dispatch(player, sp)
+check("fox: seen when not hiding", not ok, msg)
+
+data.Species = "SnowLeopard"
+PlayerService.respawnInPlace(player)
+task.wait(0.4)
+r = call("Ability", "HugeLeap")
+check("snow leopard: huge leap window", r.ok and Movement.legalSpeed(player) > 50, r.msg)
+moveTo(Vector3.new(-80, 15, -48))
+task.wait(0.6)
+check(
+	"snow leopard: roof sprint",
+	Movement.walkSpeed(player) > Movement.baseSpeed(data) * 1.5,
+	Movement.walkSpeed(player)
+)
+
+data.Species = "CorgiKnight"
+PlayerService.respawnInPlace(player)
+task.wait(0.4)
+moveTo(WorldData.ParkDogs[1] + Vector3.new(4, 0, 0))
+r = call("Ability", "CommandDogs")
+check("corgi: park dogs follow", r.ok and RareAbilities.dogs[1].Leader == player, r.msg)
+r = call("Ability", "ShieldRoll")
+check("corgi: shield roll", r.ok and Movement.walkSpeed(player) > Movement.baseSpeed(data) * 1.5, r.msg)
+
+data.Species = "Owl"
+PlayerService.respawnInPlace(player)
+task.wait(0.4)
+r = call("Ability", "NightVision")
+check("owl: night vision", r.ok, r.msg)
+r = call("Ability", "Sniff")
+check("owl: no dog abilities", r.ok == false)
+
+-- ===================================================================== 13c. Друзья
+r = call("FriendRequest", player.UserId)
+check("friends: cannot add yourself", r.ok == false)
+r = call("FriendRequest", 987654321)
+check("friends: player must be on this server", r.ok == false)
+r = call("Visit", 987654321)
+check("friends: visit non-friend refused", r.ok == false)
+r = call("FriendAccept", 987654321, true)
+check("friends: accept without request refused", r.ok == false)
+data.FriendList["987654321"] = { Name = "Ghost", Since = os.time() }
+r = call("Visit", 987654321)
+check("friends: visit offline friend refused", r.ok == false)
+local core = State.build(player)
+local fl = core and core.FriendsList
+check(
+	"friends: provider lists persisted friend offline",
+	fl ~= nil and #fl.Friends == 1 and fl.Friends[1].Online == false and fl.Max == Config.FRIEND_LIST_MAX
+)
+r = call("FriendRemove", 987654321)
+check("friends: remove", r.ok and data.FriendList["987654321"] == nil)
+
+-- ===================================================================== 13d. Звуковые настройки
+r = call("SetAudio", "Sfx", false)
+check(
+	"audio: sounds off saved",
+	r.ok and data.Settings.Audio.Sfx == false and State.build(player).Audio.Sfx == false
+)
+r = call("SetAudio", "MusicVol", 5)
+check("audio: bad volume rejected", r.ok == false and data.Settings.Audio.MusicVol == 0.6)
+r = call("SetAudio", "Sfx", true)
+check("audio: sounds back on", r.ok and data.Settings.Audio.Sfx == true)
 
 -- ===================================================================== 14. Сохранение
 check("save: saveNow", DataService.saveNow(player) == true)
