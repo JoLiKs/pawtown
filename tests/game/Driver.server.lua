@@ -24,6 +24,9 @@ local QuestService = require(Server.QuestService)
 local DayNightService = require(Server.DayNightService)
 local PlayerService = require(Server.PlayerService)
 local Movement = require(Server.Movement)
+local RareAbilities = require(Server.RareAbilities)
+local WorldBuilder = require(Server.WorldBuilder)
+local RebirthLogic = require(Shared.RebirthLogic)
 
 local function check(name, cond, msg)
 	if cond then
@@ -360,6 +363,107 @@ check(
 	root().Position.Y > y0 + 2,
 	root().Position.Y - y0
 )
+
+-- ===================================================================== 13b. Ночь Искр и редкие виды
+r = call("DevFastTrack", "Raccoon")
+check("rebirth: dev fast-track absent outside Studio", r.ok == false, r.msg)
+data.Species = "Rabbit"
+RebirthLogic.fastTrack(data, "CrystalRabbit")
+data.Trials.CrystalRabbit = nil
+r = call("Rebirth", "CrystalRabbit", "LightPaws")
+check("rebirth: refused without the trial", r.ok == false, r.msg)
+r = call("TrialStart", "CrystalRabbit")
+check("trial: started", r.ok and Session.get(player).Trial ~= nil, r.msg)
+for _, pt in ipairs(WorldData.Trials.CrystalRabbit.Points) do
+	moveTo(pt - Vector3.new(0, 1.5, 0))
+	task.wait(0.4)
+end
+check(
+	"trial: all sparks caught",
+	data.Trials.CrystalRabbit == true,
+	Session.get(player).Trial and Session.get(player).Trial.Index
+)
+local treats0 = data.Treats
+r = call("Rebirth", "CrystalRabbit", "LightPaws")
+task.wait(0.6)
+check(
+	"rebirth: Crystal Rabbit, baby, star, inherited talent",
+	r.ok
+		and data.Species == "CrystalRabbit"
+		and data.Level == 1
+		and data.Stars == 1
+		and data.Talents.Inherit == "LightPaws",
+	r.msg
+)
+check("rebirth: rig rebuilt", player.Character:GetAttribute("Species") == "CrystalRabbit")
+r = call("Ability", "CrystalSight")
+check("crystal sight: secrets found", r.ok, r.msg)
+ok, msg = usePrompt("Cache", "c_bush")
+check("crystal cache: opened after sight", ok and data.Treats > treats0, msg)
+
+data.Species = "Raccoon"
+PlayerService.respawnInPlace(player)
+task.wait(0.4)
+ok, msg = usePrompt("Unlock", "bin1")
+check("raccoon: bin opened, trinket stashed", ok and data.Stash.Trinkets == 1, msg)
+ok, msg = usePrompt("Unlock", "shed1")
+check("raccoon: shed lock picked", ok and data.Stash.Trinkets == 3, msg)
+ok, msg = usePrompt("Stash")
+check("raccoon: stash traded", ok and data.Stash.Trinkets == 0 and data.Stash.Total == 3, msg)
+
+data.Species = "Fox"
+PlayerService.respawnInPlace(player)
+task.wait(0.4)
+local mailRoot = Workspace.World.NPC:FindFirstChild("Mailman"):FindFirstChild("HumanoidRootPart")
+local bushNear, bd = nil, math.huge
+for _, b in ipairs(WorldBuilder.bushes) do
+	local d = (b - mailRoot.Position).Magnitude
+	if d < bd then
+		bushNear, bd = b, d
+	end
+end
+moveTo(bushNear)
+task.wait(0.7)
+check("fox: hidden in a bush", player.Character:GetAttribute("Hidden") == true)
+local sp = findPrompt("Snatch", "Mailman")
+moveTo(mailRoot.Position + Vector3.new(2, 0, 0))
+ok, msg = Interact.dispatch(player, sp)
+check("fox: snatched from the mailman", ok, msg)
+task.wait(0.3)
+moveTo(mailRoot.Position + Vector3.new(2, 0, 0))
+task.wait(4.5)
+ok, msg = Interact.dispatch(player, sp)
+check("fox: seen when not hiding", not ok, msg)
+
+data.Species = "SnowLeopard"
+PlayerService.respawnInPlace(player)
+task.wait(0.4)
+r = call("Ability", "HugeLeap")
+check("snow leopard: huge leap window", r.ok and Movement.legalSpeed(player) > 50, r.msg)
+moveTo(Vector3.new(-80, 15, -48))
+task.wait(0.6)
+check(
+	"snow leopard: roof sprint",
+	Movement.walkSpeed(player) > Movement.baseSpeed(data) * 1.5,
+	Movement.walkSpeed(player)
+)
+
+data.Species = "CorgiKnight"
+PlayerService.respawnInPlace(player)
+task.wait(0.4)
+moveTo(WorldData.ParkDogs[1] + Vector3.new(4, 0, 0))
+r = call("Ability", "CommandDogs")
+check("corgi: park dogs follow", r.ok and RareAbilities.dogs[1].Leader == player, r.msg)
+r = call("Ability", "ShieldRoll")
+check("corgi: shield roll", r.ok and Movement.walkSpeed(player) > Movement.baseSpeed(data) * 1.5, r.msg)
+
+data.Species = "Owl"
+PlayerService.respawnInPlace(player)
+task.wait(0.4)
+r = call("Ability", "NightVision")
+check("owl: night vision", r.ok, r.msg)
+r = call("Ability", "Sniff")
+check("owl: no dog abilities", r.ok == false)
 
 -- ===================================================================== 14. Сохранение
 check("save: saveNow", DataService.saveNow(player) == true)
