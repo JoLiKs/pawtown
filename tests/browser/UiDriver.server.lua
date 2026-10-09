@@ -40,6 +40,13 @@ end
 function handlers.species(arg)
 	PlayerService.chooseSpecies(player, arg)
 end
+-- morph:Id — сразу стать видом (в т.ч. редким) — для скриншотов моделей
+function handlers.morph(arg)
+	local data = DataService.get(player)
+	data.Species = arg
+	State.markCore(player)
+	PlayerService.respawnInPlace(player)
+end
 function handlers.level(arg)
 	local data = DataService.get(player)
 	data.Level = tonumber(arg)

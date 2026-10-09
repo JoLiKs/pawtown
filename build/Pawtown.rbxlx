@@ -2054,6 +2054,844 @@ return NeedsLogic
 			</Item>
 			<Item class="ModuleScript" referent="RBX00000000000000000000000000000010">
 				<Properties>
+					<string name="Name">PetModels</string>
+					<ProtectedString name="Source"><![CDATA[--!nonstrict
+--[[
+	PetModels — «мягкие» стилизованные модели питомцев из примитивов (v0.2): эллипсоиды (SpecialMesh Sphere —
+	в Roblox рисуется эллипсоидом любой пропорции), клинья (WedgePart) для острых ушей и кристаллов.
+	Без ассетов — работает и в эмуляторе roblox2web.
+
+	PetModels.specs(speciesId, look) -> (specs, anchors)
+	  specs: { Name, Size, CF (CFrame от точки на земле под центром, перед — -Z), Color, Mesh?, Class?,
+	           Parent? (по умолчанию Body), Joint? (имя Motor6D), Pivot? (точка сустава), Material?, Reflectance? }
+	  anchors: Neck / Top (точки для косметики), S (масштаб головы для косметики)
+	Суставы (для PetAnimator): Root, Neck, LegFL/FR/BL/BR, Tail, EarL/EarR, WingL/WingR (птицы).
+]]
+local PetModels = {}
+
+local V = Vector3.new
+local CF = CFrame.new
+local A = CFrame.Angles
+local rad = math.rad
+local BLACK = Color3.fromRGB(22, 20, 28)
+local WHITE = Color3.fromRGB(255, 255, 255)
+local PINK = Color3.fromRGB(245, 150, 170)
+local METAL = Color3.fromRGB(200, 205, 215)
+
+local function maker(look)
+	local specs = {}
+	local function col(c)
+		if type(c) == "string" then
+			return look[c] or WHITE
+		end
+		return c
+	end
+	local function add(name, size, at, color, ex)
+		local cf = if typeof(at) == "Vector3" then CF(at) else at
+		local s = { Name = name, Size = size, CF = cf, Color = col(color) }
+		if ex then
+			for k, v in pairs(ex) do
+				s[k] = v
+			end
+		end
+		table.insert(specs, s)
+		return s
+	end
+	local m = {}
+	m.specs = specs
+	-- эллипсоид
+	function m.E(name, size, at, color, ex)
+		local s = add(name, size, at, color, ex)
+		s.Mesh = "Sphere"
+		return s
+	end
+	-- клин
+	function m.W(name, size, at, color, ex)
+		local s = add(name, size, at, color, ex)
+		s.Class = "WedgePart"
+		return s
+	end
+	function m.B(name, size, at, color, ex)
+		return add(name, size, at, color, ex)
+	end
+	-- острый треугольник из двух клиньев (в плоскости XY, вершина вверх): base — CFrame основания
+	function m.tri(name, base, w, h, thick, color, ex)
+		local e = ex or {}
+		m.W(name .. "A", V(thick, h, w / 2), base * CF(-w / 4, h / 2, 0) * A(0, rad(90), 0), color, e)
+		m.W(name .. "B", V(thick, h, w / 2), base * CF(w / 4, h / 2, 0) * A(0, rad(-90), 0), color, e)
+	end
+	-- глаза: большая радужка, зрачок, два блика (милый стиль)
+	function m.eyes(H, r, o)
+		local spread, up, size = o.spread or 0.42, o.up or 0.1, o.size or 0.22
+		local iris = o.iris or "Eye"
+		for _, sx in ipairs({ -1, 1 }) do
+			local n = if sx < 0 then "L" else "R"
+			local dir = V(sx * spread, up, -1).Unit
+			local pos = H + dir * r * (o.depth or 0.86)
+			local base = CFrame.lookAt(pos, pos + dir)
+			if o.ring then
+				m.E("EyeRing" .. n, V(size * 1.35, size * 1.5, size * 0.4), base, o.ring, { Parent = "Head" })
+			end
+			m.E("Eye" .. n, V(size, size * 1.18, size * 0.5), base * CF(0, 0, -0.03), iris, {
+				Parent = "Head",
+				Material = o.glow and "Neon" or nil,
+			})
+			m.E(
+				"Pupil" .. n,
+				V(size * 0.62, size * 0.82, size * 0.45),
+				base * CF(0, -size * 0.04, -0.06),
+				BLACK,
+				{
+					Parent = "Head",
+				}
+			)
+			m.E(
+				"Shine" .. n,
+				V(size * 0.34, size * 0.34, size * 0.2),
+				base * CF(sx * size * 0.16, size * 0.24, -0.12),
+				WHITE,
+				{
+					Parent = "Head",
+				}
+			)
+			m.E(
+				"Shine2" .. n,
+				V(size * 0.16, size * 0.16, size * 0.12),
+				base * CF(-sx * size * 0.14, -size * 0.2, -0.11),
+				WHITE,
+				{
+					Parent = "Head",
+				}
+			)
+		end
+	end
+	return m
+end
+
+------------------------------------------------------------------ четвероногие
+local QUAD_DEFAULT = {
+	legH = 0.85,
+	legW = 0.42,
+	bodyL = 2.2,
+	bodyH = 1.25,
+	bodyW = 1.35,
+	headD = 1.55,
+	muzzle = "cat",
+	snoutLen = 0.6,
+	ears = "pointy",
+	earH = 0.62,
+	earW = 0.56,
+	earColor = "Body",
+	earInner = "Nose",
+	tail = "cat",
+	tailColor = "Body",
+	tailAlt = nil,
+	tailTip = nil,
+	pawColor = "Belly",
+	eyeSize = 0.36,
+	eyeSpread = 0.42,
+}
+
+local function quad(m, p)
+	local o = table.clone(QUAD_DEFAULT)
+	for k, v in pairs(p) do
+		o[k] = v
+	end
+	local E = m.E
+	local bodyY = o.legH + o.bodyH * 0.38
+	E("Body", V(o.bodyW, o.bodyH, o.bodyL), V(0, bodyY, 0), "Body")
+	E(
+		"Chest",
+		V(o.bodyW * 0.72, o.bodyH * 0.78, o.bodyL * 0.42),
+		V(0, bodyY - o.bodyH * 0.06, -o.bodyL * 0.3),
+		"Belly"
+	)
+	E(
+		"BellyPatch",
+		V(o.bodyW * 0.7, o.bodyH * 0.4, o.bodyL * 0.7),
+		V(0, bodyY - o.bodyH * 0.3, 0.02),
+		"Belly"
+	)
+	-- голова
+	local hd = o.headD
+	local headY = bodyY + o.bodyH * 0.5 + hd * 0.28
+	local headZ = -o.bodyL * 0.5 - hd * 0.1
+	local H = V(0, headY, headZ)
+	local r = hd * 0.475
+	E("Head", V(hd * 1.06, hd * 0.94, hd * 0.95), H, "Body", {
+		Joint = "Neck",
+		Pivot = V(0, bodyY + o.bodyH * 0.3, -o.bodyL * 0.36),
+	})
+	local F = H + V(0, -r * 0.3, -r * 0.88)
+	if o.muzzle == "cat" then
+		for _, sx in ipairs({ -1, 1 }) do
+			E(
+				"Cheek" .. (if sx < 0 then "L" else "R"),
+				V(hd * 0.28, hd * 0.22, hd * 0.2),
+				F + V(sx * hd * 0.11, 0, 0),
+				"Belly",
+				{ Parent = "Head" }
+			)
+			for i = 1, 2 do
+				m.B(
+					"Whisker" .. (if sx < 0 then "L" else "R") .. i,
+					V(hd * 0.36, 0.03, 0.03),
+					CF(F + V(sx * hd * 0.32, 0.02 - (i - 1) * 0.07, -0.02))
+						* A(0, 0, sx * rad(i == 1 and 8 or -6)),
+					WHITE,
+					{ Parent = "Head" }
+				)
+			end
+		end
+		E(
+			"Nose",
+			V(hd * 0.13, hd * 0.09, hd * 0.08),
+			F + V(0, hd * 0.09, -hd * 0.08),
+			"Nose",
+			{ Parent = "Head" }
+		)
+	else
+		local fox = o.muzzle == "fox"
+		local sl = o.snoutLen
+		local sw = if fox then hd * 0.34 else hd * 0.42
+		E(
+			"Snout",
+			V(sw, hd * (if fox then 0.26 else 0.32), sl),
+			F + V(0, 0, -sl * 0.28),
+			"Belly",
+			{ Parent = "Head" }
+		)
+		E(
+			"Nose",
+			V(hd * 0.18, hd * 0.13, hd * 0.12),
+			F + V(0, hd * 0.1, -sl * 0.72),
+			"Nose",
+			{ Parent = "Head" }
+		)
+		if not fox then
+			E(
+				"Tongue",
+				V(hd * 0.12, hd * 0.05, hd * 0.14),
+				F + V(0, -hd * 0.15, -sl * 0.42),
+				PINK,
+				{ Parent = "Head" }
+			)
+		end
+	end
+	if o.mask then
+		E(
+			"Mask",
+			V(hd * 1.0, hd * 0.25, hd * 0.6),
+			H + V(0, r * 0.12, -r * 0.25),
+			o.mask,
+			{ Parent = "Head" }
+		)
+	end
+	m.eyes(H, r, {
+		size = hd * o.eyeSize * 0.62,
+		spread = o.eyeSpread,
+		up = 0.14,
+		glow = o.eyeGlow,
+		depth = if o.mask then 0.98 else nil,
+	})
+	-- уши
+	for _, sx in ipairs({ -1, 1 }) do
+		local n = if sx < 0 then "L" else "R"
+		if o.ears == "floppy" then
+			local piv = H + V(sx * r * 0.82, r * 0.55, r * 0.05)
+			E(
+				"Ear" .. n,
+				V(hd * 0.2, o.earH, o.earW),
+				CF(H + V(sx * r * 1.0, r * 0.05, r * 0.05)) * A(0, 0, sx * rad(14)),
+				o.earColor,
+				{
+					Parent = "Head",
+					Joint = "Ear" .. n,
+					Pivot = piv,
+				}
+			)
+		else
+			local baseP = H + V(sx * r * 0.52, r * 0.7, r * 0.05)
+			local base = CF(baseP) * A(0, 0, -sx * rad(o.earTilt or 16)) * A(rad(-6), 0, 0)
+			E(
+				"Ear" .. n,
+				V(o.earW * 0.85, 0.22, 0.26),
+				base,
+				o.earColor,
+				{ Parent = "Head", Joint = "Ear" .. n, Pivot = baseP }
+			)
+			m.tri("Ear" .. n .. "Out", base, o.earW, o.earH, 0.16, o.earColor, { Parent = "Ear" .. n })
+			m.tri(
+				"Ear" .. n .. "In",
+				base * CF(0, 0.04, -0.06),
+				o.earW * 0.6,
+				o.earH * 0.68,
+				0.08,
+				o.earInner,
+				{ Parent = "Ear" .. n }
+			)
+		end
+	end
+	-- хвост
+	local TB = V(0, bodyY + o.bodyH * 0.18, o.bodyL * 0.44)
+	local function chain(angles, len, dia, colors, tip)
+		local pnt = TB
+		for i, ang in ipairs(angles) do
+			local dir = V(0, math.sin(rad(ang)), math.cos(rad(ang)))
+			local c = pnt + dir * len * 0.5
+			local cf = CFrame.lookAt(c, c + dir)
+			local nm = if i == 1 then "Tail" else "Tail" .. i
+			E(nm, V(dia, dia, len), cf, colors[(i - 1) % #colors + 1], {
+				Parent = if i == 1 then nil else "Tail",
+				Joint = if i == 1 then "Tail" else nil,
+				Pivot = if i == 1 then TB else nil,
+			})
+			pnt += dir * len * 0.62
+		end
+		if tip then
+			E("TailTip", V(dia * 1.05, dia * 1.05, dia * 1.3), pnt, tip, { Parent = "Tail" })
+		end
+	end
+	local tc = { o.tailColor, o.tailAlt or o.tailColor }
+	if o.tail == "cat" then
+		chain({ 25, 50, 75, 95 }, 0.5, 0.3, tc, o.tailTip)
+	elseif o.tail == "leopard" then
+		chain({ 10, 25, 45, 70, 95 }, 0.55, 0.42, tc, o.tailTip)
+	elseif o.tail == "ringed" then
+		chain({ 20, 35, 50, 65 }, 0.5, 0.5, tc, o.tailTip)
+	elseif o.tail == "dog" then
+		chain({ 45, 70 }, 0.55, 0.34, tc, o.tailTip)
+	elseif o.tail == "fox" then
+		local dir = V(0, math.sin(rad(20)), math.cos(rad(20)))
+		local c = TB + dir * 0.8
+		E("Tail", V(0.75, 0.72, 1.6), CFrame.lookAt(c, c + dir), o.tailColor, { Joint = "Tail", Pivot = TB })
+		E("TailTip", V(0.5, 0.5, 0.6), TB + dir * 1.55, o.tailTip or "Belly", { Parent = "Tail" })
+	else -- stub
+		E("Tail", V(0.45, 0.42, 0.4), TB + V(0, 0.05, 0.08), o.tailColor, { Joint = "Tail", Pivot = TB })
+	end
+	-- лапы
+	local legTop = bodyY - o.bodyH * 0.12
+	local lx, lzf, lzb = o.bodyW * 0.3, -o.bodyL * 0.3, o.bodyL * 0.3
+	for _, leg in ipairs({
+		{ "LegFL", -lx, lzf },
+		{ "LegFR", lx, lzf },
+		{ "LegBL", -lx, lzb },
+		{ "LegBR", lx, lzb },
+	}) do
+		local h = legTop - 0.1
+		E(leg[1], V(o.legW, h + 0.2, o.legW * 1.05), V(leg[2], h / 2 + 0.12, leg[3]), "Body", {
+			Joint = leg[1],
+			Pivot = V(leg[2], legTop, leg[3]),
+		})
+		E(
+			leg[1] .. "Paw",
+			V(o.legW * 1.18, 0.28, o.legW * 1.4),
+			V(leg[2], 0.14, leg[3] - 0.06),
+			o.pawColor,
+			{ Parent = leg[1] }
+		)
+	end
+	local top = H + V(0, r * 0.92, r * 0.05)
+	return {
+		H = H,
+		r = r,
+		bodyY = bodyY,
+		o = o,
+		anchors = {
+			Neck = V(0, bodyY + o.bodyH * 0.36, -o.bodyL * 0.36),
+			Top = top,
+			S = hd / 1.4,
+			NeckW = o.bodyW,
+		},
+	}
+end
+
+------------------------------------------------------------------ кролики
+local function rabbit(m, crystal)
+	local E = m.E
+	local bodyY = 0.95
+	E("Body", V(1.35, 1.3, 1.6), CF(0, bodyY, 0.15) * A(rad(-12), 0, 0), "Body")
+	E("BellyPatch", V(0.95, 0.95, 0.5), V(0, bodyY - 0.05, -0.42), "Belly")
+	local H = V(0, 1.95, -0.55)
+	local r = 0.58
+	E("Head", V(1.3, 1.15, 1.12), H, "Body", { Joint = "Neck", Pivot = V(0, 1.55, -0.35) })
+	local F = H + V(0, -r * 0.32, -r * 0.88)
+	for _, sx in ipairs({ -1, 1 }) do
+		E(
+			"Cheek" .. (if sx < 0 then "L" else "R"),
+			V(0.34, 0.28, 0.26),
+			F + V(sx * 0.15, 0, 0),
+			"Belly",
+			{ Parent = "Head" }
+		)
+	end
+	E("Nose", V(0.16, 0.11, 0.1), F + V(0, 0.12, -0.1), "Nose", { Parent = "Head" })
+	m.B("Teeth", V(0.16, 0.13, 0.04), F + V(0, -0.15, -0.1), WHITE, { Parent = "Head" })
+	m.eyes(H, r, { size = 0.3, spread = 0.48, up = 0.12 })
+	for _, sx in ipairs({ -1, 1 }) do
+		local n = if sx < 0 then "L" else "R"
+		local baseP = H + V(sx * 0.24, r * 0.85, 0.08)
+		local base = CF(baseP) * A(rad(-10), 0, -sx * rad(10))
+		E(
+			"Ear" .. n,
+			V(0.4, 0.22, 0.24),
+			base,
+			"Body",
+			{ Parent = "Head", Joint = "Ear" .. n, Pivot = baseP }
+		)
+		E("Ear" .. n .. "Long", V(0.4, 1.4, 0.22), base * CF(0, 0.65, 0), "Body", { Parent = "Ear" .. n })
+		E("Ear" .. n .. "In", V(0.22, 1.05, 0.1), base * CF(0, 0.62, -0.08), "Nose", { Parent = "Ear" .. n })
+		if crystal then
+			E(
+				"Ear" .. n .. "Glow",
+				V(0.2, 0.3, 0.2),
+				base * CF(0, 1.32, 0),
+				"Accent",
+				{ Parent = "Ear" .. n, Material = "Neon" }
+			)
+		end
+	end
+	E(
+		"Tail",
+		V(0.6, 0.6, 0.6),
+		V(0, 1.05, 0.98),
+		"Belly",
+		{ Joint = "Tail", Pivot = V(0, 1.0, 0.85), Material = crystal and "Neon" or nil }
+	)
+	-- лапы: передние тонкие, задние — бедро + длинная стопа
+	for _, sx in ipairs({ -1, 1 }) do
+		local n = if sx < 0 then "L" else "R"
+		E(
+			"LegF" .. n,
+			V(0.3, 0.75, 0.32),
+			V(sx * 0.3, 0.38, -0.45),
+			"Body",
+			{ Joint = "LegF" .. n, Pivot = V(sx * 0.3, 0.75, -0.45) }
+		)
+		E(
+			"LegF" .. n .. "Paw",
+			V(0.34, 0.22, 0.42),
+			V(sx * 0.3, 0.11, -0.52),
+			"Belly",
+			{ Parent = "LegF" .. n }
+		)
+		E(
+			"LegB" .. n,
+			V(0.55, 0.8, 0.85),
+			V(sx * 0.52, 0.55, 0.45),
+			"Body",
+			{ Joint = "LegB" .. n, Pivot = V(sx * 0.52, 0.85, 0.45) }
+		)
+		E(
+			"LegB" .. n .. "Foot",
+			V(0.4, 0.22, 0.85),
+			V(sx * 0.52, 0.11, 0.18),
+			"Belly",
+			{ Parent = "LegB" .. n }
+		)
+	end
+	if crystal then
+		for i, z in ipairs({ -0.2, 0.2, 0.55 }) do
+			local base = CF(0, bodyY + 0.6 - i * 0.05, z) * A(rad(-15), 0, 0)
+			m.tri("Crystal" .. i, base, 0.34, 0.5 - i * 0.06, 0.3, "Accent", { Material = "Neon" })
+		end
+		E(
+			"Gem",
+			V(0.18, 0.18, 0.1),
+			H + V(0, r * 0.55, -r * 0.8),
+			"Accent",
+			{ Parent = "Head", Material = "Neon" }
+		)
+	end
+	return {
+		H = H,
+		r = r,
+		anchors = { Neck = V(0, 1.45, -0.4), Top = H + V(0, r * 0.95, 0.05), S = 0.85, NeckW = 1.2 },
+	}
+end
+
+------------------------------------------------------------------ птицы
+local function parrot(m)
+	local E = m.E
+	E("Body", V(1.1, 1.55, 1.15), CF(0, 1.35, 0.05) * A(rad(-14), 0, 0), "Body")
+	E("BellyPatch", V(0.82, 1.1, 0.5), CF(0, 1.25, -0.32) * A(rad(-14), 0, 0), "Belly")
+	local H = V(0, 2.4, -0.18)
+	local r = 0.5
+	E("Head", V(1.05, 1.0, 1.0), H, "Body", { Joint = "Neck", Pivot = V(0, 2.05, -0.05) })
+	m.eyes(H, r, { size = 0.24, spread = 0.75, up = 0.15, ring = WHITE, depth = 0.9 })
+	E("Beak", V(0.36, 0.44, 0.46), CF(H + V(0, -0.08, -0.52)) * A(rad(28), 0, 0), "Nose", { Parent = "Head" })
+	E("BeakLow", V(0.26, 0.2, 0.26), H + V(0, -0.3, -0.42), Color3.fromRGB(60, 55, 60), { Parent = "Head" })
+	for i, a in ipairs({ -25, 0, 25 }) do
+		E(
+			"Crest" .. i,
+			V(0.14, 0.5, 0.22),
+			CF(H + V(math.sin(rad(a)) * 0.12, 0.55, 0.05)) * A(rad(-25), 0, rad(a)),
+			"Accent",
+			{ Parent = "Head" }
+		)
+	end
+	for _, sx in ipairs({ -1, 1 }) do
+		local n = if sx < 0 then "L" else "R"
+		E("Wing" .. n, V(0.26, 1.2, 0.88), CF(sx * 0.58, 1.4, 0.12) * A(rad(-14), 0, 0), "Body", {
+			Joint = "Wing" .. n,
+			Pivot = V(sx * 0.48, 1.85, 0.0),
+		})
+		E(
+			"Wing" .. n .. "Tip",
+			V(0.2, 0.7, 0.55),
+			CF(sx * 0.6, 0.85, 0.32) * A(rad(-20), 0, 0),
+			"Accent",
+			{ Parent = "Wing" .. n }
+		)
+		E(
+			"Wing" .. n .. "Band",
+			V(0.22, 0.25, 0.7),
+			V(sx * 0.6, 1.2, 0.15),
+			Color3.fromRGB(60, 120, 230),
+			{ Parent = "Wing" .. n }
+		)
+	end
+	E(
+		"Tail",
+		V(0.34, 0.12, 1.4),
+		CF(0, 0.75, 0.85) * A(rad(-40), 0, 0),
+		"Accent",
+		{ Joint = "Tail", Pivot = V(0, 1.0, 0.45) }
+	)
+	E(
+		"Tail2",
+		V(0.3, 0.1, 1.15),
+		CF(0.12, 0.8, 0.78) * A(rad(-38), rad(8), 0),
+		Color3.fromRGB(60, 120, 230),
+		{ Parent = "Tail" }
+	)
+	for _, sx in ipairs({ -1, 1 }) do
+		local n = if sx < 0 then "L" else "R"
+		E("LegF" .. n, V(0.16, 0.6, 0.16), V(sx * 0.24, 0.32, -0.02), Color3.fromRGB(120, 120, 130), {
+			Joint = "LegF" .. n,
+			Pivot = V(sx * 0.24, 0.62, -0.02),
+		})
+		E(
+			"LegF" .. n .. "Foot",
+			V(0.32, 0.12, 0.44),
+			V(sx * 0.24, 0.06, -0.1),
+			Color3.fromRGB(120, 120, 130),
+			{ Parent = "LegF" .. n }
+		)
+	end
+	return {
+		H = H,
+		r = r,
+		anchors = { Neck = V(0, 2.0, -0.12), Top = H + V(0, r * 0.95, 0.05), S = 0.75, NeckW = 0.95 },
+	}
+end
+
+local function owl(m)
+	local E = m.E
+	E("Body", V(1.45, 1.6, 1.35), V(0, 1.2, 0.05), "Body")
+	E("BellyPatch", V(1.05, 1.15, 0.5), V(0, 1.1, -0.42), "Belly")
+	for i, p in ipairs({
+		V(-0.2, 1.35, -0.62),
+		V(0.2, 1.35, -0.62),
+		V(0, 1.05, -0.66),
+		V(-0.25, 0.85, -0.6),
+		V(0.25, 0.85, -0.6),
+	}) do
+		E("Spot" .. i, V(0.16, 0.08, 0.06), p, "Accent")
+	end
+	local H = V(0, 2.25, -0.1)
+	local r = 0.62
+	E("Head", V(1.4, 1.15, 1.2), H, "Body", { Joint = "Neck", Pivot = V(0, 1.9, -0.05) })
+	for _, sx in ipairs({ -1, 1 }) do
+		local n = if sx < 0 then "L" else "R"
+		E("Disc" .. n, V(0.66, 0.7, 0.2), H + V(sx * 0.3, 0.02, -0.5), "Belly", { Parent = "Head" })
+		local baseP = H + V(sx * 0.48, 0.45, 0.0)
+		local base = CF(baseP) * A(0, 0, -sx * rad(25))
+		E(
+			"Ear" .. n,
+			V(0.25, 0.15, 0.2),
+			base,
+			"Accent",
+			{ Parent = "Head", Joint = "Ear" .. n, Pivot = baseP }
+		)
+		m.tri("Ear" .. n .. "Tuft", base, 0.3, 0.42, 0.14, "Accent", { Parent = "Ear" .. n })
+	end
+	m.eyes(H + V(0, 0.02, 0), r, { size = 0.4, spread = 0.5, up = 0.05, depth = 0.95 })
+	E("Beak", V(0.18, 0.32, 0.22), CF(H + V(0, -0.22, -0.62)) * A(rad(15), 0, 0), "Nose", { Parent = "Head" })
+	for _, sx in ipairs({ -1, 1 }) do
+		local n = if sx < 0 then "L" else "R"
+		E(
+			"Wing" .. n,
+			V(0.3, 1.25, 1.0),
+			V(sx * 0.72, 1.25, 0.12),
+			"Accent",
+			{ Joint = "Wing" .. n, Pivot = V(sx * 0.62, 1.75, 0.0) }
+		)
+		for k = 1, 2 do
+			E(
+				"Wing" .. n .. "Stripe" .. k,
+				V(0.31, 0.08, 0.7),
+				V(sx * 0.73, 1.05 + k * 0.25, 0.15),
+				"Belly",
+				{ Parent = "Wing" .. n }
+			)
+		end
+		E(
+			"LegF" .. n,
+			V(0.22, 0.4, 0.22),
+			V(sx * 0.3, 0.22, -0.1),
+			"Nose",
+			{ Joint = "LegF" .. n, Pivot = V(sx * 0.3, 0.45, -0.1) }
+		)
+		E(
+			"LegF" .. n .. "Foot",
+			V(0.36, 0.14, 0.4),
+			V(sx * 0.3, 0.07, -0.2),
+			"Nose",
+			{ Parent = "LegF" .. n }
+		)
+	end
+	E(
+		"Tail",
+		V(0.6, 0.14, 0.6),
+		CF(0, 0.55, 0.7) * A(rad(-35), 0, 0),
+		"Accent",
+		{ Joint = "Tail", Pivot = V(0, 0.7, 0.5) }
+	)
+	return {
+		H = H,
+		r = r,
+		anchors = { Neck = V(0, 1.85, -0.15), Top = H + V(0, 0.55, 0.05), S = 0.95, NeckW = 1.2 },
+	}
+end
+
+------------------------------------------------------------------ виды
+local BUILD = {}
+function BUILD.Cat(m)
+	local q = quad(m, { tailAlt = "Accent", tailTip = "Accent" })
+	-- полоски табби на лбу и спине
+	for i = -1, 1 do
+		m.E(
+			"Stripe" .. (i + 2),
+			V(0.1, 0.07, 0.3),
+			CF(q.H + V(i * 0.18, q.r * 0.8, -q.r * 0.35)) * A(rad(-35), 0, 0),
+			"Accent",
+			{ Parent = "Head" }
+		)
+	end
+	for i = 1, 3 do
+		m.E("BackStripe" .. i, V(1.0, 0.12, 0.2), CF(0, q.bodyY + 0.58, -0.4 + i * 0.35), "Accent")
+	end
+	return q
+end
+function BUILD.Dog(m)
+	local q = quad(m, {
+		legH = 0.9,
+		bodyL = 2.35,
+		bodyH = 1.35,
+		bodyW = 1.45,
+		headD = 1.6,
+		muzzle = "dog",
+		snoutLen = 0.7,
+		ears = "floppy",
+		earH = 0.9,
+		earW = 0.55,
+		earColor = "Accent",
+		tail = "dog",
+		tailTip = "Belly",
+		eyeSize = 0.34,
+	})
+	-- пятно у глаза
+	m.E("Patch", V(0.42, 0.42, 0.2), q.H + V(0.32, q.r * 0.22, -q.r * 0.78), "Accent", { Parent = "Head" })
+	return q
+end
+function BUILD.Fox(m)
+	return quad(m, {
+		legH = 0.9,
+		bodyL = 2.25,
+		bodyH = 1.15,
+		bodyW = 1.25,
+		headD = 1.5,
+		muzzle = "fox",
+		snoutLen = 0.75,
+		ears = "pointy",
+		earH = 0.85,
+		earW = 0.62,
+		earColor = "Body",
+		earInner = "Belly",
+		earTilt = 10,
+		tail = "fox",
+		tailTip = "Belly",
+		pawColor = "Accent",
+		eyeSize = 0.32,
+	})
+end
+function BUILD.SnowLeopard(m)
+	local q = quad(m, {
+		legH = 0.9,
+		bodyL = 2.6,
+		bodyH = 1.3,
+		bodyW = 1.4,
+		headD = 1.5,
+		ears = "pointy",
+		earH = 0.45,
+		earW = 0.5,
+		earTilt = 24,
+		tail = "leopard",
+		tailAlt = "Body",
+		tailTip = "Accent",
+		eyeSize = 0.34,
+	})
+	local spots = {
+		V(0.55, 0.3, -0.6),
+		V(0.62, 0.0, 0.0),
+		V(0.55, 0.25, 0.6),
+		V(-0.55, 0.3, -0.6),
+		V(-0.62, 0.0, 0.0),
+		V(-0.55, 0.25, 0.6),
+		V(0.3, 0.58, -0.2),
+		V(-0.3, 0.58, 0.3),
+		V(0.0, 0.64, 0.75),
+	}
+	for i, p in ipairs(spots) do
+		m.E("Spot" .. i, V(0.24, 0.22, 0.3), V(p.X, q.bodyY + p.Y, p.Z), "Accent")
+	end
+	for i, p in ipairs({ V(-0.25, 0.75, -0.4), V(0.25, 0.78, -0.35), V(0, 0.9, -0.1) }) do
+		m.E(
+			"HeadSpot" .. i,
+			V(0.13, 0.12, 0.08),
+			q.H + V(p.X, p.Y * q.r, p.Z * q.r),
+			"Accent",
+			{ Parent = "Head" }
+		)
+	end
+	return q
+end
+function BUILD.CorgiKnight(m)
+	local q = quad(m, {
+		legH = 0.5,
+		legW = 0.44,
+		bodyL = 2.5,
+		bodyH = 1.25,
+		bodyW = 1.45,
+		headD = 1.55,
+		muzzle = "dog",
+		snoutLen = 0.55,
+		ears = "pointy",
+		earH = 0.78,
+		earW = 0.66,
+		earTilt = 14,
+		earInner = "Accent",
+		tail = "stub",
+		pawColor = "Accent",
+		eyeSize = 0.34,
+	})
+	-- доспех: нагрудник, плащ, шлем с пером
+	m.E(
+		"Breastplate",
+		V(q.o.bodyW * 0.82, q.o.bodyH * 0.72, 0.6),
+		V(0, q.bodyY + 0.05, -q.o.bodyL * 0.36),
+		METAL,
+		{
+			Material = "Metal",
+			Reflectance = 0.15,
+		}
+	)
+	m.E(
+		"Crest",
+		V(0.3, 0.3, 0.12),
+		V(0, q.bodyY + 0.12, -q.o.bodyL * 0.36 - 0.3),
+		Color3.fromRGB(230, 70, 70)
+	)
+	m.E(
+		"Cape",
+		V(q.o.bodyW * 1.04, q.o.bodyH * 0.55, q.o.bodyL * 0.78),
+		V(0, q.bodyY + q.o.bodyH * 0.24, 0.22),
+		Color3.fromRGB(200, 45, 60)
+	)
+	m.E(
+		"Helmet",
+		V(q.r * 1.3, q.r * 0.6, q.r * 1.2),
+		q.H + V(0, q.r * 0.82, 0.08),
+		METAL,
+		{ Parent = "Head", Material = "Metal" }
+	)
+	m.E(
+		"Plume",
+		V(0.16, 0.45, 0.5),
+		CF(q.H + V(0, q.r * 1.25, 0.15)) * A(rad(-20), 0, 0),
+		Color3.fromRGB(230, 60, 70),
+		{ Parent = "Head" }
+	)
+	return q
+end
+function BUILD.Raccoon(m)
+	return quad(m, {
+		legH = 0.75,
+		bodyL = 2.2,
+		bodyH = 1.35,
+		bodyW = 1.5,
+		headD = 1.55,
+		ears = "pointy",
+		earH = 0.42,
+		earW = 0.5,
+		earInner = "Belly",
+		earTilt = 22,
+		mask = "Accent",
+		tail = "ringed",
+		tailAlt = "Accent",
+		tailTip = "Accent",
+		pawColor = "Accent",
+		eyeSize = 0.32,
+	})
+end
+function BUILD.StarfallDog(m)
+	local q = BUILD.Dog(m)
+	for i, p in ipairs({ V(0, 0.68, -0.3), V(0, 0.7, 0.3), V(0.45, 0.4, 0.1), V(-0.45, 0.4, 0.1) }) do
+		m.E("Star" .. i, V(0.2, 0.2, 0.2), V(p.X, q.bodyY + p.Y, p.Z), "Accent", { Material = "Neon" })
+	end
+	return q
+end
+function BUILD.MidnightCat(m)
+	local q = quad(m, { tailAlt = "Accent", tailTip = "Accent", eyeGlow = true, earInner = "Accent" })
+	m.E(
+		"Moon",
+		V(0.22, 0.22, 0.08),
+		q.H + V(0, q.r * 0.55, -q.r * 0.82),
+		"Eye",
+		{ Parent = "Head", Material = "Neon" }
+	)
+	return q
+end
+function BUILD.Rabbit(m)
+	return rabbit(m, false)
+end
+function BUILD.CrystalRabbit(m)
+	return rabbit(m, true)
+end
+BUILD.Parrot = parrot
+BUILD.Owl = owl
+
+-- Форма по умолчанию для незнакомого вида
+local BY_SHAPE = { Cat = "Cat", Dog = "Dog", Rabbit = "Rabbit", Parrot = "Parrot" }
+
+function PetModels.has(speciesId: string): boolean
+	return BUILD[speciesId] ~= nil
+end
+
+function PetModels.specs(speciesId: string, look: any)
+	local m = maker(look)
+	local fn = BUILD[speciesId] or BUILD[BY_SHAPE[look.Shape] or "Dog"]
+	local info = fn(m)
+	return m.specs, info.anchors
+end
+
+return PetModels
+]]></ProtectedString>
+				</Properties>
+			</Item>
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000011">
+				<Properties>
 					<string name="Name">PetRig</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
 --[[
@@ -2075,439 +2913,54 @@ PetRig.ROOT_SIZE = Vector3.new(2, 2, 2)
 -- Высота центра HRP над землёй
 PetRig.ROOT_Y = PetRig.HIP_HEIGHT + PetRig.ROOT_SIZE.Y / 2
 
-type PartSpec = {
-	Name: string,
-	Size: Vector3,
-	Pos: Vector3, -- центр, от земли
-	Color: string | Color3, -- ключ Look ("Body"/"Accent"/...) или цвет
-	Rot: Vector3?, -- градусы (X, Y, Z)
-	Shape: string?, -- "Ball" | "Cylinder"
-	Parent: string?, -- к какой части крепится (по умолчанию Body)
-	Joint: string?, -- имя Motor6D (анимируемый сустав); иначе Weld
-	Pivot: Vector3?, -- точка сустава (от земли)
-	Material: string?,
-}
+local PetModels = require(script.Parent.PetModels)
 
-local function P(
-	name: string,
-	size: Vector3,
-	pos: Vector3,
-	color: string | Color3,
-	extra: { [string]: any }?
-): PartSpec
-	local s: any = { Name = name, Size = size, Pos = pos, Color = color }
-	if extra then
-		for k, v in pairs(extra) do
-			s[k] = v
-		end
-	end
-	return s
-end
 local V = Vector3.new
-local BLACK = Color3.fromRGB(25, 25, 30)
 local WHITE = Color3.fromRGB(250, 250, 250)
+local BLACK = Color3.fromRGB(25, 25, 30)
 
-local function quadLegs(
-	out: { PartSpec },
-	w: number,
-	h: number,
-	x: number,
-	zf: number,
-	zb: number,
-	bodyBottom: number
-)
-	for _, leg in ipairs({ { "LegFL", -x, zf }, { "LegFR", x, zf }, { "LegBL", -x, zb }, { "LegBR", x, zb } }) do
-		table.insert(
-			out,
-			P(leg[1], V(w, h, w), V(leg[2], h / 2, leg[3]), "Body", {
-				Joint = leg[1],
-				Pivot = V(leg[2], bodyBottom, leg[3]),
-			})
-		)
-		-- лапка светлее
-		table.insert(
-			out,
-			P(
-				leg[1] .. "Paw",
-				V(w + 0.04, 0.22, w + 0.06),
-				V(leg[2], 0.11, leg[3] - 0.02),
-				"Belly",
-				{ Parent = leg[1] }
-			)
-		)
-	end
+-- Части формы (масштаб 1) и опорные точки косметики — см. PetModels
+function PetRig.shape(speciesId: string)
+	local sp = SpeciesData.ById[speciesId] or SpeciesData.ById.Dog
+	return PetModels.specs(sp.Id, sp.Look)
 end
 
-local function face(out: { PartSpec }, hy: number, hz: number, eyeX: number, eyeY: number)
-	for _, sx in ipairs({ -1, 1 }) do
-		table.insert(
-			out,
-			P(
-				"Eye" .. (if sx < 0 then "L" else "R"),
-				V(0.26, 0.3, 0.08),
-				V(sx * eyeX, hy + eyeY, hz),
-				"Eye",
-				{ Parent = "Head" }
-			)
-		)
-		table.insert(
-			out,
-			P(
-				"Pupil" .. (if sx < 0 then "L" else "R"),
-				V(0.13, 0.17, 0.06),
-				V(sx * eyeX, hy + eyeY + 0.02, hz - 0.05),
-				BLACK,
-				{ Parent = "Head" }
-			)
-		)
-		table.insert(
-			out,
-			P(
-				"Shine" .. (if sx < 0 then "L" else "R"),
-				V(0.06, 0.06, 0.04),
-				V(sx * eyeX + 0.04, hy + eyeY + 0.08, hz - 0.08),
-				WHITE,
-				{ Parent = "Head" }
-			)
-		)
-	end
-end
-
--- Детали формы (масштаб 1)
-function PetRig.shape(shape: string): { PartSpec }
-	local out: { PartSpec } = {}
-	if shape == "Cat" or shape == "Dog" then
-		local dog = shape == "Dog"
-		local legH = if dog then 1.0 else 0.95
-		local bodyH = if dog then 1.15 else 1.0
-		local bodyY = legH + bodyH / 2 - 0.05
-		table.insert(out, P("Body", V(if dog then 1.45 else 1.3, bodyH, 2.5), V(0, bodyY, 0.1), "Body"))
-		table.insert(out, P("Belly", V(1.0, 0.2, 1.8), V(0, bodyY - bodyH / 2 + 0.05, 0.1), "Belly"))
-		table.insert(out, P("Back", V(0.7, 0.12, 1.6), V(0, bodyY + bodyH / 2, 0.2), "Accent"))
-		local hy = bodyY + 0.75
-		local hz = -1.25
-		table.insert(
-			out,
-			P(
-				"Head",
-				V(1.35, 1.15, 1.15),
-				V(0, hy, hz),
-				"Body",
-				{ Joint = "Neck", Pivot = V(0, bodyY + 0.3, -0.95) }
-			)
-		)
-		local front = hz - 0.58
-		face(out, hy, front, 0.3, 0.12)
-		if dog then
-			table.insert(
-				out,
-				P("Snout", V(0.7, 0.5, 0.55), V(0, hy - 0.22, front - 0.2), "Belly", { Parent = "Head" })
-			)
-			table.insert(
-				out,
-				P("Nose", V(0.3, 0.22, 0.12), V(0, hy - 0.08, front - 0.5), "Nose", { Parent = "Head" })
-			)
-			table.insert(
-				out,
-				P(
-					"Tongue",
-					V(0.22, 0.06, 0.25),
-					V(0, hy - 0.48, front - 0.35),
-					Color3.fromRGB(240, 110, 130),
-					{ Parent = "Head" }
-				)
-			)
-			table.insert(
-				out,
-				P(
-					"EarL",
-					V(0.25, 0.75, 0.5),
-					V(-0.75, hy - 0.05, hz + 0.1),
-					"Accent",
-					{ Parent = "Head", Rot = V(0, 0, -12) }
-				)
-			)
-			table.insert(
-				out,
-				P(
-					"EarR",
-					V(0.25, 0.75, 0.5),
-					V(0.75, hy - 0.05, hz + 0.1),
-					"Accent",
-					{ Parent = "Head", Rot = V(0, 0, 12) }
-				)
-			)
-			table.insert(
-				out,
-				P(
-					"Tail",
-					V(0.28, 0.28, 1.0),
-					V(0, bodyY + 0.65, 1.65),
-					"Body",
-					{ Rot = V(40, 0, 0), Joint = "Tail", Pivot = V(0, bodyY + 0.35, 1.3) }
-				)
-			)
-		else
-			table.insert(
-				out,
-				P("Snout", V(0.55, 0.32, 0.18), V(0, hy - 0.2, front - 0.05), "Belly", { Parent = "Head" })
-			)
-			table.insert(
-				out,
-				P("Nose", V(0.2, 0.14, 0.1), V(0, hy - 0.08, front - 0.14), "Nose", { Parent = "Head" })
-			)
-			for _, sx in ipairs({ -1, 1 }) do
-				local n = if sx < 0 then "L" else "R"
-				table.insert(
-					out,
-					P(
-						"Ear" .. n,
-						V(0.42, 0.5, 0.18),
-						V(sx * 0.42, hy + 0.72, hz + 0.1),
-						"Body",
-						{ Parent = "Head", Rot = V(0, 0, sx * -18) }
-					)
-				)
-				table.insert(
-					out,
-					P(
-						"EarIn" .. n,
-						V(0.22, 0.3, 0.06),
-						V(sx * 0.42, hy + 0.68, hz - 0.0),
-						"Nose",
-						{ Parent = "Head", Rot = V(0, 0, sx * -18) }
-					)
-				)
-				table.insert(
-					out,
-					P(
-						"Whisker" .. n,
-						V(0.5, 0.04, 0.04),
-						V(sx * 0.5, hy - 0.18, front - 0.08),
-						WHITE,
-						{ Parent = "Head", Rot = V(0, 0, sx * 8) }
-					)
-				)
-			end
-			table.insert(
-				out,
-				P(
-					"Tail",
-					V(0.24, 0.24, 1.7),
-					V(0, bodyY + 0.75, 1.85),
-					"Accent",
-					{ Rot = V(45, 0, 0), Joint = "Tail", Pivot = V(0, bodyY + 0.3, 1.3) }
-				)
-			)
-		end
-		quadLegs(out, if dog then 0.42 else 0.36, legH, 0.42, -0.75, 0.95, bodyY - bodyH / 2 + 0.1)
-	elseif shape == "Rabbit" then
-		local bodyY = 1.15
-		table.insert(out, P("Body", V(1.35, 1.25, 1.8), V(0, bodyY, 0.15), "Body"))
-		table.insert(out, P("Belly", V(0.95, 0.9, 0.2), V(0, bodyY - 0.1, -0.78), "Belly"))
-		local hy, hz = 2.05, -0.75
-		table.insert(
-			out,
-			P("Head", V(1.15, 1.05, 1.05), V(0, hy, hz), "Body", { Joint = "Neck", Pivot = V(0, 1.6, -0.5) })
-		)
-		local front = hz - 0.53
-		face(out, hy, front, 0.28, 0.12)
-		table.insert(
-			out,
-			P("Snout", V(0.5, 0.3, 0.15), V(0, hy - 0.2, front - 0.05), "Belly", { Parent = "Head" })
-		)
-		table.insert(
-			out,
-			P("Nose", V(0.18, 0.12, 0.08), V(0, hy - 0.08, front - 0.12), "Nose", { Parent = "Head" })
-		)
-		table.insert(
-			out,
-			P("Teeth", V(0.16, 0.12, 0.05), V(0, hy - 0.4, front - 0.1), WHITE, { Parent = "Head" })
-		)
-		for _, sx in ipairs({ -1, 1 }) do
-			local n = if sx < 0 then "L" else "R"
-			table.insert(
-				out,
-				P(
-					"Ear" .. n,
-					V(0.32, 1.35, 0.16),
-					V(sx * 0.28, hy + 1.1, hz + 0.15),
-					"Body",
-					{ Parent = "Head", Rot = V(-8, 0, sx * -8) }
-				)
-			)
-			table.insert(
-				out,
-				P(
-					"EarIn" .. n,
-					V(0.16, 1.0, 0.06),
-					V(sx * 0.28, hy + 1.05, hz + 0.05),
-					"Nose",
-					{ Parent = "Head", Rot = V(-8, 0, sx * -8) }
-				)
-			)
-		end
-		table.insert(
-			out,
-			P(
-				"Tail",
-				V(0.6, 0.6, 0.6),
-				V(0, bodyY + 0.1, 1.1),
-				"Belly",
-				{ Shape = "Ball", Joint = "Tail", Pivot = V(0, bodyY, 0.95) }
-			)
-		)
-		-- задние лапы крупнее
-		for _, leg in ipairs({
-			{ "LegFL", -0.35, -0.55, 0.3, 0.55 },
-			{ "LegFR", 0.35, -0.55, 0.3, 0.55 },
-			{ "LegBL", -0.48, 0.55, 0.45, 0.6 },
-			{ "LegBR", 0.48, 0.55, 0.45, 0.6 },
-		}) do
-			local w, h = leg[4], leg[5]
-			table.insert(
-				out,
-				P(
-					leg[1],
-					V(w, h, w + 0.15),
-					V(leg[2], h / 2, leg[3]),
-					"Body",
-					{ Joint = leg[1], Pivot = V(leg[2], h, leg[3]) }
-				)
-			)
-		end
-	else -- Parrot
-		local bodyY = 1.45
-		table.insert(out, P("Body", V(1.05, 1.5, 1.05), V(0, bodyY, 0), "Body"))
-		table.insert(out, P("Belly", V(0.8, 1.0, 0.15), V(0, bodyY - 0.1, -0.55), "Belly"))
-		local hy, hz = 2.55, -0.15
-		table.insert(
-			out,
-			P("Head", V(1.0, 0.95, 0.95), V(0, hy, hz), "Accent", { Joint = "Neck", Pivot = V(0, 2.15, 0) })
-		)
-		local front = hz - 0.48
-		face(out, hy, front, 0.25, 0.08)
-		table.insert(
-			out,
-			P(
-				"Beak",
-				V(0.34, 0.42, 0.42),
-				V(0, hy - 0.2, front - 0.17),
-				"Nose",
-				{ Parent = "Head", Rot = V(20, 0, 0) }
-			)
-		)
-		table.insert(
-			out,
-			P(
-				"Crest",
-				V(0.18, 0.45, 0.4),
-				V(0, hy + 0.6, hz + 0.15),
-				"Belly",
-				{ Parent = "Head", Rot = V(-25, 0, 0) }
-			)
-		)
-		for _, sx in ipairs({ -1, 1 }) do
-			local n = if sx < 0 then "L" else "R"
-			table.insert(
-				out,
-				P(
-					"Wing" .. n,
-					V(0.2, 1.2, 0.85),
-					V(sx * 0.62, bodyY + 0.05, 0.1),
-					"Body",
-					{ Joint = "Wing" .. n, Pivot = V(sx * 0.52, bodyY + 0.6, 0.1) }
-				)
-			)
-			table.insert(
-				out,
-				P(
-					"WingTip" .. n,
-					V(0.16, 0.5, 0.6),
-					V(sx * 0.64, bodyY - 0.55, 0.2),
-					"Accent",
-					{ Parent = "Wing" .. n }
-				)
-			)
-		end
-		table.insert(
-			out,
-			P(
-				"Tail",
-				V(0.5, 0.12, 1.1),
-				V(0, bodyY - 0.6, 0.85),
-				"Accent",
-				{ Rot = V(-35, 0, 0), Joint = "Tail", Pivot = V(0, bodyY - 0.45, 0.45) }
-			)
-		)
-		for _, leg in ipairs({
-			{ "LegFL", -0.25, -0.05 },
-			{ "LegFR", 0.25, -0.05 },
-			{ "LegBL", -0.25, 0.05 },
-			{ "LegBR", 0.25, 0.05 },
-		}) do
-			local front2 = string.sub(leg[1], 4, 4) == "F"
-			if front2 then
-				table.insert(
-					out,
-					P(
-						leg[1],
-						V(0.16, 0.75, 0.16),
-						V(leg[2], 0.38, leg[3]),
-						Color3.fromRGB(110, 110, 120),
-						{ Joint = leg[1], Pivot = V(leg[2], 0.75, leg[3]) }
-					)
-				)
-				table.insert(
-					out,
-					P(
-						leg[1] .. "Foot",
-						V(0.3, 0.1, 0.4),
-						V(leg[2], 0.05, leg[3] - 0.08),
-						Color3.fromRGB(110, 110, 120),
-						{ Parent = leg[1] }
-					)
-				)
-			end
-		end
-	end
-	return out
-end
-
-local function deg(v: Vector3): CFrame
-	return CFrame.Angles(math.rad(v.X), math.rad(v.Y), math.rad(v.Z))
-end
-
--- Мировой CFrame детали (масштаб s), считая что HRP стоит в rootCF
-local function partCF(rootCF: CFrame, spec: PartSpec, s: number): CFrame
-	local p = spec.Pos * s - Vector3.new(0, PetRig.ROOT_Y, 0)
-	local cf = rootCF * CFrame.new(p)
-	if spec.Rot then
-		cf = cf * deg(spec.Rot)
-	end
-	return cf
-end
-
-local function makePart(spec: PartSpec, look: { [string]: any }, s: number): BasePart
-	local part = Instance.new("Part")
+local function makePart(spec: any, s: number): BasePart
+	local part = Instance.new(spec.Class or "Part") :: any
 	part.Name = spec.Name
 	part.Size = spec.Size * s
-	local col = spec.Color
-	part.Color = if type(col) == "string" then (look[col] or WHITE) else col
-	part.Material = Enum.Material.SmoothPlastic
+	part.Color = spec.Color or WHITE
+	part.Material = if spec.Material
+		then (Enum.Material :: any)[spec.Material]
+		else Enum.Material.SmoothPlastic
+	if spec.Reflectance then
+		part.Reflectance = spec.Reflectance
+	end
 	part.TopSurface = Enum.SurfaceType.Smooth
 	part.BottomSurface = Enum.SurfaceType.Smooth
 	part.CanCollide = false
 	part.CanQuery = false
 	part.CanTouch = false
+	part.CastShadow = spec.Size.Magnitude > 0.5
 	part.Massless = true
 	part.Anchored = false
-	if spec.Shape == "Ball" then
+	if spec.Mesh == "Sphere" then
+		local mesh = Instance.new("SpecialMesh")
+		mesh.MeshType = Enum.MeshType.Sphere
+		mesh.Parent = part
+	elseif spec.Shape == "Ball" then
 		part.Shape = Enum.PartType.Ball
-	elseif spec.Shape == "Cylinder" then
-		part.Shape = Enum.PartType.Cylinder
+	end
+	if spec.Name == "Head" then
+		part:SetAttribute("NoFace", true) -- эмулятор: не рисовать лицо R6 на голове питомца
 	end
 	return part
+end
+
+-- Мировой CFrame детали (масштаб s): CF задан от точки на земле под HRP
+local function partCF(rootCF: CFrame, cf: CFrame, s: number): CFrame
+	local p = cf.Position * s - Vector3.new(0, PetRig.ROOT_Y, 0)
+	return rootCF * (CFrame.new(p) * cf.Rotation)
 end
 
 local function joint(
@@ -2527,88 +2980,154 @@ local function joint(
 	return j
 end
 
--- Косметика: детали в системе Head/Body (от земли, масштаб 1, форма учитывается через якоря)
-local function cosmeticParts(item: any, shape: string): { PartSpec }
-	local out: { PartSpec } = {}
+local function P(name: string, size: Vector3, pos: Vector3, color: Color3, extra: { [string]: any }?): any
+	local sp: any = { Name = name, Size = size, CF = CFrame.new(pos), Color = color }
+	if extra then
+		for k, v in pairs(extra) do
+			sp[k] = v
+		end
+		if extra.Rot then
+			local r = extra.Rot
+			sp.CF = CFrame.new(pos) * CFrame.Angles(math.rad(r.X), math.rad(r.Y), math.rad(r.Z))
+		end
+	end
+	return sp
+end
+
+-- Косметика: детали относительно опорных точек вида (Neck — шея, Top — макушка, S — масштаб головы)
+local function cosmeticParts(item: any, anchors: any): { any }
+	local out = {}
 	local c1, c2 = item.Color, item.Color2
-	-- опорные точки шеи и макушки для каждой формы
-	local neck = ({
-		Cat = V(0, 1.75, -0.85),
-		Dog = V(0, 1.85, -0.9),
-		Rabbit = V(0, 1.6, -0.45),
-		Parrot = V(0, 2.1, -0.1),
-	})[shape] or V(0, 1.8, -0.9)
-	local top = ({
-		Cat = V(0, 2.9, -1.25),
-		Dog = V(0, 3.0, -1.25),
-		Rabbit = V(0, 2.6, -0.65),
-		Parrot = V(0, 3.05, -0.1),
-	})[shape] or V(0, 2.9, -1.2)
+	local neck, top, k = anchors.Neck, anchors.Top, anchors.S or 1
+	local nw = (anchors.NeckW or 1.3) * 0.82
 	if item.Slot == "Collar" then
-		table.insert(out, P("Collar", V(1.25, 0.2, 0.75), neck, c1, { Parent = "Body" }))
+		table.insert(out, P("Collar", V(nw, 0.2, nw * 0.62), neck, c1, { Parent = "Body", Mesh = "Sphere" }))
 		table.insert(
 			out,
 			P(
 				"CollarTag",
-				V(0.26, 0.26, 0.26),
-				neck + V(0, -0.2, -0.4),
+				V(0.24, 0.24, 0.24),
+				neck + V(0, -0.15, -nw * 0.33),
 				c2,
 				{ Parent = "Body", Shape = "Ball" }
 			)
 		)
 	elseif item.Slot == "Neck" then
-		table.insert(out, P("Bandana", V(1.2, 0.2, 0.7), neck + V(0, 0.02, 0), c1, { Parent = "Body" }))
+		table.insert(
+			out,
+			P(
+				"Bandana",
+				V(nw, 0.22, nw * 0.62),
+				neck + V(0, 0.02, 0),
+				c1,
+				{ Parent = "Body", Mesh = "Sphere" }
+			)
+		)
 		table.insert(
 			out,
 			P(
 				"BandanaFront",
-				V(0.7, 0.45, 0.1),
-				neck + V(0, -0.25, -0.38),
+				V(0.62, 0.42, 0.1),
+				neck + V(0, -0.22, -nw * 0.3),
 				c1,
 				{ Parent = "Body", Rot = V(-15, 0, 45) }
 			)
 		)
 		table.insert(
 			out,
-			P("BandanaDot", V(0.14, 0.14, 0.06), neck + V(0, -0.2, -0.45), c2, { Parent = "Body" })
+			P("BandanaDot", V(0.14, 0.14, 0.06), neck + V(0, -0.18, -nw * 0.37), c2, { Parent = "Body" })
 		)
 	elseif item.Slot == "Hat" then
 		if item.Id == "hat_party" then
-			table.insert(out, P("HatBase", V(0.65, 0.2, 0.65), top + V(0, 0.05, 0), c1, { Parent = "Head" }))
-			table.insert(out, P("HatMid", V(0.45, 0.3, 0.45), top + V(0, 0.3, 0), c2, { Parent = "Head" }))
-			table.insert(out, P("HatTop", V(0.25, 0.3, 0.25), top + V(0, 0.58, 0), c1, { Parent = "Head" }))
 			table.insert(
 				out,
-				P("HatPom", V(0.28, 0.28, 0.28), top + V(0, 0.85, 0), c2, { Parent = "Head", Shape = "Ball" })
+				P(
+					"HatBase",
+					V(0.62, 0.22, 0.62) * k,
+					top + V(0, 0.08, 0),
+					c1,
+					{ Parent = "Head", Mesh = "Sphere" }
+				)
+			)
+			table.insert(
+				out,
+				P(
+					"HatMid",
+					V(0.44, 0.34, 0.44) * k,
+					top + V(0, 0.3 * k, 0),
+					c2,
+					{ Parent = "Head", Mesh = "Sphere" }
+				)
+			)
+			table.insert(
+				out,
+				P(
+					"HatTop",
+					V(0.24, 0.34, 0.24) * k,
+					top + V(0, 0.55 * k, 0),
+					c1,
+					{ Parent = "Head", Mesh = "Sphere" }
+				)
+			)
+			table.insert(
+				out,
+				P(
+					"HatPom",
+					V(0.26, 0.26, 0.26) * k,
+					top + V(0, 0.78 * k, 0),
+					c2,
+					{ Parent = "Head", Shape = "Ball" }
+				)
 			)
 		elseif item.Id == "hat_beanie" then
 			table.insert(
 				out,
-				P("HatBase", V(1.05, 0.25, 0.95), top + V(0, -0.05, 0), c2, { Parent = "Head" })
+				P(
+					"HatBase",
+					V(1.0, 0.24, 0.92) * k,
+					top + V(0, -0.02, 0),
+					c2,
+					{ Parent = "Head", Mesh = "Sphere" }
+				)
 			)
-			table.insert(out, P("HatDome", V(0.95, 0.35, 0.85), top + V(0, 0.22, 0), c1, { Parent = "Head" }))
 			table.insert(
 				out,
-				P("HatPom", V(0.32, 0.32, 0.32), top + V(0, 0.5, 0), c2, { Parent = "Head", Shape = "Ball" })
+				P(
+					"HatDome",
+					V(0.95, 0.55, 0.85) * k,
+					top + V(0, 0.12 * k, 0),
+					c1,
+					{ Parent = "Head", Mesh = "Sphere" }
+				)
+			)
+			table.insert(
+				out,
+				P(
+					"HatPom",
+					V(0.3, 0.3, 0.3) * k,
+					top + V(0, 0.45 * k, 0),
+					c2,
+					{ Parent = "Head", Shape = "Ball" }
+				)
 			)
 		else
 			table.insert(
 				out,
 				P(
 					"HatBase",
-					V(0.85, 0.28, 0.75),
-					top + V(0, 0.05, 0),
+					V(0.8, 0.26, 0.7) * k,
+					top + V(0, 0.06, 0),
 					c1,
 					{ Parent = "Head", Material = "Neon" }
 				)
 			)
-			for i, x in ipairs({ -0.3, 0, 0.3 }) do
+			for i, x in ipairs({ -0.28, 0, 0.28 }) do
 				table.insert(
 					out,
 					P(
 						"HatSpike" .. i,
-						V(0.16, 0.28, 0.16),
-						top + V(x, 0.3, 0),
+						V(0.16, 0.28, 0.16) * k,
+						top + V(x * k, 0.28 * k, 0),
 						c1,
 						{ Parent = "Head", Rot = V(0, 45, 0) }
 					)
@@ -2616,7 +3135,7 @@ local function cosmeticParts(item: any, shape: string): { PartSpec }
 			end
 			table.insert(
 				out,
-				P("HatGem", V(0.16, 0.16, 0.08), top + V(0, 0.08, -0.4), c2, { Parent = "Head" })
+				P("HatGem", V(0.16, 0.16, 0.08) * k, top + V(0, 0.08, -0.36 * k), c2, { Parent = "Head" })
 			)
 		end
 	end
@@ -2647,28 +3166,24 @@ function PetRig.build(speciesId: string, rootCF: CFrame, opts: BuildOpts?): Mode
 	root.CFrame = rootCF
 	root.Parent = model
 
-	local specs = PetRig.shape(sp.Look.Shape)
+	local specs, anchors = PetModels.specs(sp.Id, look)
 	local cos = o.Cosmetics or {}
 	for _, slot in ipairs(ShopData.SLOTS) do
 		local id = cos[slot]
 		local item = id and ShopData.ById[id]
 		if item then
-			for _, c in ipairs(cosmeticParts(item, sp.Look.Shape)) do
+			for _, c in ipairs(cosmeticParts(item, anchors)) do
 				table.insert(specs, c)
 			end
 		end
 	end
 	local parts: { [string]: BasePart } = {}
 	for _, spec in ipairs(specs) do
-		local part = makePart(spec, look, s)
-		if spec.Material == "Neon" then
-			part.Material = Enum.Material.Neon
-		end
-		part.CFrame = partCF(rootCF, spec, s)
-		part.Parent = model
+		local part = makePart(spec, s)
+		part.CFrame = partCF(rootCF, spec.CF, s)
 		parts[spec.Name] = part
 	end
-	-- суставы: Body к HRP, остальные — к родителю
+	-- суставы: Body к HRP, остальные — к родителю (сначала суставы, потом в модель — без лишних перерасчётов)
 	for _, spec in ipairs(specs) do
 		local part = parts[spec.Name]
 		if spec.Name == "Body" then
@@ -2676,13 +3191,16 @@ function PetRig.build(speciesId: string, rootCF: CFrame, opts: BuildOpts?): Mode
 		else
 			local parent = parts[spec.Parent or "Body"] or parts.Body
 			if spec.Joint then
-				local pivot = rootCF
-					* CFrame.new((spec.Pivot or spec.Pos) * s - Vector3.new(0, PetRig.ROOT_Y, 0))
+				local pv = spec.Pivot or spec.CF.Position
+				local pivot = rootCF * CFrame.new(pv * s - Vector3.new(0, PetRig.ROOT_Y, 0))
 				joint("Motor6D", spec.Joint, parent, part, pivot)
 			else
 				joint("Weld", spec.Name .. "Weld", parent, part, part.CFrame)
 			end
 		end
+	end
+	for _, spec in ipairs(specs) do
+		parts[spec.Name].Parent = model
 	end
 
 	local hum = Instance.new("Humanoid")
@@ -2768,7 +3286,7 @@ return PetRig
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000011">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000012">
 				<Properties>
 					<string name="Name">Progression</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -2951,7 +3469,7 @@ return Progression
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000012">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000013">
 				<Properties>
 					<string name="Name">QuestData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -3044,7 +3562,7 @@ return QuestData
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000013">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000014">
 				<Properties>
 					<string name="Name">RebirthLogic</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -3123,7 +3641,7 @@ return RebirthLogic
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000014">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000015">
 				<Properties>
 					<string name="Name">Remotes</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -3196,7 +3714,7 @@ return Remotes
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000015">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000016">
 				<Properties>
 					<string name="Name">ShopData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -3304,7 +3822,7 @@ return ShopData
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000016">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000017">
 				<Properties>
 					<string name="Name">SpeciesData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -3627,7 +4145,7 @@ return SpeciesData
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000017">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000018">
 				<Properties>
 					<string name="Name">TrickData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -3770,7 +4288,7 @@ return TrickData
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000018">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000019">
 				<Properties>
 					<string name="Name">UiGeometry</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -3880,7 +4398,7 @@ return UiGeometry
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000019">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001A">
 				<Properties>
 					<string name="Name">Util</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -4007,7 +4525,7 @@ return Util
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001A">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001B">
 				<Properties>
 					<string name="Name">WorldData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -4139,11 +4657,11 @@ return WorldData
 			</Item>
 		</Item>
 	</Item>
-	<Item class="ServerScriptService" referent="RBX0000000000000000000000000000001B">
+	<Item class="ServerScriptService" referent="RBX0000000000000000000000000000001C">
 		<Properties>
 			<string name="Name">ServerScriptService</string>
 		</Properties>
-		<Item class="Script" referent="RBX0000000000000000000000000000001C">
+		<Item class="Script" referent="RBX0000000000000000000000000000001D">
 			<Properties>
 				<string name="Name">Main</string>
 				<token name="RunContext">0</token>
@@ -4182,11 +4700,11 @@ print("[Pawtown] Server started. JobId:", game.JobId)
 ]]></ProtectedString>
 			</Properties>
 		</Item>
-		<Item class="Folder" referent="RBX0000000000000000000000000000001D">
+		<Item class="Folder" referent="RBX0000000000000000000000000000001E">
 			<Properties>
 				<string name="Name">Server</string>
 			</Properties>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001E">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001F">
 				<Properties>
 					<string name="Name">AbilityService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -4399,7 +4917,7 @@ return AbilityService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001F">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000020">
 				<Properties>
 					<string name="Name">AntiExploit</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -4524,7 +5042,7 @@ return AntiExploit
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000020">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000021">
 				<Properties>
 					<string name="Name">DataService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5003,7 +5521,7 @@ return DataService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000021">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000022">
 				<Properties>
 					<string name="Name">DayNightService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5093,7 +5611,7 @@ return DayNightService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000022">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000023">
 				<Properties>
 					<string name="Name">FamilyService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5506,7 +6024,7 @@ return FamilyService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000023">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000024">
 				<Properties>
 					<string name="Name">Interact</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5600,7 +6118,7 @@ return Interact
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000024">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000025">
 				<Properties>
 					<string name="Name">LanguageService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5693,7 +6211,7 @@ return LanguageService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000025">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000026">
 				<Properties>
 					<string name="Name">Migrations</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5777,7 +6295,7 @@ return Migrations
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000026">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000027">
 				<Properties>
 					<string name="Name">Movement</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5910,7 +6428,7 @@ return Movement
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000027">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000028">
 				<Properties>
 					<string name="Name">NeedsService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -6165,7 +6683,7 @@ return NeedsService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000028">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000029">
 				<Properties>
 					<string name="Name">Notify</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -6189,7 +6707,7 @@ return Notify
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000029">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002A">
 				<Properties>
 					<string name="Name">ParkService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -6432,7 +6950,7 @@ return ParkService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002A">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002B">
 				<Properties>
 					<string name="Name">PlayerService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -6737,7 +7255,7 @@ return PlayerService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002B">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002C">
 				<Properties>
 					<string name="Name">Progress</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -6865,7 +7383,7 @@ return Progress
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002C">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002D">
 				<Properties>
 					<string name="Name">QuestService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7142,7 +7660,7 @@ return QuestService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002D">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002E">
 				<Properties>
 					<string name="Name">Router</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7233,7 +7751,7 @@ return Router
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002E">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002F">
 				<Properties>
 					<string name="Name">Session</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7327,7 +7845,7 @@ return Session
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002F">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000030">
 				<Properties>
 					<string name="Name">ShopService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7433,7 +7951,7 @@ return ShopService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000030">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000031">
 				<Properties>
 					<string name="Name">SocialService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7569,7 +8087,7 @@ return SocialService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000031">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000032">
 				<Properties>
 					<string name="Name">State</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7682,7 +8200,7 @@ return State
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000032">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000033">
 				<Properties>
 					<string name="Name">TrickService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7817,7 +8335,7 @@ return TrickService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000033">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000034">
 				<Properties>
 					<string name="Name">WorldBuilder</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -8751,15 +9269,15 @@ return WorldBuilder
 			</Item>
 		</Item>
 	</Item>
-	<Item class="StarterPlayer" referent="RBX00000000000000000000000000000034">
+	<Item class="StarterPlayer" referent="RBX00000000000000000000000000000035">
 		<Properties>
 			<string name="Name">StarterPlayer</string>
 		</Properties>
-		<Item class="StarterPlayerScripts" referent="RBX00000000000000000000000000000035">
+		<Item class="StarterPlayerScripts" referent="RBX00000000000000000000000000000036">
 			<Properties>
 				<string name="Name">StarterPlayerScripts</string>
 			</Properties>
-			<Item class="LocalScript" referent="RBX00000000000000000000000000000036">
+			<Item class="LocalScript" referent="RBX00000000000000000000000000000037">
 				<Properties>
 					<string name="Name">PetAnimator</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -8911,7 +9429,13 @@ local function animatePet(m: Model, r: any, t: number)
 	local swing = math.sin(ph) * 0.7 * moving
 	local rootCF = CFrame.new(0, math.abs(math.sin(ph)) * 0.12 * moving + math.sin(t * 2) * 0.02, 0)
 	local neck = A(math.sin(t * 1.7 + r.Phase) * 0.05, math.sin(t * 0.9 + r.Phase) * 0.12, 0)
-	local tail = A(0, math.sin(t * 7) * 0.35, 0)
+	-- хвост: спокойное покачивание в покое, быстрее на бегу
+	local tail =
+		A(math.sin(t * 1.3 + r.Phase) * 0.08, math.sin(t * (2.2 + moving * 5)) * (0.22 + moving * 0.15), 0)
+	-- уши: редкое «подёргивание» (раз в ~3 с), у бегущего — прижаты назад
+	local tw = (t + r.Phase) % 3.1
+	local twitch = if tw < 0.22 then math.sin(tw / 0.22 * math.pi) * 0.45 else 0
+	local earL, earR = A(-0.15 * moving, 0, twitch), A(-0.15 * moving, 0, -twitch * 0.4)
 	local legs =
 		{ LegFL = A(swing, 0, 0), LegBR = A(swing, 0, 0), LegFR = A(-swing, 0, 0), LegBL = A(-swing, 0, 0) }
 	local wing = 0
@@ -8939,6 +9463,7 @@ local function animatePet(m: Model, r: any, t: number)
 		neck = A(0.25, 0, 0)
 		tail = A(0, 0.3, 0)
 		wing = 0
+		earL, earR = A(0.3, 0, 0), A(0.3, 0, 0)
 	end
 	-- действие (еда, нюх, отряхивание)
 	local act, at = parseStamp(m:GetAttribute("Action"))
@@ -8998,6 +9523,8 @@ local function animatePet(m: Model, r: any, t: number)
 	for name, cf in pairs(legs) do
 		setT(J[name], cf)
 	end
+	setT(J.EarL, earL)
+	setT(J.EarR, earR)
 	setT(J.WingL, A(0, 0, -wing))
 	setT(J.WingR, A(0, 0, wing))
 end
@@ -9036,7 +9563,7 @@ end)
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="LocalScript" referent="RBX00000000000000000000000000000037">
+			<Item class="LocalScript" referent="RBX00000000000000000000000000000038">
 				<Properties>
 					<string name="Name">WorldLocalizer</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -9143,22 +9670,22 @@ end)
 			</Item>
 		</Item>
 	</Item>
-	<Item class="StarterGui" referent="RBX00000000000000000000000000000038">
+	<Item class="StarterGui" referent="RBX00000000000000000000000000000039">
 		<Properties>
 			<string name="Name">StarterGui</string>
 		</Properties>
-		<Item class="ScreenGui" referent="RBX00000000000000000000000000000039">
+		<Item class="ScreenGui" referent="RBX0000000000000000000000000000003A">
 			<Properties>
 				<string name="Name">PawtownGui</string>
 				<bool name="ResetOnSpawn">false</bool>
 				<token name="ZIndexBehavior">1</token>
 				<double name="DisplayOrder">50</double>
 			</Properties>
-			<Item class="Folder" referent="RBX0000000000000000000000000000003A">
+			<Item class="Folder" referent="RBX0000000000000000000000000000003B">
 				<Properties>
 					<string name="Name">Modules</string>
 				</Properties>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003B">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003C">
 					<Properties>
 						<string name="Name">Abilities</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -9313,7 +9840,7 @@ return Abilities
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003C">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003D">
 					<Properties>
 						<string name="Name">Actions</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -9369,7 +9896,7 @@ return Actions
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003D">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003E">
 					<Properties>
 						<string name="Name">BathGame</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -9595,7 +10122,7 @@ return BathGame
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003E">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003F">
 					<Properties>
 						<string name="Name">ClientState</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -9713,7 +10240,7 @@ return ClientState
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003F">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000040">
 					<Properties>
 						<string name="Name">Cutscene</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -9862,7 +10389,7 @@ return Cutscene
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000040">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000041">
 					<Properties>
 						<string name="Name">EmotesPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -9949,7 +10476,7 @@ return EmotesPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000041">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000042">
 					<Properties>
 						<string name="Name">Fx</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10050,7 +10577,7 @@ return Fx
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000042">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000043">
 					<Properties>
 						<string name="Name">Hud</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10459,7 +10986,7 @@ return Hud
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000043">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000044">
 					<Properties>
 						<string name="Name">Layout</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10611,7 +11138,7 @@ return Layout
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000044">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000045">
 					<Properties>
 						<string name="Name">QuestsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10845,7 +11372,7 @@ return QuestsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000045">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000046">
 					<Properties>
 						<string name="Name">RebirthPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10978,7 +11505,7 @@ return RebirthPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000046">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000047">
 					<Properties>
 						<string name="Name">SettingsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11051,7 +11578,7 @@ return SettingsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000047">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000048">
 					<Properties>
 						<string name="Name">ShopPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11217,7 +11744,7 @@ return ShopPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000048">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000049">
 					<Properties>
 						<string name="Name">SpeciesPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11390,7 +11917,7 @@ return SpeciesPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000049">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004A">
 					<Properties>
 						<string name="Name">TalentsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11554,7 +12081,7 @@ return TalentsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004A">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004B">
 					<Properties>
 						<string name="Name">Theme</string>
 						<ProtectedString name="Source"><![CDATA[--!strict
@@ -11614,7 +12141,7 @@ return Theme
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004B">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004C">
 					<Properties>
 						<string name="Name">Toasts</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11779,7 +12306,7 @@ return Toasts
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004C">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004D">
 					<Properties>
 						<string name="Name">TricksPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12188,7 +12715,7 @@ return TricksPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004D">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004E">
 					<Properties>
 						<string name="Name">Ui</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12388,7 +12915,7 @@ return Ui
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004E">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004F">
 					<Properties>
 						<string name="Name">Widgets</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12956,7 +13483,7 @@ return Widgets
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004F">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000050">
 					<Properties>
 						<string name="Name">WorldFx</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13191,7 +13718,7 @@ return WorldFx
 					</Properties>
 				</Item>
 			</Item>
-			<Item class="LocalScript" referent="RBX00000000000000000000000000000050">
+			<Item class="LocalScript" referent="RBX00000000000000000000000000000051">
 				<Properties>
 					<string name="Name">UIController</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict

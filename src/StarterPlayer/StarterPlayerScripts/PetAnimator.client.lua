@@ -147,7 +147,13 @@ local function animatePet(m: Model, r: any, t: number)
 	local swing = math.sin(ph) * 0.7 * moving
 	local rootCF = CFrame.new(0, math.abs(math.sin(ph)) * 0.12 * moving + math.sin(t * 2) * 0.02, 0)
 	local neck = A(math.sin(t * 1.7 + r.Phase) * 0.05, math.sin(t * 0.9 + r.Phase) * 0.12, 0)
-	local tail = A(0, math.sin(t * 7) * 0.35, 0)
+	-- хвост: спокойное покачивание в покое, быстрее на бегу
+	local tail =
+		A(math.sin(t * 1.3 + r.Phase) * 0.08, math.sin(t * (2.2 + moving * 5)) * (0.22 + moving * 0.15), 0)
+	-- уши: редкое «подёргивание» (раз в ~3 с), у бегущего — прижаты назад
+	local tw = (t + r.Phase) % 3.1
+	local twitch = if tw < 0.22 then math.sin(tw / 0.22 * math.pi) * 0.45 else 0
+	local earL, earR = A(-0.15 * moving, 0, twitch), A(-0.15 * moving, 0, -twitch * 0.4)
 	local legs =
 		{ LegFL = A(swing, 0, 0), LegBR = A(swing, 0, 0), LegFR = A(-swing, 0, 0), LegBL = A(-swing, 0, 0) }
 	local wing = 0
@@ -175,6 +181,7 @@ local function animatePet(m: Model, r: any, t: number)
 		neck = A(0.25, 0, 0)
 		tail = A(0, 0.3, 0)
 		wing = 0
+		earL, earR = A(0.3, 0, 0), A(0.3, 0, 0)
 	end
 	-- действие (еда, нюх, отряхивание)
 	local act, at = parseStamp(m:GetAttribute("Action"))
@@ -234,6 +241,8 @@ local function animatePet(m: Model, r: any, t: number)
 	for name, cf in pairs(legs) do
 		setT(J[name], cf)
 	end
+	setT(J.EarL, earL)
+	setT(J.EarR, earR)
 	setT(J.WingL, A(0, 0, -wing))
 	setT(J.WingR, A(0, 0, wing))
 end
