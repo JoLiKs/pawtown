@@ -115,7 +115,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		AutoButtonColor = false,
 		BackgroundColor3 = Theme.Bg,
 		BackgroundTransparency = 0.12,
-		Size = UDim2.fromOffset(300, 98),
+		Size = UDim2.fromOffset(300, 102),
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.new(1, -10, 0, 10),
 		Parent = root,
@@ -135,9 +135,9 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 	-- шаг — не больше двух строк (длинный текст обрезается многоточием, не налезает на «Задания дня»)
 	local tStep = Ui.text({
 		Name = "Step",
-		TextSize = 17,
+		TextSize = 18,
 		TextTruncate = Enum.TextTruncate.AtEnd,
-		Size = UDim2.new(1, -20, 0, 40),
+		Size = UDim2.new(1, -20, 0, 42),
 		Position = UDim2.fromOffset(10, 34),
 		TextYAlignment = Enum.TextYAlignment.Top,
 		Parent = tracker,
