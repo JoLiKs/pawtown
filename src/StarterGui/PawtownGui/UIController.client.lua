@@ -59,7 +59,13 @@ Hud.init(gui, openPanel)
 require(Modules:WaitForChild("Fx")).init(gui, function(name: string)
 	openPanel(name, true)
 end)
-require(Modules:WaitForChild("Cutscene")).init(gui)
+require(Modules:WaitForChild("Cutscene")).init(gui, function()
+	for _, p in pairs(panels) do
+		if p.IsOpen() then
+			p.Close()
+		end
+	end
+end)
 require(Modules:WaitForChild("WorldFx")).init()
 require(Modules:WaitForChild("Abilities")).init()
 

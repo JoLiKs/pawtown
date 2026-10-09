@@ -24,7 +24,7 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 		Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -4), Position = UDim2.fromOffset(4, 0) })
 	Widgets.padding(scroll, 8)
 	local grid = New("UIGridLayout", {
-		CellSize = UDim2.new(0.5, -6, 0, 236),
+		CellSize = UDim2.new(0.5, -6, 0, 262),
 		CellPadding = UDim2.fromOffset(8, 8),
 		SortOrder = Enum.SortOrder.LayoutOrder,
 		Parent = scroll,
@@ -68,11 +68,11 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 			TextSize = 15,
 			TextColor3 = Theme.TextDim,
 			TextYAlignment = Enum.TextYAlignment.Top,
-			Size = UDim2.new(1, -84, 0, 42),
-			Position = UDim2.fromOffset(80, 36),
+			Size = UDim2.new(1, -84, 0, 66),
+			Position = UDim2.fromOffset(80, 34),
 			Parent = card,
 		})
-		local y = 82
+		local y = 104
 		for _, abId in ipairs(sp.Abilities) do
 			local ab = SpeciesData.Abilities[abId]
 			if ab then
@@ -104,8 +104,8 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 			local _, set = Ui.bar(card, UDim2.fromOffset(84, yy + 4), UDim2.new(1, -96, 0, 10), color)
 			set(v)
 		end
-		stat("species.speed", (sp.Speed - 0.7) / 0.6, 160, Theme.Green)
-		stat("species.jump", (sp.Jump - 0.7) / 0.6, 180, Theme.Blue)
+		stat("species.speed", (sp.Speed - 0.7) / 0.6, 182, Theme.Green)
+		stat("species.jump", (sp.Jump - 0.7) / 0.6, 202, Theme.Blue)
 		chooseButtons[id] = Widgets.button({
 			Name = "Choose",
 			Text = L.k("btn.choose"),

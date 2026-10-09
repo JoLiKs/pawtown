@@ -29,7 +29,7 @@ Cutscene.SCENES = {
 }
 Cutscene.SLIDE = 2.6
 
-function Cutscene.init(gui: ScreenGui)
+function Cutscene.init(gui: ScreenGui, closeAll: (() -> ())?)
 	local layer = New("Frame", {
 		Name = "Cutscene",
 		BackgroundTransparency = 1,
@@ -109,6 +109,9 @@ function Cutscene.init(gui: ScreenGui)
 		end
 		token += 1
 		local my = token
+		if closeAll then
+			closeAll()
+		end
 		layer.Visible = true
 		for _, slide in ipairs(scene) do
 			if token ~= my then
