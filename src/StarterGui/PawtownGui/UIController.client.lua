@@ -14,6 +14,15 @@ local Hud = require(Modules:WaitForChild("Hud"))
 
 ClientState.init()
 Toasts.init(gui)
+-- звук: ошибка модуля (или ассетов) никогда не ломает интерфейс
+do
+	local ok: boolean, err: any = pcall(function()
+		require(Modules:WaitForChild("Music")).init(gui)
+	end)
+	if not ok then
+		warn("[Music] init failed: " .. tostring(err))
+	end
+end
 
 local panels = {}
 local openPanel

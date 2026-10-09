@@ -73,7 +73,7 @@ local function makeTemplate(): Data
 		Stash = { Trinkets = 0, Total = 0 }, -- тайник енота
 		FriendList = {}, -- [tostring(userId)] = { Name, Since } — список друзей (до Config.FRIEND_LIST_MAX)
 		Choices = {}, -- выборы в сюжете (глава 2): [id] = вариант
-		Settings = { Lang = "auto" },
+		Settings = { Lang = "auto", Audio = { Music = true, Sfx = true, MusicVol = 0.6 } },
 		Joined = os.time(),
 		LastSeen = os.time(),
 	}

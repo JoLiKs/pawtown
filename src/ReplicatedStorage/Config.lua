@@ -106,4 +106,41 @@ Config.FRIEND_LIST_MAX = 50
 Config.VISIT_COOLDOWN = 10
 Config.COMBO_WINDOW = 3 -- секунд: оба друга делают одну эмоцию рядом -> комбо
 
+-- Звук (v0.2). Оригинальные процедурные звуки tools/music/synth.py -> assets/audio/*.ogg, загружены через Open Cloud
+-- (tools/upload_audio.py, автор userId 11770388445). ID = 0 — звука нет (игра молчит без ошибок). Пока у universe нет
+-- права Use (tools/grant_audio_use.py), ассеты в живой игре не грузятся: клиент повторяет загрузку и не ломается.
+Config.SOUNDS = {
+	MUSIC_DAY = 80019631737532, -- assets/audio/maple_street.ogg — дневная тема «Кленовая улица»
+	MUSIC_NIGHT = 134760802853412, -- assets/audio/evening_lullaby.ogg — ночная тема «Колыбельная фонарей»
+	BARK = 101202179959844, -- assets/audio/bark.ogg
+	MEOW = 98567436700081, -- assets/audio/meow.ogg
+	SQUEAK = 121111211429733, -- assets/audio/squeak.ogg
+	CHIRP = 89730859497254, -- assets/audio/chirp.ogg
+	HOOT = 112661856031857, -- assets/audio/hoot.ogg
+	PICKUP = 73197057843015, -- assets/audio/pickup.ogg — подобрал предмет / осколок
+	QUEST_DONE = 110692406184872, -- assets/audio/quest_done.ogg — шаг главы / ежедневное задание
+}
+Config.MUSIC = {
+	DAY_VOLUME = 0.35, -- базовая громкость (умножается на ползунок игрока)
+	NIGHT_VOLUME = 0.4,
+	FADE = 3, -- секунд кроссфейда день <-> ночь
+	SFX_VOLUME = 0.5,
+	VOICE_VOLUME = 0.6,
+}
+-- голос питомца (эмоция «Голос» / «Повтор»): звук и PlaybackSpeed (один ассет на несколько видов)
+Config.VOICES = {
+	Dog = { Key = "BARK", Speed = 1 },
+	CorgiKnight = { Key = "BARK", Speed = 1.25 },
+	Fox = { Key = "BARK", Speed = 1.45 },
+	Cat = { Key = "MEOW", Speed = 1 },
+	SnowLeopard = { Key = "MEOW", Speed = 0.72 },
+	Rabbit = { Key = "SQUEAK", Speed = 1 },
+	CrystalRabbit = { Key = "SQUEAK", Speed = 1.15 },
+	Raccoon = { Key = "SQUEAK", Speed = 0.8 },
+	Parrot = { Key = "CHIRP", Speed = 1 },
+	Owl = { Key = "HOOT", Speed = 1 },
+	StarfallDog = { Key = "BARK", Speed = 1.1 },
+	MidnightCat = { Key = "MEOW", Speed = 0.9 },
+}
+
 return Config

@@ -6,6 +6,7 @@
 	v3 (0.2): перерождение (Stars, Lineage, Trials), тайник енота (Stash), список друзей (FriendList), выборы (Choices).
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local AudioData = require(ReplicatedStorage.Shared.AudioData)
 local NeedsLogic = require(ReplicatedStorage.Shared.NeedsLogic)
 local SpeciesData = require(ReplicatedStorage.Shared.SpeciesData)
 
@@ -69,6 +70,18 @@ function Migrations.run(data: { [string]: any }): boolean
 		data.Settings.Lang = "auto"
 		changed = true
 	end
+	-- v0.2: звуковые настройки (музыка / звуки / громкость) — всегда в нормальном виде
+	local audio = AudioData.normalize(data.Settings.Audio)
+	local prevAudio = data.Settings.Audio
+	if
+		type(prevAudio) ~= "table"
+		or prevAudio.Music ~= audio.Music
+		or prevAudio.Sfx ~= audio.Sfx
+		or prevAudio.MusicVol ~= audio.MusicVol
+	then
+		changed = true
+	end
+	data.Settings.Audio = audio
 	for _, key in ipairs({ "Treats", "Xp", "TotalTreats" }) do
 		if data[key] ~= nil and bad(data[key]) then
 			data[key] = 0

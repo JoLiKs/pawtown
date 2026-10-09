@@ -12,6 +12,7 @@ local LocalizationService = game:GetService("LocalizationService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local AudioData = require(ReplicatedStorage.Shared.AudioData)
 local Locale = require(ReplicatedStorage.Shared.Locale)
 
 local DataService = require(script.Parent.DataService)
@@ -76,6 +77,20 @@ function LanguageService.init()
 		end
 		data.Settings.Lang = choice
 		LanguageService.apply(player)
+		State.markCore(player)
+		return true, nil
+	end)
+	-- v0.2: звуковые настройки (как SettingsService в roblox-game): ползунок нажимают часто — 4 в секунду
+	Router.register("SetAudio", 4, 10, function(player: Player, key: any, value: any)
+		local data = DataService.get(player)
+		if not data then
+			return false, "err.bad_request"
+		end
+		local audio, err = AudioData.set(data.Settings.Audio, key, value)
+		if not audio then
+			return false, err
+		end
+		data.Settings.Audio = audio
 		State.markCore(player)
 		return true, nil
 	end)

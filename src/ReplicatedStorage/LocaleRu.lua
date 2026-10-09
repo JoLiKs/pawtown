@@ -442,6 +442,16 @@ LocaleRu.Strings = {
 	["combo.Zoomies"] = "Носимся кругами",
 	["combo.Echo"] = "Эхо",
 	["fx.combo"] = "Комбо с другом!",
+	["settings.sound"] = "Звук",
+	["settings.music_on"] = "Музыка: вкл",
+	["settings.music_off"] = "Музыка: выкл",
+	["settings.sfx_on"] = "Звуки: вкл",
+	["settings.sfx_off"] = "Звуки: выкл",
+	["settings.volume"] = "Громкость музыки {n}%",
+	["settings.music_playing"] = "Музыка играет",
+	["settings.music_loading"] = "Музыка загружается...",
+	["settings.music_error"] = "Музыка сейчас недоступна",
+	["settings.sound_note"] = "«Звуки: выкл» глушит и шаги, и другие звуки персонажей.",
 }
 
 -- Перевод «данных» (имена/описания из data-модулей), ключ — английский текст

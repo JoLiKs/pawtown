@@ -442,6 +442,16 @@ LocaleEn.Strings = {
 	["combo.Zoomies"] = "Zoomies",
 	["combo.Echo"] = "Echo",
 	["fx.combo"] = "Friend combo!",
+	["settings.sound"] = "Sound",
+	["settings.music_on"] = "Music: on",
+	["settings.music_off"] = "Music: off",
+	["settings.sfx_on"] = "Sounds: on",
+	["settings.sfx_off"] = "Sounds: off",
+	["settings.volume"] = "Music volume {n}%",
+	["settings.music_playing"] = "Music is playing",
+	["settings.music_loading"] = "Music is loading...",
+	["settings.music_error"] = "Music is unavailable right now",
+	["settings.sound_note"] = '"Sounds: off" also mutes footsteps and other character sounds.',
 }
 
 return LocaleEn

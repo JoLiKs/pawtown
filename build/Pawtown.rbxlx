@@ -150,6 +150,206 @@ gui:Destroy()
 			</Properties>
 			<Item class="ModuleScript" referent="RBX00000000000000000000000000000008">
 				<Properties>
+					<string name="Name">AudioData</string>
+					<ProtectedString name="Source"><![CDATA[--!strict
+--[[
+	AudioData — общие правила звука для сервера и клиента (скопировано из roblox-game v3.3; в Pawtown вместо
+	«спокойная / эпичная / дождь» — дневная и ночная темы).
+	  * настройки игрока data.Settings.Audio = { Music = bool, Sfx = bool, MusicVol = 0..1 (шаг 0.1) };
+	  * soundId: ID из Config.SOUNDS -> "rbxassetid://ID" или nil (0, не число, дробь — звука нет, игра молчит
+	    без ошибок: так музыку можно выключить, не дожидаясь загрузки ассетов);
+	  * musicTarget: какой трек должен звучать (ночью — ночной, днём — дневной; если нужного нет — запасной);
+	  * fadeStep / gain: плавный кроссфейд (равная мощность, чтобы на стыке не было провала громкости).
+]]
+local AudioData = {}
+
+AudioData.DEFAULT = { Music = true, Sfx = true, MusicVol = 0.6 }
+AudioData.VOL_STEP = 0.1
+AudioData.KEYS = { Music = "boolean", Sfx = "boolean", MusicVol = "number" }
+
+local function round(v: number): number
+	-- делением, а не умножением на 0.1: 6 / 10 == 0.6 точно (6 * 0.1 даёт 0.6000000000000001)
+	local k = math.floor(1 / AudioData.VOL_STEP + 0.5)
+	return math.floor(v * k + 0.5) / k
+end
+
+-- копия настроек с подставленными значениями по умолчанию и отсечёнными мусорными полями
+function AudioData.normalize(a: any): { Music: boolean, Sfx: boolean, MusicVol: number }
+	local src = if type(a) == "table" then a else {}
+	local vol = src.MusicVol
+	if type(vol) ~= "number" or vol ~= vol then
+		vol = AudioData.DEFAULT.MusicVol
+	end
+	return {
+		Music = if type(src.Music) == "boolean" then src.Music else AudioData.DEFAULT.Music,
+		Sfx = if type(src.Sfx) == "boolean" then src.Sfx else AudioData.DEFAULT.Sfx,
+		MusicVol = math.clamp(round(vol), 0, 1),
+	}
+end
+
+-- сервер: изменить одно поле; возвращает новые настройки или nil, ключ ошибки
+function AudioData.set(a: any, key: any, value: any): (any, string?)
+	if type(key) ~= "string" or AudioData.KEYS[key] == nil then
+		return nil, "err.bad_request"
+	end
+	if type(value) ~= AudioData.KEYS[key] then
+		return nil, "err.bad_request"
+	end
+	if key == "MusicVol" and (value ~= value or value < 0 or value > 1) then
+		return nil, "err.bad_request"
+	end
+	local out = AudioData.normalize(a)
+	out[key] = if key == "MusicVol" then math.clamp(round(value), 0, 1) else value
+	return out, nil
+end
+
+function AudioData.soundId(id: any): string?
+	if type(id) == "number" and id > 0 and id == math.floor(id) and id < 2 ^ 53 then
+		return "rbxassetid://" .. string.format("%d", id)
+	end
+	return nil
+end
+
+-- "Day" | "Night" | nil. Ночью — ночная тема, днём — дневная; если нужного трека нет — запасной из имеющихся.
+function AudioData.musicTarget(night: boolean, hasDay: boolean, hasNight: boolean): string?
+	if night and hasNight then
+		return "Night"
+	end
+	if hasDay then
+		return "Day"
+	end
+	return if hasNight then "Night" else nil
+end
+
+-- сдвиг «доли» трека к цели (0 или 1) за dt при длительности кроссфейда fade секунд
+function AudioData.fadeStep(mix: number, target: number, dt: number, fade: number): number
+	local step = if fade > 0 then dt / fade else 1
+	if mix < target then
+		return math.min(target, mix + step)
+	end
+	return math.max(target, mix - step)
+end
+
+-- громкость Sound: кривая равной мощности × базовая громкость трека × ползунок игрока (vol 0..1).
+-- Выключение музыки — это цель 0 для всех треков (плавное затухание), а не мгновенный ноль.
+function AudioData.gain(mix: number, base: number, vol: number): number
+	return math.sin(math.clamp(mix, 0, 1) * math.pi / 2) * base * math.clamp(vol, 0, 1)
+end
+
+-- ---------------------------------------------------------------------------
+-- v3.2: здоровье звуковых ассетов. Если ассет не загрузился (например, отклонён модерацией), звук помечается
+-- сломанным: одна запись в лог, дальше он просто пропускается (без повторных Play и спама ошибок).
+-- Пока ассет грузится, Play повторяется не чаще RETRY секунд.
+-- ---------------------------------------------------------------------------
+AudioData.RETRY = 3
+
+export type Health = {
+	Failed: { [string]: string },
+	Tries: { [string]: number },
+	Fails: { [string]: number },
+	Waits: { [string]: number },
+}
+
+function AudioData.newHealth(): Health
+	return { Failed = {}, Tries = {}, Fails = {}, Waits = {} }
+end
+
+-- ---------------------------------------------------------------------------
+-- v3.2.2: результат загрузки ассета (ContentProvider.PreloadAsync). Первая загрузка большого трека в Roblox
+-- нередко отдаёт TimedOut — это НЕ поломка: повторяем с нарастающей паузой бесконечно. Сломанным ассет
+-- считается только после MAX_FAILURES подряд статусов Failure.
+-- Возвращает "ok" | "retry" | "broken" и паузу до повтора (для "retry").
+-- ---------------------------------------------------------------------------
+AudioData.MAX_FAILURES = 3
+AudioData.BACKOFF = { 2, 4, 8, 15, 30 }
+
+function AudioData.retryDelay(n: number): number
+	local b = AudioData.BACKOFF
+	return b[math.clamp(n, 1, #b)]
+end
+
+function AudioData.loadResult(h: Health, key: string, status: string): (string, number?)
+	if status == "Success" then
+		h.Fails[key] = 0
+		h.Waits[key] = 0
+		return "ok", nil
+	end
+	if status == "Failure" then
+		local n = (h.Fails[key] or 0) + 1
+		h.Fails[key] = n
+		if n >= AudioData.MAX_FAILURES then
+			return "broken", nil
+		end
+		return "retry", AudioData.retryDelay(n)
+	end
+	-- TimedOut и прочее (None, Loading) — только повтор, никогда не «сломан»
+	local w = (h.Waits[key] or 0) + 1
+	h.Waits[key] = w
+	return "retry", AudioData.retryDelay(w)
+end
+
+-- строка состояния музыки для окна настроек: "off" | "playing" | "loading" | "error" (+ код ошибки)
+function AudioData.musicStatus(
+	enabled: boolean,
+	hasTrack: boolean,
+	loaded: boolean,
+	playing: boolean,
+	err: string?
+): (string, string?)
+	if not enabled then
+		return "off", nil
+	end
+	if not hasTrack then
+		return "error", err or "no track" -- l10n-ok
+	end
+	if loaded and playing then
+		return "playing", nil
+	end
+	return "loading", nil
+end
+
+-- true — это первая ошибка по ключу (её нужно записать в лог); повторные — false
+function AudioData.reportFailure(h: Health, key: string, why: string?): boolean
+	if h.Failed[key] ~= nil then
+		return false
+	end
+	h.Failed[key] = why or "load failed" -- l10n-ok
+	return true
+end
+
+function AudioData.isFailed(h: Health, key: string): boolean
+	return h.Failed[key] ~= nil
+end
+
+-- можно ли сейчас вызвать Play для ключа (не сломан и с прошлой попытки прошло RETRY секунд); отмечает попытку
+function AudioData.tryPlay(h: Health, key: string, now: number): boolean
+	if h.Failed[key] ~= nil then
+		return false
+	end
+	local last = h.Tries[key]
+	if last and now - last < AudioData.RETRY then
+		return false
+	end
+	h.Tries[key] = now
+	return true
+end
+
+-- строка для атрибута/теста: сломанные ключи через запятую (по алфавиту)
+function AudioData.failedList(h: Health): string
+	local keys = {}
+	for k in pairs(h.Failed) do
+		table.insert(keys, k)
+	end
+	table.sort(keys)
+	return table.concat(keys, ",")
+end
+
+return AudioData
+]]></ProtectedString>
+				</Properties>
+			</Item>
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000009">
+				<Properties>
 					<string name="Name">Config</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
 -- Общие настройки Pawtown (клиент + сервер). Все балансные числа — здесь и в data-модулях.
@@ -259,11 +459,48 @@ Config.FRIEND_LIST_MAX = 50
 Config.VISIT_COOLDOWN = 10
 Config.COMBO_WINDOW = 3 -- секунд: оба друга делают одну эмоцию рядом -> комбо
 
+-- Звук (v0.2). Оригинальные процедурные звуки tools/music/synth.py -> assets/audio/*.ogg, загружены через Open Cloud
+-- (tools/upload_audio.py, автор userId 11770388445). ID = 0 — звука нет (игра молчит без ошибок). Пока у universe нет
+-- права Use (tools/grant_audio_use.py), ассеты в живой игре не грузятся: клиент повторяет загрузку и не ломается.
+Config.SOUNDS = {
+	MUSIC_DAY = 80019631737532, -- assets/audio/maple_street.ogg — дневная тема «Кленовая улица»
+	MUSIC_NIGHT = 134760802853412, -- assets/audio/evening_lullaby.ogg — ночная тема «Колыбельная фонарей»
+	BARK = 101202179959844, -- assets/audio/bark.ogg
+	MEOW = 98567436700081, -- assets/audio/meow.ogg
+	SQUEAK = 121111211429733, -- assets/audio/squeak.ogg
+	CHIRP = 89730859497254, -- assets/audio/chirp.ogg
+	HOOT = 112661856031857, -- assets/audio/hoot.ogg
+	PICKUP = 73197057843015, -- assets/audio/pickup.ogg — подобрал предмет / осколок
+	QUEST_DONE = 110692406184872, -- assets/audio/quest_done.ogg — шаг главы / ежедневное задание
+}
+Config.MUSIC = {
+	DAY_VOLUME = 0.35, -- базовая громкость (умножается на ползунок игрока)
+	NIGHT_VOLUME = 0.4,
+	FADE = 3, -- секунд кроссфейда день <-> ночь
+	SFX_VOLUME = 0.5,
+	VOICE_VOLUME = 0.6,
+}
+-- голос питомца (эмоция «Голос» / «Повтор»): звук и PlaybackSpeed (один ассет на несколько видов)
+Config.VOICES = {
+	Dog = { Key = "BARK", Speed = 1 },
+	CorgiKnight = { Key = "BARK", Speed = 1.25 },
+	Fox = { Key = "BARK", Speed = 1.45 },
+	Cat = { Key = "MEOW", Speed = 1 },
+	SnowLeopard = { Key = "MEOW", Speed = 0.72 },
+	Rabbit = { Key = "SQUEAK", Speed = 1 },
+	CrystalRabbit = { Key = "SQUEAK", Speed = 1.15 },
+	Raccoon = { Key = "SQUEAK", Speed = 0.8 },
+	Parrot = { Key = "CHIRP", Speed = 1 },
+	Owl = { Key = "HOOT", Speed = 1 },
+	StarfallDog = { Key = "BARK", Speed = 1.1 },
+	MidnightCat = { Key = "MEOW", Speed = 0.9 },
+}
+
 return Config
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000009">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000A">
 				<Properties>
 					<string name="Name">DayNight</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -298,7 +535,7 @@ return DayNight
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000A">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000B">
 				<Properties>
 					<string name="Name">FamilyData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -359,7 +596,7 @@ return FamilyData
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000B">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000C">
 				<Properties>
 					<string name="Name">FriendsLogic</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -438,7 +675,7 @@ return FriendsLogic
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000C">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000D">
 				<Properties>
 					<string name="Name">Icons</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -939,7 +1176,7 @@ return Icons
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000D">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000E">
 				<Properties>
 					<string name="Name">Locale</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -1355,7 +1592,7 @@ return Locale
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000E">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000F">
 				<Properties>
 					<string name="Name">LocaleEn</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -1802,13 +2039,23 @@ LocaleEn.Strings = {
 	["combo.Zoomies"] = "Zoomies",
 	["combo.Echo"] = "Echo",
 	["fx.combo"] = "Friend combo!",
+	["settings.sound"] = "Sound",
+	["settings.music_on"] = "Music: on",
+	["settings.music_off"] = "Music: off",
+	["settings.sfx_on"] = "Sounds: on",
+	["settings.sfx_off"] = "Sounds: off",
+	["settings.volume"] = "Music volume {n}%",
+	["settings.music_playing"] = "Music is playing",
+	["settings.music_loading"] = "Music is loading...",
+	["settings.music_error"] = "Music is unavailable right now",
+	["settings.sound_note"] = '"Sounds: off" also mutes footsteps and other character sounds.',
 }
 
 return LocaleEn
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000000F">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000010">
 				<Properties>
 					<string name="Name">LocaleRu</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -2255,6 +2502,16 @@ LocaleRu.Strings = {
 	["combo.Zoomies"] = "Носимся кругами",
 	["combo.Echo"] = "Эхо",
 	["fx.combo"] = "Комбо с другом!",
+	["settings.sound"] = "Звук",
+	["settings.music_on"] = "Музыка: вкл",
+	["settings.music_off"] = "Музыка: выкл",
+	["settings.sfx_on"] = "Звуки: вкл",
+	["settings.sfx_off"] = "Звуки: выкл",
+	["settings.volume"] = "Громкость музыки {n}%",
+	["settings.music_playing"] = "Музыка играет",
+	["settings.music_loading"] = "Музыка загружается...",
+	["settings.music_error"] = "Музыка сейчас недоступна",
+	["settings.sound_note"] = "«Звуки: выкл» глушит и шаги, и другие звуки персонажей.",
 }
 
 -- Перевод «данных» (имена/описания из data-модулей), ключ — английский текст
@@ -2363,7 +2620,7 @@ return LocaleRu
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000010">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000011">
 				<Properties>
 					<string name="Name">NeedsLogic</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -2539,7 +2796,7 @@ return NeedsLogic
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000011">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000012">
 				<Properties>
 					<string name="Name">PetModels</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -3377,7 +3634,7 @@ return PetModels
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000012">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000013">
 				<Properties>
 					<string name="Name">PetRig</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -3801,7 +4058,7 @@ return PetRig
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000013">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000014">
 				<Properties>
 					<string name="Name">Progression</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -3996,7 +4253,7 @@ return Progression
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000014">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000015">
 				<Properties>
 					<string name="Name">QuestData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -4135,7 +4392,7 @@ return QuestData
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000015">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000016">
 				<Properties>
 					<string name="Name">RebirthLogic</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -4382,7 +4639,7 @@ return RebirthLogic
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000016">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000017">
 				<Properties>
 					<string name="Name">Remotes</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -4455,7 +4712,7 @@ return Remotes
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000017">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000018">
 				<Properties>
 					<string name="Name">ShopData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -4582,7 +4839,7 @@ return ShopData
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000018">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000019">
 				<Properties>
 					<string name="Name">SpeciesData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -4986,7 +5243,7 @@ return SpeciesData
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000019">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001A">
 				<Properties>
 					<string name="Name">TrickData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5129,7 +5386,7 @@ return TrickData
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001A">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001B">
 				<Properties>
 					<string name="Name">UiGeometry</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5239,7 +5496,7 @@ return UiGeometry
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001B">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001C">
 				<Properties>
 					<string name="Name">Util</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5366,7 +5623,7 @@ return Util
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001C">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000001D">
 				<Properties>
 					<string name="Name">WorldData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5630,11 +5887,11 @@ return WorldData
 			</Item>
 		</Item>
 	</Item>
-	<Item class="ServerScriptService" referent="RBX0000000000000000000000000000001D">
+	<Item class="ServerScriptService" referent="RBX0000000000000000000000000000001E">
 		<Properties>
 			<string name="Name">ServerScriptService</string>
 		</Properties>
-		<Item class="Script" referent="RBX0000000000000000000000000000001E">
+		<Item class="Script" referent="RBX0000000000000000000000000000001F">
 			<Properties>
 				<string name="Name">Main</string>
 				<token name="RunContext">0</token>
@@ -5677,11 +5934,11 @@ print("[Pawtown] Server started. JobId:", game.JobId)
 ]]></ProtectedString>
 			</Properties>
 		</Item>
-		<Item class="Folder" referent="RBX0000000000000000000000000000001F">
+		<Item class="Folder" referent="RBX00000000000000000000000000000020">
 			<Properties>
 				<string name="Name">Server</string>
 			</Properties>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000020">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000021">
 				<Properties>
 					<string name="Name">AbilityService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -5895,7 +6152,7 @@ return AbilityService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000021">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000022">
 				<Properties>
 					<string name="Name">AntiExploit</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -6020,7 +6277,7 @@ return AntiExploit
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000022">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000023">
 				<Properties>
 					<string name="Name">DataService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -6098,7 +6355,7 @@ local function makeTemplate(): Data
 		Stash = { Trinkets = 0, Total = 0 }, -- тайник енота
 		FriendList = {}, -- [tostring(userId)] = { Name, Since } — список друзей (до Config.FRIEND_LIST_MAX)
 		Choices = {}, -- выборы в сюжете (глава 2): [id] = вариант
-		Settings = { Lang = "auto" },
+		Settings = { Lang = "auto", Audio = { Music = true, Sfx = true, MusicVol = 0.6 } },
 		Joined = os.time(),
 		LastSeen = os.time(),
 	}
@@ -6505,7 +6762,7 @@ return DataService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000023">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000024">
 				<Properties>
 					<string name="Name">DayNightService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -6595,7 +6852,7 @@ return DayNightService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000024">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000025">
 				<Properties>
 					<string name="Name">FamilyService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7046,7 +7303,7 @@ return FamilyService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000025">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000026">
 				<Properties>
 					<string name="Name">FriendsService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7310,7 +7567,7 @@ return FriendsService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000026">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000027">
 				<Properties>
 					<string name="Name">Interact</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7404,7 +7661,7 @@ return Interact
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000027">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000028">
 				<Properties>
 					<string name="Name">LanguageService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7421,6 +7678,7 @@ local LocalizationService = game:GetService("LocalizationService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local AudioData = require(ReplicatedStorage.Shared.AudioData)
 local Locale = require(ReplicatedStorage.Shared.Locale)
 
 local DataService = require(script.Parent.DataService)
@@ -7488,6 +7746,20 @@ function LanguageService.init()
 		State.markCore(player)
 		return true, nil
 	end)
+	-- v0.2: звуковые настройки (как SettingsService в roblox-game): ползунок нажимают часто — 4 в секунду
+	Router.register("SetAudio", 4, 10, function(player: Player, key: any, value: any)
+		local data = DataService.get(player)
+		if not data then
+			return false, "err.bad_request"
+		end
+		local audio, err = AudioData.set(data.Settings.Audio, key, value)
+		if not audio then
+			return false, err
+		end
+		data.Settings.Audio = audio
+		State.markCore(player)
+		return true, nil
+	end)
 	Players.PlayerRemoving:Connect(function(player)
 		countries[player] = nil
 	end)
@@ -7497,7 +7769,7 @@ return LanguageService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000028">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000029">
 				<Properties>
 					<string name="Name">Migrations</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7508,6 +7780,7 @@ return LanguageService
 	v3 (0.2): перерождение (Stars, Lineage, Trials), тайник енота (Stash), список друзей (FriendList), выборы (Choices).
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local AudioData = require(ReplicatedStorage.Shared.AudioData)
 local NeedsLogic = require(ReplicatedStorage.Shared.NeedsLogic)
 local SpeciesData = require(ReplicatedStorage.Shared.SpeciesData)
 
@@ -7571,6 +7844,18 @@ function Migrations.run(data: { [string]: any }): boolean
 		data.Settings.Lang = "auto"
 		changed = true
 	end
+	-- v0.2: звуковые настройки (музыка / звуки / громкость) — всегда в нормальном виде
+	local audio = AudioData.normalize(data.Settings.Audio)
+	local prevAudio = data.Settings.Audio
+	if
+		type(prevAudio) ~= "table"
+		or prevAudio.Music ~= audio.Music
+		or prevAudio.Sfx ~= audio.Sfx
+		or prevAudio.MusicVol ~= audio.MusicVol
+	then
+		changed = true
+	end
+	data.Settings.Audio = audio
 	for _, key in ipairs({ "Treats", "Xp", "TotalTreats" }) do
 		if data[key] ~= nil and bad(data[key]) then
 			data[key] = 0
@@ -7599,7 +7884,7 @@ return Migrations
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000029">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002A">
 				<Properties>
 					<string name="Name">Movement</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -7747,7 +8032,7 @@ return Movement
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002A">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002B">
 				<Properties>
 					<string name="Name">NeedsService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -8002,7 +8287,7 @@ return NeedsService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002B">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002C">
 				<Properties>
 					<string name="Name">Notify</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -8026,7 +8311,7 @@ return Notify
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002C">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002D">
 				<Properties>
 					<string name="Name">ParkService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -8269,7 +8554,7 @@ return ParkService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002D">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002E">
 				<Properties>
 					<string name="Name">PlayerService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -8574,7 +8859,7 @@ return PlayerService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002E">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002F">
 				<Properties>
 					<string name="Name">Progress</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -8708,7 +8993,7 @@ return Progress
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX0000000000000000000000000000002F">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000030">
 				<Properties>
 					<string name="Name">QuestService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -8999,7 +9284,7 @@ return QuestService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000030">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000031">
 				<Properties>
 					<string name="Name">RareAbilities</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -9431,7 +9716,7 @@ return RareAbilities
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000031">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000032">
 				<Properties>
 					<string name="Name">RebirthService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -9677,7 +9962,7 @@ return RebirthService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000032">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000033">
 				<Properties>
 					<string name="Name">Router</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -9768,7 +10053,7 @@ return Router
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000033">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000034">
 				<Properties>
 					<string name="Name">Session</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -9872,7 +10157,7 @@ return Session
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000034">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000035">
 				<Properties>
 					<string name="Name">ShopService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -9982,7 +10267,7 @@ return ShopService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000035">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000036">
 				<Properties>
 					<string name="Name">SocialService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -10123,7 +10408,7 @@ return SocialService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000036">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000037">
 				<Properties>
 					<string name="Name">State</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -10132,6 +10417,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage.Shared
 
+local AudioData = require(Shared.AudioData)
 local NeedsLogic = require(Shared.NeedsLogic)
 local Progression = require(Shared.Progression)
 local QuestData = require(Shared.QuestData)
@@ -10186,6 +10472,7 @@ function State.build(player: Player): any?
 		Carrying = s and s.Carrying or "",
 		Sleeping = s ~= nil and s.SleepUntil > os.clock(),
 		Lang = data.Settings.Lang,
+		Audio = AudioData.normalize(data.Settings.Audio),
 		FriendsCount = (function()
 			local n = 0
 			for _ in pairs(data.FriendList or {}) do
@@ -10236,7 +10523,7 @@ return State
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000037">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000038">
 				<Properties>
 					<string name="Name">StoryService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -10553,7 +10840,7 @@ return StoryService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000038">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000039">
 				<Properties>
 					<string name="Name">TrickService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -10688,7 +10975,7 @@ return TrickService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000039">
+			<Item class="ModuleScript" referent="RBX0000000000000000000000000000003A">
 				<Properties>
 					<string name="Name">WorldBuilder</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -11781,15 +12068,15 @@ return WorldBuilder
 			</Item>
 		</Item>
 	</Item>
-	<Item class="StarterPlayer" referent="RBX0000000000000000000000000000003A">
+	<Item class="StarterPlayer" referent="RBX0000000000000000000000000000003B">
 		<Properties>
 			<string name="Name">StarterPlayer</string>
 		</Properties>
-		<Item class="StarterPlayerScripts" referent="RBX0000000000000000000000000000003B">
+		<Item class="StarterPlayerScripts" referent="RBX0000000000000000000000000000003C">
 			<Properties>
 				<string name="Name">StarterPlayerScripts</string>
 			</Properties>
-			<Item class="LocalScript" referent="RBX0000000000000000000000000000003C">
+			<Item class="LocalScript" referent="RBX0000000000000000000000000000003D">
 				<Properties>
 					<string name="Name">CameraController</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11873,7 +12160,7 @@ RunService.RenderStepped:Connect(step)
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="LocalScript" referent="RBX0000000000000000000000000000003D">
+			<Item class="LocalScript" referent="RBX0000000000000000000000000000003E">
 				<Properties>
 					<string name="Name">PetAnimator</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12210,7 +12497,7 @@ end)
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="LocalScript" referent="RBX0000000000000000000000000000003E">
+			<Item class="LocalScript" referent="RBX0000000000000000000000000000003F">
 				<Properties>
 					<string name="Name">WorldLocalizer</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -12317,22 +12604,22 @@ end)
 			</Item>
 		</Item>
 	</Item>
-	<Item class="StarterGui" referent="RBX0000000000000000000000000000003F">
+	<Item class="StarterGui" referent="RBX00000000000000000000000000000040">
 		<Properties>
 			<string name="Name">StarterGui</string>
 		</Properties>
-		<Item class="ScreenGui" referent="RBX00000000000000000000000000000040">
+		<Item class="ScreenGui" referent="RBX00000000000000000000000000000041">
 			<Properties>
 				<string name="Name">PawtownGui</string>
 				<bool name="ResetOnSpawn">false</bool>
 				<token name="ZIndexBehavior">1</token>
 				<double name="DisplayOrder">50</double>
 			</Properties>
-			<Item class="Folder" referent="RBX00000000000000000000000000000041">
+			<Item class="Folder" referent="RBX00000000000000000000000000000042">
 				<Properties>
 					<string name="Name">Modules</string>
 				</Properties>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000042">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000043">
 					<Properties>
 						<string name="Name">Abilities</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12560,7 +12847,7 @@ return Abilities
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000043">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000044">
 					<Properties>
 						<string name="Name">Actions</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12616,7 +12903,7 @@ return Actions
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000044">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000045">
 					<Properties>
 						<string name="Name">BathGame</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12842,7 +13129,7 @@ return BathGame
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000045">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000046">
 					<Properties>
 						<string name="Name">ChoicePanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12947,7 +13234,7 @@ return ChoicePanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000046">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000047">
 					<Properties>
 						<string name="Name">ClientState</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13065,7 +13352,7 @@ return ClientState
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000047">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000048">
 					<Properties>
 						<string name="Name">Cutscene</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13221,7 +13508,7 @@ return Cutscene
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000048">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000049">
 					<Properties>
 						<string name="Name">EmotesPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13308,7 +13595,7 @@ return EmotesPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000049">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004A">
 					<Properties>
 						<string name="Name">FriendsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13566,7 +13853,7 @@ return FriendsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004A">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004B">
 					<Properties>
 						<string name="Name">Fx</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13673,7 +13960,7 @@ return Fx
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004B">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004C">
 					<Properties>
 						<string name="Name">Hud</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -14096,7 +14383,7 @@ return Hud
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004C">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004D">
 					<Properties>
 						<string name="Name">Layout</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -14248,7 +14535,389 @@ return Layout
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004D">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004E">
+					<Properties>
+						<string name="Name">Music</string>
+						<ProtectedString name="Source"><![CDATA[--!nonstrict
+--[[
+	Music — фоновая музыка и короткие звуки на клиенте (подход roblox-game Music.lua v3.3, перенесён в Pawtown).
+	  * днём — «Кленовая улица» (Config.SOUNDS.MUSIC_DAY), ночью — «Колыбельная фонарей» (MUSIC_NIGHT); между ними
+	    плавный кроссфейд Config.MUSIC.FADE секунд; ночь — по Lighting.ClockTime (DayNight.isNight);
+	  * настройки игрока Core.Audio (AudioData): музыка вкл/выкл, громкость, звуки вкл/выкл;
+	  * группы SoundService «Music» и «SFX»: переключатели настроек = громкость групп; ВСЕ прочие звуки мира и
+	    персонажей (шаги, прыжок, приземление) тоже попадают в «SFX», поэтому «Звуки: выкл» глушит и их;
+	  * ID = 0 — звука нет: ничего не создаётся и не играет (никаких ошибок и пустых Sound);
+	  * загрузка с повторами: TimedOut — ждём и пробуем снова (паузы растут), Failure — сломан только после
+	    AudioData.MAX_FAILURES попыток подряд; сломанный звук — одна запись в лог, дальше пропускается, игра
+	    работает (вторая тема играет вместо сломанной; Play не повторяется каждый кадр);
+	  * звуки: голос питомца (эмоции Voice / Mimic любого игрока, в точке персонажа, Config.VOICES), подбор
+	    предмета / осколка (PICKUP), шаг главы или ежедневное задание (QUEST_DONE).
+	Атрибуты gui для тестов: MusicStatus, MusicTarget, MusicTracks, AudioFailed, SfxVolume, LastSfx.
+]]
+local ContentProvider = game:GetService("ContentProvider")
+local Debris = game:GetService("Debris")
+local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
+local Workspace = game:GetService("Workspace")
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AudioData = require(Shared:WaitForChild("AudioData"))
+local Config = require(Shared:WaitForChild("Config"))
+local DayNight = require(Shared:WaitForChild("DayNight"))
+local Remotes = require(Shared:WaitForChild("Remotes"))
+
+local ClientState = require(script.Parent.ClientState)
+
+local Music = {}
+
+type Track = { Sound: Sound, Mix: number, Base: number, Key: string, Loaded: boolean }
+local tracks: { [string]: Track } = {}
+local settings = AudioData.normalize(nil)
+local health = AudioData.newHealth()
+local guiRef: ScreenGui? = nil
+local musicGroup: SoundGroup? = nil
+local sfxGroup: SoundGroup? = nil
+local lastStatus = ""
+local SFX_KEYS = { "BARK", "MEOW", "SQUEAK", "CHIRP", "HOOT", "PICKUP", "QUEST_DONE" }
+
+local function publish()
+	local g = guiRef
+	if g then
+		g:SetAttribute(
+			"MusicTracks",
+			(if tracks.Day then "Day" else "") .. (if tracks.Night then "Night" else "")
+		)
+		g:SetAttribute("AudioFailed", AudioData.failedList(health))
+	end
+end
+
+local function group(name: string): SoundGroup
+	local g = SoundService:FindFirstChild(name)
+	if g and g:IsA("SoundGroup") then
+		return g
+	end
+	local ng = Instance.new("SoundGroup")
+	ng.Name = name
+	ng.Volume = 1
+	ng.Parent = SoundService
+	return ng
+end
+
+local function applyGroups()
+	if musicGroup then
+		musicGroup.Volume = if settings.Music then 1 else 0
+	end
+	if sfxGroup then
+		sfxGroup.Volume = if settings.Sfx then 1 else 0
+	end
+end
+
+-- любой звук без группы (звуки персонажей RbxCharacterSounds, звуки в мире) — в группу «Звуки»
+function Music.route(o: Instance)
+	local g = sfxGroup
+	if g and o:IsA("Sound") and o.SoundGroup == nil then
+		o.SoundGroup = g
+	end
+end
+
+function Music.fail(key: string, why: string?)
+	if not AudioData.reportFailure(health, key, why) then
+		return
+	end
+	warn(
+		("[Music] sound %s (%s) unavailable after %d attempts: %s; skipped"):format(
+			key,
+			tostring(Config.SOUNDS[key]),
+			AudioData.MAX_FAILURES,
+			why or "?"
+		)
+	)
+	publish()
+end
+
+local function statusName(st: any): string
+	if st == Enum.AssetFetchStatus.Success then
+		return "Success"
+	elseif st == Enum.AssetFetchStatus.Failure then
+		return "Failure"
+	elseif st == Enum.AssetFetchStatus.TimedOut then
+		return "TimedOut"
+	end
+	return tostring(st)
+end
+
+local function load(key: string, target: any, onLoaded: (() -> ())?)
+	task.spawn(function()
+		while true do
+			local status = "Success"
+			local ok: boolean, err: any = pcall(function()
+				ContentProvider:PreloadAsync({ target }, function(_contentId, st)
+					status = statusName(st)
+				end)
+			end)
+			if not ok then
+				status = "Failure"
+			end
+			if typeof(target) == "Instance" and target:IsA("Sound") and target.IsLoaded then
+				status = "Success"
+			end
+			local res, delay = AudioData.loadResult(health, key, status)
+			if res == "ok" then
+				if onLoaded then
+					onLoaded()
+				end
+				return
+			elseif res == "broken" then
+				Music.fail(key, if ok then status else tostring(err))
+				return
+			end
+			print(("[Music] %s: %s, retry in %ds"):format(key, status, delay or 0))
+			task.wait(delay or 5)
+			if typeof(target) == "Instance" and target:IsA("Sound") and not target.IsLoaded then
+				local id = target.SoundId
+				target.SoundId = ""
+				target.SoundId = id
+			end
+		end
+	end)
+end
+
+function Music.settings()
+	return settings
+end
+
+local function usable(name: string): boolean
+	local t = tracks[name]
+	return t ~= nil and not AudioData.isFailed(health, t.Key)
+end
+
+local function isNight(): boolean
+	return DayNight.isNight(Lighting.ClockTime)
+end
+
+function Music.target(): string?
+	if not settings.Music then
+		return nil
+	end
+	return AudioData.musicTarget(isNight(), usable("Day"), usable("Night"))
+end
+
+-- состояние для окна настроек: "off" | "playing" | "loading" | "error", код ошибки
+function Music.status(): (string, string?)
+	local target = Music.target()
+	local t = if target then tracks[target] else nil
+	local err = health.Failed.MUSIC_DAY or health.Failed.MUSIC_NIGHT
+	return AudioData.musicStatus(
+		settings.Music,
+		t ~= nil,
+		t ~= nil and (t.Loaded or t.Sound.IsLoaded),
+		t ~= nil and t.Sound.IsPlaying,
+		err
+	)
+end
+
+local function startTrack(t: Track)
+	local s = t.Sound
+	if s.IsPaused then
+		s:Resume() -- тема продолжает с того же места
+	else
+		s:Play()
+	end
+end
+
+local function step(dt: number)
+	local target = Music.target()
+	for name, t in pairs(tracks) do
+		t.Mix = AudioData.fadeStep(t.Mix, if name == target then 1 else 0, dt, Config.MUSIC.FADE)
+		local s = t.Sound
+		s.Volume = AudioData.gain(t.Mix, t.Base, settings.MusicVol)
+		if t.Mix > 0 and not s.IsPlaying then
+			if AudioData.tryPlay(health, t.Key, os.clock()) then
+				startTrack(t)
+			end
+		elseif t.Mix <= 0 and s.IsPlaying then
+			s:Pause()
+		end
+	end
+	local st, code = Music.status()
+	local line = st .. (if code then " " .. code else "")
+	if line ~= lastStatus then
+		lastStatus = line
+		local t = if target then tracks[target] else nil
+		print(
+			("[Music] status=%s track=%s loaded=%s playing=%s group=%.2f musicOn=%s vol=%.1f"):format(
+				line,
+				target or "-",
+				tostring(t ~= nil and t.Sound.IsLoaded),
+				tostring(t ~= nil and t.Sound.IsPlaying),
+				if musicGroup then musicGroup.Volume else -1,
+				tostring(settings.Music),
+				settings.MusicVol
+			)
+		)
+		local g = guiRef
+		if g then
+			g:SetAttribute("MusicStatus", line)
+		end
+	end
+end
+
+-- короткий звук из Config.SOUNDS (если звуки включены и ассет не сломан); с at — в точке мира / на детали
+function Music.sfx(key: string, at: (Vector3 | BasePart)?, volume: number?, speed: number?)
+	local g = guiRef
+	if g then
+		g:SetAttribute("LastSfx", key)
+	end
+	local id = AudioData.soundId(Config.SOUNDS[key])
+	if not id or not settings.Sfx or AudioData.isFailed(health, key) then
+		return
+	end
+	local s = Instance.new("Sound")
+	s.Name = "Sfx_" .. key
+	s.SoundId = id
+	s.Volume = volume or Config.MUSIC.SFX_VOLUME
+	s.PlaybackSpeed = speed or 1
+	s.SoundGroup = sfxGroup
+	if typeof(at) == "Vector3" then
+		local att = Instance.new("Attachment")
+		att.Name = "SfxAt"
+		att.Position = at -- Terrain в начале координат: Position == мировая точка
+		att.Parent = Workspace.Terrain
+		s.RollOffMinDistance = 10
+		s.RollOffMaxDistance = 90
+		s.Parent = att
+		Debris:AddItem(att, 4)
+	elseif typeof(at) == "Instance" then
+		s.RollOffMinDistance = 10
+		s.RollOffMaxDistance = 90
+		s.Parent = at
+		Debris:AddItem(s, 4)
+	else
+		s.Parent = SoundService
+		Debris:AddItem(s, 4)
+	end
+	s:Play()
+end
+
+-- голос вида (эмоции Voice / Mimic): слышно рядом с питомцем, у каждого вида свой звук или высота
+function Music.voice(species: string?, at: (Vector3 | BasePart)?)
+	local v = Config.VOICES[species or ""] or Config.VOICES.Dog
+	Music.sfx(v.Key, at, Config.MUSIC.VOICE_VOLUME, v.Speed)
+end
+
+local function watchCharacter(ch: Model)
+	local last = ch:GetAttribute("Emote")
+	ch:GetAttributeChangedSignal("Emote"):Connect(function()
+		local v = ch:GetAttribute("Emote")
+		if v == last or type(v) ~= "string" then
+			return
+		end
+		last = v
+		local id = string.split(v, ":")[1]
+		if id == "Voice" or id == "Mimic" then
+			local sp = ch:GetAttribute("Species")
+			Music.voice(
+				if type(sp) == "string" then sp else nil,
+				ch:FindFirstChild("HumanoidRootPart") :: BasePart?
+			)
+		end
+	end)
+end
+
+local function watchPlayer(p: Player)
+	if p.Character then
+		watchCharacter(p.Character)
+	end
+	p.CharacterAdded:Connect(watchCharacter)
+end
+
+function Music.init(gui: ScreenGui)
+	guiRef = gui
+	musicGroup = group("Music")
+	sfxGroup = group("SFX")
+	applyGroups()
+	local folder = Instance.new("Folder")
+	folder.Name = "PawtownMusic"
+	folder.Parent = SoundService
+	for _, name in ipairs({ "Day", "Night" }) do
+		local key = if name == "Day" then "MUSIC_DAY" else "MUSIC_NIGHT"
+		local id = AudioData.soundId(Config.SOUNDS[key])
+		if id then
+			local s = Instance.new("Sound")
+			s.Name = "Music" .. name
+			s.SoundId = id
+			s.Looped = true
+			s.Volume = 0
+			s.SoundGroup = musicGroup
+			s.Parent = folder
+			local t: Track = {
+				Sound = s,
+				Mix = 0,
+				Base = if name == "Night" then Config.MUSIC.NIGHT_VOLUME else Config.MUSIC.DAY_VOLUME,
+				Key = key,
+				Loaded = false,
+			}
+			tracks[name] = t
+			local function onLoaded()
+				if t.Loaded then
+					return
+				end
+				t.Loaded = true
+				print(("[Music] %s loaded (%s, %.0fs)"):format(name, id, s.TimeLength))
+				if t.Mix > 0 and not s.IsPlaying then
+					startTrack(t)
+				end
+			end
+			s.Loaded:Connect(onLoaded)
+			load(key, s, onLoaded)
+		end
+	end
+	for _, key in ipairs(SFX_KEYS) do
+		local id = AudioData.soundId(Config.SOUNDS[key])
+		if id then
+			load(key, id, nil)
+		end
+	end
+	publish()
+	for _, d in ipairs(Workspace:GetDescendants()) do
+		Music.route(d)
+	end
+	Workspace.DescendantAdded:Connect(Music.route)
+	for _, p in ipairs(Players:GetPlayers()) do
+		watchPlayer(p)
+	end
+	Players.PlayerAdded:Connect(watchPlayer)
+	local carrying = ""
+	ClientState.onCore(function(core)
+		settings = AudioData.normalize(core and core.Audio)
+		applyGroups()
+		local c = core and core.Carrying or ""
+		if c ~= carrying and c ~= "" then
+			Music.sfx("PICKUP")
+		end
+		carrying = c
+	end)
+	Remotes.getEvent("Fx").OnClientEvent:Connect(function(kind)
+		if kind == "Quest" or kind == "Daily" then
+			Music.sfx("QUEST_DONE")
+		elseif kind == "Shard" or kind == "Gift" then
+			Music.sfx("PICKUP")
+		end
+	end)
+	RunService.Heartbeat:Connect(function(dt)
+		step(dt)
+		gui:SetAttribute("MusicTarget", Music.target() or "")
+		gui:SetAttribute("SfxVolume", if sfxGroup then sfxGroup.Volume else -1)
+	end)
+end
+
+return Music
+]]></ProtectedString>
+					</Properties>
+				</Item>
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004F">
 					<Properties>
 						<string name="Name">QuestsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -14523,7 +15192,7 @@ return QuestsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004E">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000050">
 					<Properties>
 						<string name="Name">RebirthPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -14830,35 +15499,63 @@ return RebirthPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004F">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000051">
 					<Properties>
 						<string name="Name">SettingsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
--- SettingsPanel — язык (авто / English / Русский) и сведения об игре. Общение — только стандартный чат Roblox.
+--[[
+	SettingsPanel — язык (авто / English / Русский), звук (музыка вкл/выкл, звуки вкл/выкл — глушат и звуки
+	персонажей, громкость музыки, состояние музыки) и сведения об игре. Общение — только стандартный чат Roblox.
+]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local AudioData = require(Shared:WaitForChild("AudioData"))
 local Config = require(Shared:WaitForChild("Config"))
 local L = require(Shared:WaitForChild("Locale"))
 
 local Actions = require(script.Parent.Actions)
 local ClientState = require(script.Parent.ClientState)
+local Music = require(script.Parent.Music)
 local Theme = require(script.Parent.Theme)
 local Ui = require(script.Parent.Ui)
 local Widgets = require(script.Parent.Widgets)
 
+local New = Widgets.New
 local SettingsPanel = {}
 
 function SettingsPanel.init(gui: ScreenGui)
-	local panel = Widgets.panel(gui, "Settings")
-	local body = panel.Body
-	Ui.text({
-		Text = L.k("settings.lang"),
-		Font = Theme.Font,
-		TextSize = 19,
-		Size = UDim2.new(1, -20, 0, 26),
-		Position = UDim2.fromOffset(12, 8),
-		Parent = body,
-	})
+	local panel = Widgets.panel(gui, "Settings", nil, { MinH = 470 })
+	local scroll =
+		Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -4), Position = UDim2.fromOffset(4, 0) })
+	Widgets.padding(scroll, 8)
+	Ui.list(scroll, 8)
+	local order = 0
+	local function nextOrder(): number
+		order += 1
+		return order
+	end
+	local function heading(text: any)
+		Ui.text({
+			Text = text,
+			Font = Theme.Font,
+			TextSize = 19,
+			Size = UDim2.new(1, -8, 0, 26),
+			LayoutOrder = nextOrder(),
+			Parent = scroll,
+		})
+	end
+	local function row(name: string, h: number): Frame
+		return New("Frame", {
+			Name = name,
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, h),
+			LayoutOrder = nextOrder(),
+			Parent = scroll,
+		})
+	end
+
+	heading(L.k("settings.lang"))
+	local langRow = row("LangRow", 44)
 	local buttons = {}
 	for i, choice in ipairs({ "auto", "en", "ru" }) do
 		buttons[choice] = Widgets.button({
@@ -14866,36 +15563,125 @@ function SettingsPanel.init(gui: ScreenGui)
 			Text = L.k("lang." .. choice),
 			Color = Theme.BgLight,
 			MaxTextSize = 18,
-			Size = UDim2.new(1 / 3, -12, 0, 44),
-			Position = UDim2.new((i - 1) / 3, 8, 0, 40),
-			Parent = body,
+			Size = UDim2.new(1 / 3, -8, 1, 0),
+			Position = UDim2.new((i - 1) / 3, 4, 0, 0),
+			Parent = langRow,
 			OnClick = function()
 				Actions.call("SetLanguage", choice)
 			end,
 		})
 	end
+
+	heading(L.k("settings.sound"))
+	local current = AudioData.normalize(nil)
+	local toggles = row("SoundRow", 44)
+	local musicBtn = Widgets.button({
+		Name = "MusicToggle",
+		Text = "",
+		Color = Theme.Green,
+		MaxTextSize = 17,
+		Size = UDim2.new(0.5, -8, 1, 0),
+		Position = UDim2.fromOffset(4, 0),
+		Parent = toggles,
+		OnClick = function()
+			Actions.call("SetAudio", "Music", not current.Music)
+		end,
+	})
+	local sfxBtn = Widgets.button({
+		Name = "SfxToggle",
+		Text = "",
+		Color = Theme.Green,
+		MaxTextSize = 17,
+		Size = UDim2.new(0.5, -8, 1, 0),
+		Position = UDim2.new(0.5, 4, 0, 0),
+		Parent = toggles,
+		OnClick = function()
+			Actions.call("SetAudio", "Sfx", not current.Sfx)
+		end,
+	})
+	local volRow = row("VolumeRow", 44)
+	local function volBtn(name: string, text: string, delta: number, pos: UDim2)
+		return Widgets.button({
+			Name = name,
+			Text = text,
+			Color = Theme.BgLight,
+			MaxTextSize = 22,
+			Size = UDim2.fromOffset(52, 44),
+			Position = pos,
+			Parent = volRow,
+			OnClick = function()
+				local v = math.clamp(current.MusicVol + delta, 0, 1)
+				Actions.call("SetAudio", "MusicVol", math.floor(v * 10 + 0.5) / 10)
+			end,
+		})
+	end
+	volBtn("VolDown", "-", -AudioData.VOL_STEP, UDim2.fromOffset(4, 0))
+	volBtn("VolUp", "+", AudioData.VOL_STEP, UDim2.new(1, -56, 0, 0))
+	local volLabel = Ui.text({
+		Name = "VolumeLabel",
+		Text = "",
+		TextSize = 17,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		Size = UDim2.new(1, -128, 1, 0),
+		Position = UDim2.fromOffset(64, 0),
+		Parent = volRow,
+	})
+	local statusLabel = Ui.text({
+		Name = "MusicStatusLabel",
+		Text = "",
+		TextSize = 14,
+		TextColor3 = Theme.TextDim,
+		Size = UDim2.new(1, -8, 0, 20),
+		LayoutOrder = nextOrder(),
+		Parent = scroll,
+	})
+	Ui.text({
+		Text = L.k("settings.sound_note"),
+		TextSize = 14,
+		TextColor3 = Theme.TextDim,
+		Size = UDim2.new(1, -8, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		LayoutOrder = nextOrder(),
+		Parent = scroll,
+	})
+
 	Ui.text({
 		Text = L.k("settings.chat"),
 		TextSize = 15,
 		TextColor3 = Theme.TextDim,
 		TextYAlignment = Enum.TextYAlignment.Top,
-		Size = UDim2.new(1, -24, 0, 60),
-		Position = UDim2.fromOffset(12, 100),
-		Parent = body,
+		Size = UDim2.new(1, -8, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		LayoutOrder = nextOrder(),
+		Parent = scroll,
 	})
 	Ui.text({
 		Text = L.k("settings.version", { v = Config.VERSION }),
 		TextSize = 15,
 		TextColor3 = Theme.TextDim,
-		Size = UDim2.new(1, -24, 0, 20),
-		Position = UDim2.new(0, 12, 1, -28),
-		Parent = body,
+		Size = UDim2.new(1, -8, 0, 20),
+		LayoutOrder = nextOrder(),
+		Parent = scroll,
 	})
+
+	local function refreshStatus()
+		local st, code = Music.status()
+		statusLabel.Text = L.t("settings.music_" .. st)
+			.. (if st == "error" and code then " (" .. code .. ")" else "")
+	end
 	ClientState.onCore(function(core)
 		for choice, b in pairs(buttons) do
 			b.BackgroundColor3 = if (core.Lang or "auto") == choice then Theme.Green else Theme.BgLight
 		end
+		current = AudioData.normalize(core.Audio)
+		musicBtn.Text = L.t(if current.Music then "settings.music_on" else "settings.music_off")
+		musicBtn.BackgroundColor3 = if current.Music then Theme.Green else Theme.BgLight
+		sfxBtn.Text = L.t(if current.Sfx then "settings.sfx_on" else "settings.sfx_off")
+		sfxBtn.BackgroundColor3 = if current.Sfx then Theme.Green else Theme.BgLight
+		volLabel.Text = L.t("settings.volume", { n = math.floor(current.MusicVol * 100 + 0.5) })
+		refreshStatus()
 	end)
+	gui:GetAttributeChangedSignal("MusicStatus"):Connect(refreshStatus)
 	return panel
 end
 
@@ -14903,7 +15689,7 @@ return SettingsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000050">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000052">
 					<Properties>
 						<string name="Name">ShopPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -15078,7 +15864,7 @@ return ShopPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000051">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000053">
 					<Properties>
 						<string name="Name">SpeciesCard</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -15256,7 +16042,7 @@ return SpeciesCard
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000052">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000054">
 					<Properties>
 						<string name="Name">SpeciesPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -15361,7 +16147,7 @@ return SpeciesPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000053">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000055">
 					<Properties>
 						<string name="Name">TalentsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -15525,7 +16311,7 @@ return TalentsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000054">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000056">
 					<Properties>
 						<string name="Name">Theme</string>
 						<ProtectedString name="Source"><![CDATA[--!strict
@@ -15585,7 +16371,7 @@ return Theme
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000055">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000057">
 					<Properties>
 						<string name="Name">Toasts</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -15750,7 +16536,7 @@ return Toasts
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000056">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000058">
 					<Properties>
 						<string name="Name">TricksPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -16159,7 +16945,7 @@ return TricksPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000057">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000059">
 					<Properties>
 						<string name="Name">Ui</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -16370,7 +17156,7 @@ return Ui
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000058">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000005A">
 					<Properties>
 						<string name="Name">Widgets</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -16938,7 +17724,7 @@ return Widgets
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000059">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000005B">
 					<Properties>
 						<string name="Name">WorldFx</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -17295,7 +18081,7 @@ return WorldFx
 					</Properties>
 				</Item>
 			</Item>
-			<Item class="LocalScript" referent="RBX0000000000000000000000000000005A">
+			<Item class="LocalScript" referent="RBX0000000000000000000000000000005C">
 				<Properties>
 					<string name="Name">UIController</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -17314,6 +18100,15 @@ local Hud = require(Modules:WaitForChild("Hud"))
 
 ClientState.init()
 Toasts.init(gui)
+-- звук: ошибка модуля (или ассетов) никогда не ломает интерфейс
+do
+	local ok: boolean, err: any = pcall(function()
+		require(Modules:WaitForChild("Music")).init(gui)
+	end)
+	if not ok then
+		warn("[Music] init failed: " .. tostring(err))
+	end
+end
 
 local panels = {}
 local openPanel

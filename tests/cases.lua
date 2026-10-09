@@ -56,6 +56,7 @@ local function boot(label, opts)
 		"SpeciesData",
 		"RebirthLogic",
 		"FriendsLogic",
+		"AudioData",
 		"DayNight",
 		"UiGeometry",
 	}) do
@@ -375,6 +376,100 @@ test("FriendsLogic: список друзей, лимит, комбо", function
 		check(S0.LocaleEn.Strings["combo." .. c.Id] ~= nil, "combo key " .. c.Id)
 	end
 end)
+
+test(
+	"Звук: AudioData (настройки, ID, день/ночь, кроссфейд, загрузка с повтором), ID в Config, голоса видов",
+	function()
+		local A, Config = S0.AudioData, S0.Config
+		local d = A.normalize(nil)
+		check(d.Music == true and d.Sfx == true and d.MusicVol == 0.6, "defaults")
+		local junk = A.normalize({ Music = "yes", Sfx = 0, MusicVol = 0 / 0, Extra = 1 })
+		check(
+			junk.Music == true and junk.Sfx == true and junk.MusicVol == 0.6 and junk.Extra == nil,
+			"junk cleaned"
+		)
+		check(
+			A.normalize({ MusicVol = 7 }).MusicVol == 1 and A.normalize({ MusicVol = 0.33 }).MusicVol == 0.3,
+			"volume"
+		)
+		local a = A.set(d, "Sfx", false)
+		check(a and a.Sfx == false and d.Sfx == true, "set returns copy")
+		check(
+			A.set(d, "Music", 1) == nil and A.set(d, "MusicVol", 2) == nil and A.set(d, "Lang", "en") == nil,
+			"validation"
+		)
+		check(A.soundId(0) == nil and A.soundId(1.5) == nil and A.soundId("1") == nil, "no id")
+		check(A.soundId(80019631737532) == "rbxassetid://80019631737532", "big id")
+		check(
+			A.musicTarget(false, true, true) == "Day" and A.musicTarget(true, true, true) == "Night",
+			"day/night"
+		)
+		check(
+			A.musicTarget(true, true, false) == "Day" and A.musicTarget(false, false, true) == "Night",
+			"fallback"
+		)
+		check(A.musicTarget(true, false, false) == nil, "silence")
+		local mix, t = 0, 0
+		while mix < 1 and t < 100 do
+			mix = A.fadeStep(mix, 1, 0.1, Config.MUSIC.FADE)
+			t += 0.1
+		end
+		check(math.abs(t - Config.MUSIC.FADE) < 0.15, "fade length")
+		check(math.abs(A.gain(0.5, 1, 1) ^ 2 * 2 - 1) < 1e-6, "equal power")
+		-- загрузка: TimedOut — бесконечные повторы, Failure — сломан после MAX_FAILURES подряд, успех сбрасывает
+		local h = A.newHealth()
+		for _ = 1, 10 do
+			check(A.loadResult(h, "MUSIC_DAY", "TimedOut") == "retry", "timeout retries")
+		end
+		check(
+			A.loadResult(h, "BARK", "Failure") == "retry" and A.loadResult(h, "BARK", "Success") == "ok",
+			"reset"
+		)
+		local res
+		for _ = 1, A.MAX_FAILURES do
+			res = A.loadResult(h, "MEOW", "Failure")
+		end
+		check(res == "broken", "broken after failures")
+		check(A.reportFailure(h, "MEOW", "x") and not A.reportFailure(h, "MEOW", "x"), "logged once")
+		check(A.isFailed(h, "MEOW") and not A.tryPlay(h, "MEOW", 0), "broken not played")
+		check(
+			A.tryPlay(h, "HOOT", 10) and not A.tryPlay(h, "HOOT", 11) and A.tryPlay(h, "HOOT", 14),
+			"play throttle"
+		)
+		-- ID звуков (загружены через Open Cloud) и голос каждого вида
+		for _, k in ipairs({
+			"MUSIC_DAY",
+			"MUSIC_NIGHT",
+			"BARK",
+			"MEOW",
+			"SQUEAK",
+			"CHIRP",
+			"HOOT",
+			"PICKUP",
+			"QUEST_DONE",
+		}) do
+			local v = Config.SOUNDS[k]
+			check(type(v) == "number" and A.soundId(v) ~= nil, "Config.SOUNDS." .. k)
+		end
+		for _, sp in ipairs(S0.SpeciesData.List) do
+			local v = Config.VOICES[sp.Id]
+			check(
+				v ~= nil and Config.SOUNDS[v.Key] ~= nil and v.Speed > 0.5 and v.Speed < 2,
+				"voice " .. sp.Id
+			)
+		end
+		-- миграция: нет настроек звука / мусор — нормальный вид
+		local data = { Settings = { Lang = "ru", Audio = { Music = "x", MusicVol = 5 } } }
+		S0.Migrations.run(data)
+		check(data.Settings.Audio.Music == true and data.Settings.Audio.MusicVol == 1, "migration audio")
+		local data2 = { Settings = { Lang = "en" } }
+		S0.Migrations.run(data2)
+		check(
+			data2.Settings.Audio and data2.Settings.Audio.Sfx == true and data2.Settings.Lang == "en",
+			"migration adds audio"
+		)
+	end
+)
 
 test(
 	"Экономика: только косметика за лакомства, подарки семьи существуют",

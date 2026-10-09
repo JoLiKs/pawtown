@@ -540,6 +540,17 @@ check(
 r = call("FriendRemove", 987654321)
 check("friends: remove", r.ok and data.FriendList["987654321"] == nil)
 
+-- ===================================================================== 13d. Звуковые настройки
+r = call("SetAudio", "Sfx", false)
+check(
+	"audio: sounds off saved",
+	r.ok and data.Settings.Audio.Sfx == false and State.build(player).Audio.Sfx == false
+)
+r = call("SetAudio", "MusicVol", 5)
+check("audio: bad volume rejected", r.ok == false and data.Settings.Audio.MusicVol == 0.6)
+r = call("SetAudio", "Sfx", true)
+check("audio: sounds back on", r.ok and data.Settings.Audio.Sfx == true)
+
 -- ===================================================================== 14. Сохранение
 check("save: saveNow", DataService.saveNow(player) == true)
 check("daily: 5 tasks today", count(data.Daily.Items) == 5, count(data.Daily.Items))
