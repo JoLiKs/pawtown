@@ -89,10 +89,10 @@ function RebirthPanel.init(gui: ScreenGui)
 	Widgets.padding(top, 8)
 	Ui.list(top, 6)
 	local intro = flowText(top, "Intro", 1, 16, Theme.Text)
-	intro.Text = L.k("rebirth.intro")
+	L.bind(intro, "Text", L.k("rebirth.intro"))
 	local stars = flowText(top, "Stars", 2, 16, Theme.Gold)
 	local keep = flowText(top, "Keep", 3, 15, Theme.TextDim)
-	keep.Text = L.k("rebirth.keep")
+	L.bind(keep, "Text", L.k("rebirth.keep"))
 	local inhRow = New("Frame", {
 		Name = "InheritRow",
 		BackgroundTransparency = 1,

@@ -955,7 +955,8 @@ local function buildStory2()
 			{ CanCollide = false }
 		)
 	end
-	sign(f, c + V(0, 10, 0), "place.Party", c3(255, 230, 160), 200)
+	-- видна только с улицы (не сквозь дом через дорогу)
+	sign(f, c + V(0, 10, 0), "place.Party", c3(255, 230, 160), 200).MaxDistance = 55
 	local sc = WorldData.Story2.Shortcut
 	for _, side in ipairs({ "A", "B" }) do
 		local pos: Vector3 = if side == "A" then sc.A else sc.B

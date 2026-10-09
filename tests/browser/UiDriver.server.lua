@@ -16,6 +16,8 @@ local QuestService = require(Server.QuestService)
 local Session = require(Server.Session)
 local State = require(Server.State)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
+local QuestData = require(ReplicatedStorage.Shared.QuestData)
+local RebirthLogic = require(ReplicatedStorage.Shared.RebirthLogic)
 
 local player = Players:GetPlayers()[1] or Players.PlayerAdded:Wait()
 while
@@ -94,6 +96,50 @@ function handlers.hud(arg)
 	if g then
 		g.Enabled = arg ~= "off"
 	end
+end
+
+-- fasttrack:Id — выполнить все условия перерождения в вид Id (как DevFastTrack в Studio) — для скриншота
+function handlers.fasttrack(arg)
+	RebirthLogic.fastTrack(DataService.get(player), arg)
+	State.markCore(player)
+	PlayerService.refreshTag(player)
+end
+-- chapter:stepId — перейти в главу 2 к шагу stepId
+function handlers.chapter(arg)
+	local data = DataService.get(player)
+	data.Story.Chapter = 2
+	data.Story.Step = 1
+	data.Story.P = 0
+	for i, st in ipairs(QuestData.chapter(2)) do
+		if st.Id == arg then
+			data.Story.Step = i
+		end
+	end
+	State.markCore(player)
+end
+-- friendsfake — в снимок списка друзей добавляются выдуманные игроки (в эмуляторе один игрок на сервере):
+-- друг не в сети (сохраняется в данных), заявка и двое «на сервере». Только для скриншота.
+function handlers.friendsfake()
+	local data = DataService.get(player)
+	data.FriendList["90001"] = { Name = "MapleMia", Since = os.time() }
+	data.FriendList["90002"] = { Name = "Biscuit_77", Since = os.time() }
+	data.Friends = data.Friends or {}
+	data.Friends["90001"] = 42
+	local orig = State.providers.FriendsList
+	State.providers.FriendsList = function(pl, d)
+		local fl = orig(pl, d)
+		table.insert(fl.Requests, { Id = 90003, Name = "PuddleJumper" })
+		table.insert(fl.Here, { Id = 90003, Name = "PuddleJumper", Friend = false, Sent = false })
+		table.insert(fl.Here, { Id = 90004, Name = "SunnyPaws", Friend = false, Sent = true })
+		table.insert(fl.Friends, 1, { Id = 90005, Name = "Cocoa_Bean", Online = true, Points = 18 })
+		table.insert(fl.Here, 1, { Id = 90005, Name = "Cocoa_Bean", Friend = true, Sent = false })
+		return fl
+	end
+	State.markCore(player)
+end
+-- emote:Id — эмоция через тот же Router-путь, что и у кнопки
+function handlers.emote(arg)
+	Remotes.getFunction("Action").OnServerInvoke(player, "Emote", arg)
 end
 
 local last
