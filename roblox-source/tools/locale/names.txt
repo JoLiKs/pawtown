@@ -1,0 +1,76 @@
+# english data text | ru
+A short burst of speed. | Короткий рывок скорости.
+Agile and curious. Reaches places nobody else can. | Ловкая и любопытная. Доберётся туда, куда никто не может.
+Best friend | Лучший друг
+Blue Collar | Синий ошейник
+Bond with owners grows 25% faster. | Привязанность хозяев растёт на 25% быстрее.
+Born from a falling star. Loved by everyone. | Рождён из падающей звезды. Его любят все.
+Brave guardian of the family. | Храбрый защитник семьи.
+Brings the newspaper home… with your help. | Приносит газету домой… с твоей помощью.
+Burrow | Подкоп
+Cat | Кошка
+Cooks, spoils you with snacks. | Готовит и балует вкусненьким.
+Copy sounds: a special emote. | Повторяет звуки: особая эмоция.
+Corgi Knight | Корги-рыцарь
+Cozy Beanie | Уютная шапочка
+Crawl under fences through gaps. | Пролезает под заборами через лазы.
+Crystal Rabbit | Хрустальный кролик
+Cunning sniffer of secrets. | Хитрый охотник за секретами.
+Dad | Папа
+Dash | Рывок
+Dig | Копать
+Dig up treasures at dig spots. | Выкапывает сокровища из ямок.
+Dog | Собака
+Double jump | Двойной прыжок
+Fastest runner. Burrows under fences. | Самый быстрый. Пролезает под заборами.
+Flap your wings twice in the air. | Два взмаха крыльями в воздухе.
+Fox | Лиса
+Glide | Планирование
+Grandma | Бабушка
+Green Bandana | Зелёная бандана
+Hold jump while falling to glide. | Держи прыжок в падении, чтобы планировать.
+Jump again in mid-air. | Ещё один прыжок в воздухе.
+Jump higher. | Прыжок выше.
+Keen Nose | Чуткий нос
+Keeper of the soul sparks. | Хранитель искр душ.
+Light Paws | Лёгкие лапы
+Little Crown | Маленькая корона
+Loves to play fetch and tricks. | Обожает апорт и трюки.
+Loyal friend with a great nose. Bonds with owners best. | Верный друг с отличным нюхом. Лучше всех ладит с хозяевами.
+Master of mischief and bins. | Мастер проказ и мусорных баков.
+Mia | Мия
+Midnight Cat | Полуночный Кот
+Mimic | Пародия
+More treats from finds and digs. | Больше лакомств из находок и раскопок.
+Owl | Сова
+Owners bond with you faster. | Хозяева привязываются быстрее.
+Parrot | Попугай
+Party Hat | Праздничный колпак
+Paw | Дай лапу
+Plaid Bandana | Клетчатая бандана
+Play Dead | Притворись мёртвым
+Puppy Eyes | Щенячьи глазки
+Rabbit | Кролик
+Raccoon | Енот
+Red Collar | Красный ошейник
+Reveal memory shards and dig spots nearby. | Показывает осколки и ямки рядом.
+Roll Over | Перекат
+Roof runner | Бегун по крышам
+Run faster on rooftops. | Быстрее бегает по крышам.
+Run faster. | Быстрее бег.
+Shimmers with starlight. | Мерцает звёздным светом.
+Short flight | Короткий полёт
+Short flights and gliding. Mimics any sound. | Короткие полёты и планирование. Повторяет любые звуки.
+Showstopper | Звезда шоу
+Silent climber of the highest roofs. | Бесшумно взбирается на самые высокие крыши.
+Sit | Сидеть
+Sniff | Нюх
+Sniff reaches farther. | Нюх дальше.
+Snow Leopard | Снежный барс
+Spin | Кружись
+Spring Legs | Пружинистые лапы
+Star Collar | Звёздный ошейник
+Starfall Dog | Пёс Звездопада
+Treasure Hunter | Кладоискатель
+Wider timing window in tricks. | Шире окно попадания в трюках.
+Wise night flyer. | Мудрый ночной летун.

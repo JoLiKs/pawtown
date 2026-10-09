@@ -1,0 +1,7 @@
+{
+  "_comment": "Веб-демо Pawtown (roblox2web). DEMO_FAST=true ускоряет день/ночь только в веб-версии.",
+  "placeKey": "pawtown-v01",
+  "patches": [
+    { "script": "Shared.Config", "regex": "(\\bWEB_DEMO\\s*=\\s*)false", "replace": "$1true" }
+  ]
+}

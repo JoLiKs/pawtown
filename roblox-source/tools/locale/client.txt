@@ -1,0 +1,106 @@
+# key | en | ru
+panel.Species | Choose your new body | Выбери новое тело
+panel.Tricks | Tricks | Трюки
+panel.Shop | Pet boutique | Бутик для питомцев
+panel.Quests | Journal | Дневник
+panel.Talents | Talents | Таланты
+panel.SparkNight | Spark Night | Ночь Искр
+panel.Settings | Settings | Настройки
+panel.Emotes | Emotes | Эмоции
+btn.choose | Choose | Выбрать
+btn.look | Take a look | Посмотреть
+btn.play | Play | Играть
+btn.again | Again | Ещё раз
+btn.close | Close | Закрыть
+btn.cancel | Cancel | Отмена
+btn.buy | Buy | Купить
+btn.equip | Wear | Надеть
+btn.unequip | Take off | Снять
+btn.learn | Learn | Изучить
+btn.skip | Skip | Пропустить
+btn.spark_night | Spark Night | Ночь Искр
+species.speed | Speed | Скорость
+species.jump | Jump | Прыжок
+species.rare_title | Rare and legendary species | Редкие и легендарные виды
+species.rare_desc | On a Spark Night a grown pet can be reborn as a rare species. They can't be bought - only earned by playing. | В Ночь Искр взрослый питомец может переродиться в редкий вид. Их нельзя купить - только заслужить игрой.
+hud.level | Lv {n} · {age} | Ур. {n} · {age}
+hud.chapter | Chapter 1 · step {i}/{total} | Глава 1 · шаг {i}/{total}
+hud.chapter_done | Chapter 1 complete | Глава 1 пройдена
+hud.free_play | Explore Lumen Hills and do daily tasks | Исследуй Люмен-Хиллс и выполняй задания дня
+hud.daily | Daily tasks: {n}/{total} | Задания дня: {n}/{total}
+mood.Happy | Happy | Счастлив
+mood.Normal | Calm | Спокоен
+mood.Sad | Sad | Грустит
+mood.Mischievous | Mischievous | Шалит
+mood.nil | - | -
+trick.hint | Tap when a paw reaches the circle (Space / F) | Жми, когда лапка в круге (пробел / F)
+trick.tap | TAP | ЖМИ
+trick.judge.perfect | Perfect! | Идеально!
+trick.judge.good | Good! | Хорошо!
+trick.judge.ok | OK | Неплохо
+trick.judge.miss | Miss | Мимо
+trick.medal.0 | Keep practicing! | Тренируйся ещё!
+trick.medal.1 | Bronze medal! | Бронзовая медаль!
+trick.medal.2 | Silver medal! | Серебряная медаль!
+trick.medal.3 | Gold medal! | Золотая медаль!
+trick.score | Score: {n}% | Точность: {n}%
+trick.info | {beats} beats · +{xp} XP | Нот: {beats} · +{xp} опыта
+bath.title | Bath time! | Купание!
+bath.hint | Scrub the dirty spots (tap each 3 times) | Ототри грязные пятна (по 3 касания)
+bath.done_hint | All clean! Now shake it off! | Всё чисто! Теперь отряхнись!
+bath.shake | Shake off! | Отряхнуться!
+shop.note | Cosmetics only: no stat boosts. Paid with treats earned in play. | Только внешний вид, без бонусов. Оплата лакомствами из игры.
+shop.slot.Collar | Collars | Ошейники
+shop.slot.Neck | Bandanas | Банданы
+shop.slot.Hat | Hats | Шапки
+quests.chapter1 | Chapter 1: New Home | Глава 1: Новый дом
+quests.daily | Daily tasks | Задания дня
+quests.family | Family bond | Привязанность семьи
+quests.world | Lumen Hills | Люмен-Хиллс
+quests.done | Done! | Готово!
+quests.bond_next | {n} (gift at {at}) | {n} (подарок на {at})
+quests.shards | Memory shards: {n}/{total} | Осколки памяти: {n}/{total}
+quests.rep | Reputation: street {street}, park {park} | Репутация: улица {street}, парк {park}
+quests.friends | Pet friends: {n} | Друзья-питомцы: {n}
+talents.points | Talent points: {n} | Очки талантов: {n}
+branch.Nose | Nose | Нюх
+branch.Agility | Agility | Ловкость
+branch.Charm | Charm | Обаяние
+rebirth.intro | Reach the requirements to be reborn on a Spark Night. Coming in a future update! | Выполни условия, чтобы переродиться в Ночь Искр. Появится в следующих обновлениях!
+rebirth.soon | Coming soon | Скоро
+tier.Rare | Rare | Редкий
+tier.Legendary | Legendary | Легендарный
+req.Level | Level {have}/{need} | Уровень {have}/{need}
+req.Nose | Nose talents {have}/{need} | Таланты нюха {have}/{need}
+req.Agility | Agility talents {have}/{need} | Таланты ловкости {have}/{need}
+req.Charm | Charm talents {have}/{need} | Таланты обаяния {have}/{need}
+req.Shards | Shards {have}/{need} | Осколки {have}/{need}
+req.Bond | Family bond {have}/{need} | Привязанность {have}/{need}
+req.Gold | Gold medals {have}/{need} | Золотые медали {have}/{need}
+settings.lang | Language | Язык
+settings.chat | Talk to other players only in the standard Roblox chat. Be kind! | Общайтесь с другими игроками только в стандартном чате Roblox. Будьте добры!
+settings.version | Version {v} | Версия {v}
+lang.auto | Auto | Авто
+lang.en | English | English
+lang.ru | Русский | Русский
+emote.Wag | Wag | Вилять
+emote.PlayBow | Play bow | Поиграем?
+emote.Voice | Voice | Голос
+emote.Sniff | Sniff | Нюхать
+emote.Roll | Roll | Кувырок
+emote.Mimic | Mimic | Пародия
+fx.level | Level {n}! | Уровень {n}!
+fx.step_done | Step complete! | Шаг выполнен!
+fx.daily_done | Daily task done! | Задание дня выполнено!
+fx.gift | A gift from {who}! | Подарок от: {who}!
+fx.treats | {n} treats | {n} лакомств
+fx.shard | Memory shard! | Осколок памяти!
+fx.shard_sub | You remember a little more... | Ты вспоминаешь чуть больше…
+fx.gate | Gate {n}/{total} | Ворота {n}/{total}
+cut.adopt.1 | Keeper Ann smiles: "Someone has come for you!" | Смотрительница Анна улыбается: «За тобой пришли!»
+cut.adopt.2 | Dad, Grandma and little Mia take you home to Maple Street. | Папа, бабушка и малышка Мия забирают тебя домой на Кленовую улицу.
+cut.adopt.3 | Deep inside, something remembers... being a kid, just like Mia. | Где-то глубоко внутри что-то помнит… как ты был ребёнком, как Мия.
+cut.dream.1 | You fall asleep... and the stars begin to fall. | Ты засыпаешь… и звёзды начинают падать.
+cut.dream.2 | On a lonely hill a black cat with starry eyes is waiting. | На одиноком холме ждёт чёрный кот со звёздными глазами.
+cut.dream.3 | Midnight Cat: "Your spark got lost on Starfall night. Find your memories." | Полуночный Кот: «Твоя искра потерялась в ночь Звездопада. Найди свои воспоминания».
+cut.dream.4 | Chapter 1 complete. The story continues in the next update! | Глава 1 пройдена. История продолжится в следующем обновлении!

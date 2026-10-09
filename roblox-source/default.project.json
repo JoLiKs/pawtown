@@ -1,0 +1,31 @@
+{
+  "name": "Pawtown",
+  "globIgnorePaths": ["**/*.spec.lua"],
+  "tree": {
+    "$className": "DataModel",
+    "Workspace": {
+      "$className": "Workspace",
+      "$properties": { "StreamingEnabled": false },
+      "$ignoreUnknownInstances": true
+    },
+    "Players": {
+      "$className": "Players",
+      "$properties": { "CharacterAutoLoads": false }
+    },
+    "Lighting": {
+      "$className": "Lighting",
+      "$ignoreUnknownInstances": true
+    },
+    "ReplicatedFirst": { "$className": "ReplicatedFirst", "$path": "src/ReplicatedFirst" },
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Shared": { "$path": "src/ReplicatedStorage" }
+    },
+    "ServerScriptService": { "$className": "ServerScriptService", "$path": "src/ServerScriptService" },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": { "$path": "src/StarterPlayer/StarterPlayerScripts" }
+    },
+    "StarterGui": { "$className": "StarterGui", "$path": "src/StarterGui" }
+  }
+}
