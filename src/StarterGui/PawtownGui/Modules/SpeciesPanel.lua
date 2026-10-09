@@ -28,7 +28,7 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 	local cards = {}
 	for i, sp in ipairs(SpeciesData.Standard) do
 		local id = sp.Id
-		local btn = {
+		local btn: any = {
 			Text = "btn.choose",
 			OnClick = function()
 				if Actions.call("ChooseSpecies", id) then
