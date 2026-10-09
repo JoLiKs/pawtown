@@ -90,6 +90,16 @@ local CARRY = {
 		Color = Color3.fromRGB(230, 230, 60),
 		Shape = Enum.PartType.Ball,
 	},
+	Parcel = {
+		Size = Vector3.new(0.9, 0.6, 0.7),
+		Color = Color3.fromRGB(190, 140, 90),
+		Shape = Enum.PartType.Block,
+	},
+	Glasses = {
+		Size = Vector3.new(0.8, 0.25, 0.2),
+		Color = Color3.fromRGB(60, 60, 80),
+		Shape = Enum.PartType.Block,
+	},
 }
 
 local function updateCarry(m: Model, r: any)

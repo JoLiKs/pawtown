@@ -61,6 +61,20 @@ local LOOKS = {
 		Hair = c3(60, 40, 30),
 		H = 1,
 	},
+	Elm = {
+		Shirt = c3(120, 170, 90),
+		Pants = c3(110, 80, 60),
+		Skin = c3(240, 210, 190),
+		Hair = c3(200, 200, 205),
+		H = 0.95,
+	},
+	Buttercup = {
+		Shirt = c3(230, 200, 80),
+		Pants = c3(90, 90, 110),
+		Skin = c3(230, 190, 160),
+		Hair = c3(70, 60, 55),
+		H = 1.0,
+	},
 	Mailman = {
 		Shirt = c3(60, 90, 170),
 		Pants = c3(40, 50, 90),
@@ -306,6 +320,17 @@ function FamilyService.nearestMember(pos: Vector3, radius: number): string?
 	return best
 end
 
+-- Сюжет главы 2 перехватывает разговор с почтальоном (StoryService): true — обработано
+FamilyService.onMailman = nil :: ((Player, boolean) -> boolean)?
+
+function FamilyService.greetMailman(player: Player)
+	if FamilyService.onMailman and FamilyService.onMailman(player, false) then
+		return
+	end
+	FamilyService.say("Mailman", "speech.mail_hi")
+	QuestService.event(player, "greet_mailman")
+end
+
 function FamilyService.mailmanPos(): Vector3?
 	local m = npcs.Mailman
 	local root = m and m:FindFirstChild("HumanoidRootPart") :: BasePart?
@@ -348,6 +373,17 @@ function FamilyService.init()
 	makeNpc("Kid", F.Kid, 150, true)
 	makeNpc("Keeper", F.Keeper, 160, true)
 	local mail = makeNpc("Mailman", WorldData.MailmanRoute[1], 90, false)
+	-- соседи Кленовой улицы (глава 2)
+	for _, id in ipairs({ "Elm", "Buttercup" }) do
+		local nb = makeNpc(id, WorldData.Story2[id], 180, true)
+		local r = nb:FindFirstChild("HumanoidRootPart") :: BasePart
+		Interact.prompt(
+			r,
+			"Neighbour",
+			"prompt.neighbour",
+			{ Arg = id, Object = "npc." .. id, Distance = 10 }
+		)
+	end
 	-- сумка почтальона
 	local body = mail:FindFirstChild("Body") :: BasePart
 	local bag = WorldBuilder.part(
@@ -382,11 +418,13 @@ function FamilyService.init()
 		return interactFamily(player, arg or "")
 	end)
 	Interact.register("Mailman", function(player)
+		if FamilyService.onMailman and FamilyService.onMailman(player, true) then
+			return true, nil
+		end
 		if not Session.cooldown(player, "mailman", 10) then
 			return false, nil
 		end
-		FamilyService.say("Mailman", "speech.mail_hi")
-		QuestService.event(player, "greet_mailman")
+		FamilyService.greetMailman(player)
 		NeedsService.add(player, "Fun", 3)
 		return true, nil
 	end)

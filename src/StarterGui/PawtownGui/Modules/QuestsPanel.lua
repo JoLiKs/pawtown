@@ -1,6 +1,6 @@
 --!nonstrict
 --[[
-	QuestsPanel — «Дневник»: шаги главы 1 «Новый дом», ежедневные задания, привязанность семьи
+	QuestsPanel — «Дневник»: шаги текущей главы (1 «Новый дом», 2 «Соседи»), ежедневные задания, привязанность семьи
 	(со следующим подарком), репутация районов, осколки памяти и друзья.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -49,37 +49,42 @@ function QuestsPanel.init(gui: ScreenGui)
 		})
 	end
 
-	-- глава
-	header("quests.chapter1", 1)
+	-- главы: показываем текущую (пройденная глава 1 сворачивается в заголовок)
 	local steps = {}
-	for i, st in ipairs(QuestData.CHAPTER1) do
-		local r = row(st.Id, 1 + i)
-		local ic = New("Frame", {
-			Name = "IconHolder",
-			BackgroundTransparency = 1,
-			Size = UDim2.fromOffset(30, 30),
-			Position = UDim2.fromOffset(8, 7),
-			Parent = r,
-		})
-		local t = Ui.text({
-			Name = "Text",
-			Text = L.k("quest." .. st.Id),
-			TextSize = 16,
-			Size = UDim2.new(1, -110, 1, -4),
-			Position = UDim2.fromOffset(46, 2),
-			Parent = r,
-		})
-		local p = Ui.text({
-			Name = "P",
-			Font = Theme.Font,
-			TextSize = 16,
-			TextXAlignment = Enum.TextXAlignment.Right,
-			Size = UDim2.fromOffset(60, 40),
-			AnchorPoint = Vector2.new(1, 0),
-			Position = UDim2.new(1, -8, 0, 2),
-			Parent = r,
-		})
-		steps[i] = { Row = r, Icon = ic, Text = t, P = p, State = "" }
+	local chapterHeaders = {}
+	for c, list in ipairs(QuestData.CHAPTERS) do
+		local base = (c - 1) * 9
+		header("quests.chapter" .. c, base + 1)
+		chapterHeaders[c] = scroll:FindFirstChild("H_quests.chapter" .. c)
+		for i, st in ipairs(list) do
+			local r = row(st.Id, base + 1 + i)
+			local ic = New("Frame", {
+				Name = "IconHolder",
+				BackgroundTransparency = 1,
+				Size = UDim2.fromOffset(30, 30),
+				Position = UDim2.fromOffset(8, 7),
+				Parent = r,
+			})
+			local t = Ui.text({
+				Name = "Text",
+				Text = L.k("quest." .. st.Id),
+				TextSize = 16,
+				Size = UDim2.new(1, -110, 1, -4),
+				Position = UDim2.fromOffset(46, 2),
+				Parent = r,
+			})
+			local p = Ui.text({
+				Name = "P",
+				Font = Theme.Font,
+				TextSize = 16,
+				TextXAlignment = Enum.TextXAlignment.Right,
+				Size = UDim2.fromOffset(60, 40),
+				AnchorPoint = Vector2.new(1, 0),
+				Position = UDim2.new(1, -8, 0, 2),
+				Parent = r,
+			})
+			table.insert(steps, { Row = r, Icon = ic, Text = t, P = p, State = "", C = c, I = i, St = st })
+		end
 	end
 	-- ежедневные
 	header("quests.daily", 20)
@@ -120,6 +125,26 @@ function QuestsPanel.init(gui: ScreenGui)
 	-- мир
 	header("quests.world", 40)
 	local world = row("World", 41, 92)
+	-- награды репутации Кленовой улицы
+	local rewards = row("RepRewards", 42, 8 + 24 * #QuestData.REP_REWARDS)
+	local rewardRows = {}
+	for i, r in ipairs(QuestData.REP_REWARDS) do
+		Ui.icon(
+			if r.Kind == "Shortcut" then "Home" elseif r.Kind == "Discount" then "Treat" else "Shop",
+			20,
+			{
+				Position = UDim2.fromOffset(10, 6 + (i - 1) * 24),
+				Parent = rewards,
+			}
+		)
+		rewardRows[i] = Ui.text({
+			Name = "Reward" .. r.Kind,
+			TextSize = 15,
+			Size = UDim2.new(1, -50, 0, 22),
+			Position = UDim2.fromOffset(42, 4 + (i - 1) * 24),
+			Parent = rewards,
+		})
+	end
 	Ui.icon("Shard", 26, { Position = UDim2.fromOffset(8, 6), Parent = world })
 	local shardsT = Ui.text({
 		TextSize = 16,
@@ -145,9 +170,17 @@ function QuestsPanel.init(gui: ScreenGui)
 	ClientState.onCore(function(core)
 		local story = core.Story or {}
 		local idx = story.Index or 1
-		for i, s in ipairs(steps) do
-			local st = QuestData.CHAPTER1[i]
-			local state = if i < idx then "done" elseif i == idx then "cur" else "todo"
+		local cur = story.Chapter or 1
+		for c, h in pairs(chapterHeaders) do
+			h.Visible = c <= cur
+		end
+		for _, s in ipairs(steps) do
+			local st, i = s.St, s.I
+			s.Row.Visible = s.C == cur
+			local state = if s.C < cur or (s.C == cur and i < idx)
+				then "done"
+				elseif s.C == cur and i == idx then "cur"
+				else "todo"
 			if s.State ~= state then
 				s.State = state
 				Widgets.clear(s.Icon)
@@ -216,10 +249,18 @@ function QuestsPanel.init(gui: ScreenGui)
 		end
 		shardsT.Text = L.t("quests.shards", { n = #(core.Shards or {}), total = #WorldData.Shards })
 		local rep = core.Rep or {}
+		local street = Progression.repLevel(rep.Street or 0)
 		repT.Text = L.t("quests.rep", {
-			street = Progression.repLevel(rep.Street or 0),
+			street = street,
 			park = Progression.repLevel(rep.Park or 0),
 		})
+		for i, r in ipairs(QuestData.REP_REWARDS) do
+			local t = rewardRows[i]
+			if t then
+				t.Text = L.t("quests.rep_reward." .. r.Kind, { n = r.Level, pct = r.Pct or 0 })
+				t.TextColor3 = if street >= r.Level then Theme.Green else Theme.TextDim
+			end
+		end
 		friendsT.Text = L.t("quests.friends", { n = core.FriendsCount or 0 })
 	end)
 	return panel

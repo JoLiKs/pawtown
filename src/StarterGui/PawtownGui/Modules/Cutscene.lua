@@ -27,6 +27,11 @@ Cutscene.SCENES = {
 		{ "MidnightCat", "cut.dream.3" },
 		{ "Shard", "cut.dream.4" },
 	},
+	Chapter2 = {
+		{ "Home", "cut.ch2.1" },
+		{ "Friends", "cut.ch2.2" },
+		{ "Quest", "cut.ch2.3" },
+	},
 	Rebirth = { { "Spark", "cut.reborn.1" }, { "Xp", "cut.reborn.2" }, { "Love", "cut.reborn.3" } },
 }
 Cutscene.SLIDE = 2.6

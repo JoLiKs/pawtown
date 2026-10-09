@@ -24,8 +24,8 @@ species.jump | Jump | Прыжок
 species.rare_title | Rare and legendary species | Редкие и легендарные виды
 species.rare_desc | On a Spark Night a grown pet can be reborn as a rare species. They can't be bought - only earned by playing. | В Ночь Искр взрослый питомец может переродиться в редкий вид. Их нельзя купить - только заслужить игрой.
 hud.level | Lv {n} · {age} | Ур. {n} · {age}
-hud.chapter | Chapter 1 · step {i}/{total} | Глава 1 · шаг {i}/{total}
-hud.chapter_done | Chapter 1 complete | Глава 1 пройдена
+hud.chapter | Chapter {c} · step {i}/{total} | Глава {c} · шаг {i}/{total}
+hud.chapter_done | All chapters complete | Все главы пройдены
 hud.free_play | Explore Lumen Hills and do daily tasks | Исследуй Люмен-Хиллс и выполняй задания дня
 hud.daily | Daily tasks: {n}/{total} | Задания дня: {n}/{total}
 mood.Happy | Happy | Счастлив
@@ -131,3 +131,22 @@ fx.trial_spark | Spark caught! | Искра поймана!
 cut.reborn.1 | The sparks gather around you... | Искры собираются вокруг тебя…
 cut.reborn.2 | A new body, the same heart. | Новое тело — то же сердце.
 cut.reborn.3 | Your family still knows you. Welcome back, little one! | Семья узнаёт тебя. С возвращением, малыш!
+
+# v0.2 — глава 2 «Соседи»
+panel.Choice | What will you do? | Что ты сделаешь?
+quests.chapter2 | Chapter 2: Neighbours | Глава 2: Соседи
+quests.rep_reward.Shortcut | Street rep {n}: neighbours' shortcut to the park | Репутация улицы {n}: тропинка соседей в парк
+quests.rep_reward.Discount | Street rep {n}: {pct}% off in the boutique | Репутация улицы {n}: скидка {pct}% в бутике
+quests.rep_reward.Cosmetic | Street rep {n}: Maple Leaf Hat | Репутация улицы {n}: кленовая шляпа
+shop.rep_reward | Street rep {n} reward | Награда за репутацию {n}
+shop.discount | {n} (was {old}) | {n} (было {old})
+shop.rep_locked | Earn it with reputation | Только за репутацию
+choice.parcel.title | The lost parcel | Потерянная посылка
+choice.parcel.text | You found Pete's lost parcel. It squeaks when you bite it... there is a squeaky toy inside! | Ты нашёл потерянную посылку почтальона Пети. Если её куснуть, она пищит… внутри игрушка-пищалка!
+choice.parcel.return | Bring it back to Pete | Вернуть Пете
+choice.parcel.keep | Keep the squeaky toy | Оставить пищалку себе
+choice.parcel.return.effect | Maple Street will remember: +{rep} reputation, +{n} treats | Кленовая улица запомнит: +{rep} репутации, +{n} лакомств
+choice.parcel.keep.effect | Fun for you: +{n} treats, but {rep} street reputation | Весело тебе: +{n} лакомств, но {rep} репутации улицы
+cut.ch2.1 | A new day on Maple Street. | Новый день на Кленовой улице.
+cut.ch2.2 | The neighbours want to meet the new pet! | Соседи хотят познакомиться с новым питомцем!
+cut.ch2.3 | And the mailman looks worried... | А почтальон выглядит встревоженным…

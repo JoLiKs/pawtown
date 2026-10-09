@@ -919,6 +919,71 @@ local function buildRare()
 	end
 end
 
+-- Глава 2: праздник улицы и тропинка соседей (награда репутации улицы)
+local function buildStory2()
+	local f = folder(world, "Story2")
+	local c = WorldData.Story2.Party
+	for i, x in ipairs({ -6, 6 }) do
+		part(f, "PartyTable" .. i, V(5, 0.4, 2.5), c + V(x, 2.2, 0), c3(240, 240, 235))
+		part(f, "PartyTableLeg" .. i, V(0.5, 2, 0.5), c + V(x, 1, 0), COL.Wood)
+	end
+	part(
+		f,
+		"PartyCake",
+		V(1.6, 1, 1.6),
+		c + V(-6, 2.9, 0),
+		c3(250, 200, 220),
+		{ Shape = Enum.PartType.Cylinder }
+	)
+	local colors = { c3(250, 90, 90), c3(90, 170, 250), c3(250, 220, 80), c3(140, 220, 120) }
+	for i = 1, 8 do
+		local a = i / 8 * math.pi * 2
+		part(
+			f,
+			"Balloon" .. i,
+			V(1.4, 1.7, 1.4),
+			c + V(math.cos(a) * 11, 7 + (i % 2), math.sin(a) * 7),
+			colors[(i - 1) % #colors + 1],
+			{ Shape = Enum.PartType.Ball, CanCollide = false }
+		)
+		part(
+			f,
+			"BalloonString" .. i,
+			V(0.08, 6, 0.08),
+			c + V(math.cos(a) * 11, 3.5 + (i % 2), math.sin(a) * 7),
+			c3(240, 240, 240),
+			{ CanCollide = false }
+		)
+	end
+	sign(f, c + V(0, 10, 0), "place.Party", c3(255, 230, 160), 200)
+	local sc = WorldData.Story2.Shortcut
+	for _, side in ipairs({ "A", "B" }) do
+		local pos: Vector3 = if side == "A" then sc.A else sc.B
+		local arch = part(
+			f,
+			"HedgeArch" .. side,
+			V(5, 5, 1.2),
+			pos + V(0, 2.5, 0),
+			c3(70, 150, 70),
+			{ Material = Enum.Material.Grass, CanCollide = false }
+		)
+		part(
+			f,
+			"HedgePath" .. side,
+			V(4, 0.12, 4),
+			pos + V(0, 0.07, 1.5),
+			c3(200, 170, 120),
+			{ CanCollide = false }
+		)
+		Interact.prompt(
+			arch,
+			"Shortcut",
+			"prompt.shortcut",
+			{ Arg = side, Object = "obj.shortcut", Distance = 9 }
+		)
+	end
+end
+
 -- Остров сна: тёмная площадка в небе, звёзды и Полуночный кот (катсцена «Сон»)
 local function buildDream()
 	local d = folder(world, "Dream")
@@ -1005,6 +1070,7 @@ function WorldBuilder.build()
 	buildBurrows()
 	buildShards()
 	buildRare()
+	buildStory2()
 	buildDream()
 	-- папки для динамики: NPC, мячи, игрушки
 	folder(world, "NPC")

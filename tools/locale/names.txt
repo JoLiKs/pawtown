@@ -96,3 +96,4 @@ Long flight | Долгий полёт
 Five wing flaps and a slow, long glide. | Пять взмахов и долгое плавное планирование.
 Night vision | Ночное зрение
 See clearly at night; shards glow. | Ясно видит ночью; осколки светятся.
+Maple Leaf Hat | Кленовая шляпа

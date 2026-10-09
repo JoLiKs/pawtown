@@ -15,7 +15,7 @@ toast.age_up | You grew up: {age}! | Ты подрос: {age}!
 toast.rep_up | {place} reputation: level {n} | Репутация, {place}: уровень {n}
 toast.reward | {what}: +{t} treats, +{x} XP | {what}: +{t} лакомств, +{x} опыта
 toast.next_step | Next: {step} | Дальше: {step}
-toast.chapter_done | Chapter 1 complete! More chapters are coming. | Глава 1 пройдена! Новые главы скоро.
+toast.chapter_done | All chapters complete! More are coming. | Все главы пройдены! Новые скоро.
 toast.gift_item | {who} gave you a gift: {item}! | {who} дарит тебе подарок: {item}!
 toast.gift_treats | {who} gave you {n} treats! | {who} дарит тебе {n} лакомств!
 age.Baby | Baby | Малыш
@@ -215,3 +215,41 @@ msg.sight_found | Crystal sight: {n} {n|secret|secrets|secrets} | Хрустал
 speech.noticed | Hey! I see you! | Эй! Я тебя вижу!
 speech.snatched | Wait... where is my snack? | Стоп… где мой перекус?
 speech.keeper_dog | Thank you, brave knight! | Спасибо, храбрый рыцарь!
+
+# v0.2 — глава 2 «Соседи» и награды репутации
+toast.chapter_done_n | Chapter {n} complete! | Глава {n} пройдена!
+quest.c2_meet | Meet the neighbours on Maple Street | Познакомься с соседями на Кленовой улице
+quest.c2_mail | Say hi to Pete the mailman | Поздоровайся с почтальоном Петей
+quest.c2_parcel | Find Pete's lost parcel | Найди потерянную посылку Пети
+quest.c2_choice | Decide what to do with the parcel (talk to Pete) | Реши, что делать с посылкой (поговори с Петей)
+quest.c2_glasses | Find Mrs. Elm's glasses in her flowerbed | Найди очки миссис Вязовой в её клумбе
+quest.c2_cheer | Cheer up grumpy Mr. Buttercup with an emote | Развесели ворчуна мистера Лютикова эмоцией
+quest.c2_party | Join the Maple Street party | Приходи на праздник Кленовой улицы
+npc.Elm | Mrs. Elm | Миссис Вязова
+npc.Buttercup | Mr. Buttercup | Мистер Лютиков
+speech.Elm.hi | Oh, what a sweet little thing! | Ой, какая прелесть!
+speech.Buttercup.hi | Hmph. Keep off my lawn. | Хм. По газону не бегать.
+speech.elm_lost | I can't find my glasses anywhere... | Не могу найти свои очки…
+speech.elm_glasses | My glasses! Thank you, dear! | Мои очки! Спасибо, милый!
+speech.buttercup_grumpy | Nothing can cheer me up today. | Сегодня меня ничто не развеселит.
+speech.buttercup_smile | Heh... alright, that was cute. | Хе… ладно, это было мило.
+speech.mail_lost | Oh no, I lost a parcel somewhere on the street! | Ой-ой, я потерял посылку где-то на улице!
+speech.mail_thanks | You found it! You are a hero! | Нашлась! Ты настоящий герой!
+speech.mail_sad | Hmm, has anyone seen a parcel? | Хм, никто не видел посылку?
+prompt.neighbour | Say hi | Поздороваться
+prompt.pick_parcel | Pick up | Взять
+prompt.pick_glasses | Pick up | Взять
+obj.parcel | Lost parcel | Потерянная посылка
+obj.glasses | Glasses | Очки
+place.Party | Maple Street party | Праздник Кленовой улицы
+prompt.shortcut | Take the shortcut | Пройти тропинкой
+obj.shortcut | Neighbours' shortcut | Тропинка соседей
+msg.no_choice | Find the parcel first | Сначала найди посылку
+msg.choice_return | Pete is so happy! Street reputation +{n} | Петя так рад! Репутация улицы +{n}
+msg.choice_keep | Squeak squeak! Street reputation {n} | Пи-пи! Репутация улицы {n}
+msg.rep_cosmetic | Maple Street thanks you: {item}! | Кленовая улица благодарит тебя: {item}!
+msg.shortcut_locked | The neighbours open this path at street reputation {n} | Соседи откроют тропинку при репутации улицы {n}
+msg.shortcut_used | Through the hedges! | Сквозь живую изгородь!
+msg.got_parcel | You carry the parcel | Ты несёшь посылку
+msg.got_glasses | You carry the glasses carefully | Ты осторожно несёшь очки
+msg.rep_only | This is a reputation reward | Это награда за репутацию

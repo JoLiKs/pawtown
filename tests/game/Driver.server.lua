@@ -240,7 +240,57 @@ check("sleep: night skipped to morning", not DayNightService.isNight(), DayNight
 check("dream: teleported to dream island", root().Position.Y > 40, tostring(root().Position))
 task.wait(12)
 check("dream: back in bed", root().Position.Y < 20)
-check("quest: chapter 1 complete", step() == nil and data.Story.Step > #QuestData.CHAPTER1, tostring(step()))
+check(
+	"quest: chapter 1 complete -> chapter 2",
+	step() == "c2_meet" and data.Story.Chapter == 2,
+	tostring(step())
+)
+
+-- ===================================================================== 7b. Глава 2 «Соседи»
+local uid = tostring(player.UserId)
+ok, msg = usePrompt("Neighbour", "Elm")
+ok, msg = usePrompt("Neighbour", "Buttercup")
+check("ch2: met both neighbours", step() == "c2_mail", step())
+ok, msg = usePrompt("Mailman")
+check("ch2: mailman lost a parcel", step() == "c2_parcel", step())
+task.wait(1.5)
+ok, msg = usePrompt("PickStory", "Parcel:" .. uid)
+check("ch2: parcel found", ok and step() == "c2_choice" and Session.get(player).Carrying == "Parcel", msg)
+local rep0 = data.Rep.Street
+r = call("StoryChoice", "c2_parcel", "fly")
+check("ch2: bad choice refused", r.ok == false)
+r = call("StoryChoice", "c2_parcel", "return")
+check(
+	"ch2: returned parcel -> street reputation",
+	r.ok and data.Rep.Street == rep0 + 30 and data.Choices.c2_parcel == "return" and step() == "c2_glasses",
+	r.msg
+)
+task.wait(1.5)
+ok, msg = usePrompt("PickStory", "Glasses:" .. uid)
+ok, msg = usePrompt("Neighbour", "Elm")
+check("ch2: glasses returned to Mrs. Elm", step() == "c2_cheer", step())
+moveTo(WorldData.Story2.Buttercup + Vector3.new(3, 0, 4))
+r = call("Emote", "Wag")
+task.wait(0.3)
+check("ch2: Mr. Buttercup cheered up", step() == "c2_party", step())
+moveTo(WorldData.Story2.Party)
+task.wait(1.5)
+check("ch2: street party -> chapter 2 complete", step() == nil, tostring(step()))
+ok, msg = usePrompt("Shortcut", "A")
+check(
+	"rep reward: shortcut to the park",
+	ok and (root().Position - WorldData.Story2.Shortcut.B).Magnitude < 10,
+	tostring(msg) .. " " .. tostring(root().Position)
+)
+local ShopData = require(Shared.ShopData)
+local Progress = require(Server.Progress)
+Progress.rep(player, "Street", 200)
+task.wait(1.2)
+check("rep reward: maple hat granted", data.Cosmetics.Owned.hat_maple == true)
+check(
+	"rep reward: boutique discount",
+	ShopData.price(ShopData.ById.hat_crown, 3) < ShopData.ById.hat_crown.Price
+)
 
 -- ===================================================================== 8. Способности собаки
 r = call("Ability", "Sniff")
@@ -270,9 +320,12 @@ check(
 	"shop: cosmetic on the rig",
 	player.Character:FindFirstChild("HatBase", true) ~= nil or #player.Character:GetDescendants() > 0
 )
-check("shop: treats spent", data.Treats == 500 - 80, data.Treats)
+local paid = ShopData.price(ShopData.ById.hat_party, require(Shared.Progression).repLevel(data.Rep.Street))
+check("shop: treats spent (street discount)", paid == 68 and data.Treats == 500 - paid, data.Treats)
 r = call("Buy", "hat_party")
-check("shop: no double buy", r.ok == false and data.Treats == 420)
+check("shop: no double buy", r.ok == false and data.Treats == 500 - paid)
+r = call("Buy", "hat_maple")
+check("shop: reputation hat is not for sale", r.ok == false)
 r = call("Equip", "Hat", "")
 check("shop: unequip", r.ok and data.Cosmetics.Equipped.Hat == "")
 r = call("Equip", "Hat", "hat_crown")

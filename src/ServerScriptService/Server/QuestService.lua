@@ -1,6 +1,6 @@
 --!strict
 --[[
-	QuestService — глава 1 «Новый дом» (по шагам) и 5 ежедневных заданий (обновляются в полночь UTC).
+	QuestService — главы сюжета (1 «Новый дом», 2 «Соседи»; по шагам) и 5 ежедневных заданий (обновляются в полночь UTC).
 	QuestService.event(player, kind, key?) — единая точка: сервисы сообщают о событиях (eat, trick, cuddle, shard…).
 	Награды выдаются автоматически при выполнении (Progress.reward) — без лишних кликов.
 	Также: газета (почтовый ящик) и «потерянная игрушка» (своя для каждого игрока).
@@ -26,9 +26,17 @@ local QuestService = {}
 
 QuestService.onStepDone = nil :: ((Player, string) -> ())?
 
--- Текущий шаг главы (или nil, если глава пройдена)
+-- Текущий шаг сюжета (или nil, если все главы пройдены). Пройденная глава сама переходит в следующую.
 function QuestService.currentStep(data: any): QuestData.Step?
-	return QuestData.CHAPTER1[data.Story.Step]
+	local story = data.Story
+	story.Chapter = story.Chapter or 1
+	while story.Step > #QuestData.chapter(story.Chapter) and story.Chapter < #QuestData.CHAPTERS do
+		story.Chapter += 1
+		story.Step = 1
+		story.P = 0
+		story.Seen = {}
+	end
+	return QuestData.chapter(story.Chapter)[story.Step]
 end
 
 function QuestService.stepId(player: Player): string?
@@ -77,12 +85,17 @@ local function advanceStory(player: Player, data: any, kind: string, key: string
 	end
 	data.Story.P += 1
 	if data.Story.P >= step.Need then
+		local chapter = data.Story.Chapter or 1
 		data.Story.Step += 1
 		data.Story.P = 0
 		data.Story.Seen = {}
 		Progress.reward(player, { Treats = step.Treats, Xp = step.Xp }, "quest." .. step.Id)
 		Remotes.getEvent("Fx"):FireClient(player, "Quest", step.Id)
 		local nextStep = QuestService.currentStep(data)
+		if data.Story.Chapter ~= chapter then
+			Notify.send(player, Locale.m("toast.chapter_done_n", { n = chapter }), "reward")
+			Remotes.getEvent("Cutscene"):FireClient(player, "Chapter" .. data.Story.Chapter)
+		end
 		if nextStep then
 			Notify.send(player, Locale.m("toast.next_step", { step = "quest." .. nextStep.Id }), "info")
 		else
@@ -213,8 +226,9 @@ function QuestService.init()
 	State.providers.Story = function(_player, data)
 		local step = QuestService.currentStep(data)
 		return {
+			Chapter = data.Story.Chapter or 1,
 			Index = data.Story.Step,
-			Total = #QuestData.CHAPTER1,
+			Total = #QuestData.chapter(data.Story.Chapter or 1),
 			Id = step and step.Id or "",
 			P = data.Story.P,
 			Need = step and step.Need or 0,

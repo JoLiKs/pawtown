@@ -23,6 +23,7 @@ local Progress = {}
 -- Вызывается при смене возрастной стадии (PlayerService перестраивает риг)
 Progress.onAgeChanged = nil :: ((Player) -> ())?
 Progress.onLevel = nil :: ((Player, number) -> ())?
+Progress.onRep = nil :: ((Player, string) -> ())?
 
 function Progress.xp(player: Player, amount: number): number
 	local data = DataService.get(player)
@@ -101,6 +102,9 @@ function Progress.rep(player: Player, district: string, amount: number)
 	local after = Progression.repLevel(data.Rep[district])
 	if after > before then
 		Notify.send(player, Locale.m("toast.rep_up", { place = "place." .. district, n = after }), "reward")
+		if Progress.onRep then
+			task.spawn(Progress.onRep, player, district)
+		end
 	end
 	State.markCore(player)
 end

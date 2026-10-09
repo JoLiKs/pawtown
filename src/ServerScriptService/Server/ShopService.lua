@@ -40,11 +40,15 @@ function ShopService.init()
 		if data.Cosmetics.Owned[item.Id] then
 			return false, "msg.owned"
 		end
+		if item.Rep then
+			return false, "msg.rep_only"
+		end
 		local pos = AntiExploit.rootPos(player)
 		if not pos or WorldData.zoneAt(pos) ~= "Home" then
 			return false, "msg.shop_home_only"
 		end
-		if not Progress.spend(player, item.Price) then
+		local price = ShopData.price(item, Progression.repLevel(data.Rep.Street or 0))
+		if not Progress.spend(player, price) then
 			return false, "msg.not_enough"
 		end
 		data.Cosmetics.Owned[item.Id] = true

@@ -6,6 +6,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local L = require(Shared:WaitForChild("Locale"))
+local Progression = require(Shared:WaitForChild("Progression"))
 local ShopData = require(Shared:WaitForChild("ShopData"))
 
 local Actions = require(script.Parent.Actions)
@@ -86,12 +87,12 @@ function ShopPanel.init(gui: ScreenGui)
 			Parent = card,
 		})
 		Ui.icon("Treat", 22, { Position = UDim2.fromOffset(72, 52), Parent = card })
-		Ui.text({
+		local priceLabel = Ui.text({
 			Name = "Price",
 			Text = tostring(item.Price),
 			Font = Theme.Font,
 			TextSize = 18,
-			Size = UDim2.fromOffset(80, 22),
+			Size = UDim2.new(1, -106, 0, 22),
 			Position = UDim2.fromOffset(98, 52),
 			Parent = card,
 		})
@@ -103,7 +104,7 @@ function ShopPanel.init(gui: ScreenGui)
 			Position = UDim2.new(0, 8, 1, -48),
 			Parent = card,
 		})
-		cards[item.Id] = { Card = card, Button = btn, Item = item }
+		cards[item.Id] = { Card = card, Button = btn, Item = item, Price = priceLabel }
 		btn.Activated:Connect(function()
 			local core = ClientState.Core or {}
 			local cos = core.Cosmetics or { Owned = {}, Equipped = {} }
@@ -122,9 +123,17 @@ function ShopPanel.init(gui: ScreenGui)
 		local cos = core.Cosmetics or { Owned = {}, Equipped = {} }
 		for _, c in pairs(cards) do
 			c.Card.Visible = c.Item.Slot == current
-			if not cos.Owned[c.Item.Id] then
+			local price = ShopData.price(c.Item, Progression.repLevel((core.Rep or {}).Street or 0))
+			c.Price.Text = if c.Item.Rep
+				then L.t("shop.rep_reward", { n = c.Item.Rep })
+				elseif price < c.Item.Price then L.t("shop.discount", { n = price, old = c.Item.Price })
+				else tostring(price)
+			if not cos.Owned[c.Item.Id] and c.Item.Rep then
+				c.Button.Text = L.t("shop.rep_locked")
+				Widgets.setEnabled(c.Button, false)
+			elseif not cos.Owned[c.Item.Id] then
 				c.Button.Text = L.t("btn.buy")
-				Widgets.setEnabled(c.Button, (core.Treats or 0) >= c.Item.Price, Theme.Green)
+				Widgets.setEnabled(c.Button, (core.Treats or 0) >= price, Theme.Green)
 			elseif cos.Equipped[c.Item.Slot] == c.Item.Id then
 				c.Button.Text = L.t("btn.unequip")
 				Widgets.setEnabled(c.Button, true, Theme.Orange)

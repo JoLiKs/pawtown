@@ -89,6 +89,30 @@ function WorldFx.targetFor(stepId: string, core: any): Vector3?
 	elseif stepId == "c1_dream" then
 		return H.PetBed
 	end
+	-- глава 2 «Соседи»
+	local S2 = WorldData.Story2
+	local npc = Workspace:FindFirstChild("World") and Workspace.World:FindFirstChild("NPC")
+	local function npcPos(id: string): Vector3?
+		local m = npc and npc:FindFirstChild(id)
+		local r = m and m:FindFirstChild("HumanoidRootPart")
+		return r and Vector3.new(r.Position.X, 0, r.Position.Z)
+	end
+	local items = core.StoryItems or {}
+	if stepId == "c2_meet" then
+		local pos = rootPos() or Vector3.zero
+		local a, b = S2.Elm, S2.Buttercup
+		return if (a - pos).Magnitude < (b - pos).Magnitude then a else b
+	elseif stepId == "c2_mail" or stepId == "c2_choice" then
+		return npcPos("Mailman")
+	elseif stepId == "c2_parcel" then
+		return items.Parcel or S2.Parcel
+	elseif stepId == "c2_glasses" then
+		return if core.Carrying == "Glasses" then S2.Elm else (items.Glasses or S2.Glasses)
+	elseif stepId == "c2_cheer" then
+		return S2.Buttercup
+	elseif stepId == "c2_party" then
+		return S2.Party
+	end
 	return nil
 end
 

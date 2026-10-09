@@ -215,6 +215,34 @@ local function cosmeticParts(item: any, anchors: any): { any }
 					{ Parent = "Head", Shape = "Ball" }
 				)
 			)
+		elseif item.Id == "hat_maple" then
+			-- кленовый лист: широкая «тарелка» и три доли листа веером
+			table.insert(
+				out,
+				P(
+					"HatBase",
+					V(1.0, 0.12, 0.9) * k,
+					top + V(0, 0.02, 0),
+					c1,
+					{ Parent = "Head", Mesh = "Sphere" }
+				)
+			)
+			for i, a in ipairs({ -38, 0, 38 }) do
+				table.insert(
+					out,
+					P(
+						"HatLeaf" .. i,
+						V(0.34, 0.62, 0.08) * k,
+						top + V(math.sin(math.rad(a)) * 0.24 * k, 0.3 * k, 0.05),
+						if i == 2 then c1 else c1:Lerp(c2, 0.35),
+						{ Parent = "Head", Mesh = "Sphere", Rot = V(-10, 0, -a) }
+					)
+				)
+			end
+			table.insert(
+				out,
+				P("HatStem", V(0.06, 0.26, 0.06) * k, top + V(0, 0.12 * k, 0.32 * k), c2, { Parent = "Head" })
+			)
 		else
 			table.insert(
 				out,

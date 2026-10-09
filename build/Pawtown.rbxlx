@@ -1302,7 +1302,7 @@ LocaleEn.Strings = {
 	["toast.rep_up"] = "{place} reputation: level {n}",
 	["toast.reward"] = "{what}: +{t} treats, +{x} XP",
 	["toast.next_step"] = "Next: {step}",
-	["toast.chapter_done"] = "Chapter 1 complete! More chapters are coming.",
+	["toast.chapter_done"] = "All chapters complete! More are coming.",
 	["toast.gift_item"] = "{who} gave you a gift: {item}!",
 	["toast.gift_treats"] = "{who} gave you {n} treats!",
 	["age.Baby"] = "Baby",
@@ -1500,6 +1500,42 @@ LocaleEn.Strings = {
 	["speech.noticed"] = "Hey! I see you!",
 	["speech.snatched"] = "Wait... where is my snack?",
 	["speech.keeper_dog"] = "Thank you, brave knight!",
+	["toast.chapter_done_n"] = "Chapter {n} complete!",
+	["quest.c2_meet"] = "Meet the neighbours on Maple Street",
+	["quest.c2_mail"] = "Say hi to Pete the mailman",
+	["quest.c2_parcel"] = "Find Pete's lost parcel",
+	["quest.c2_choice"] = "Decide what to do with the parcel (talk to Pete)",
+	["quest.c2_glasses"] = "Find Mrs. Elm's glasses in her flowerbed",
+	["quest.c2_cheer"] = "Cheer up grumpy Mr. Buttercup with an emote",
+	["quest.c2_party"] = "Join the Maple Street party",
+	["npc.Elm"] = "Mrs. Elm",
+	["npc.Buttercup"] = "Mr. Buttercup",
+	["speech.Elm.hi"] = "Oh, what a sweet little thing!",
+	["speech.Buttercup.hi"] = "Hmph. Keep off my lawn.",
+	["speech.elm_lost"] = "I can't find my glasses anywhere...",
+	["speech.elm_glasses"] = "My glasses! Thank you, dear!",
+	["speech.buttercup_grumpy"] = "Nothing can cheer me up today.",
+	["speech.buttercup_smile"] = "Heh... alright, that was cute.",
+	["speech.mail_lost"] = "Oh no, I lost a parcel somewhere on the street!",
+	["speech.mail_thanks"] = "You found it! You are a hero!",
+	["speech.mail_sad"] = "Hmm, has anyone seen a parcel?",
+	["prompt.neighbour"] = "Say hi",
+	["prompt.pick_parcel"] = "Pick up",
+	["prompt.pick_glasses"] = "Pick up",
+	["obj.parcel"] = "Lost parcel",
+	["obj.glasses"] = "Glasses",
+	["place.Party"] = "Maple Street party",
+	["prompt.shortcut"] = "Take the shortcut",
+	["obj.shortcut"] = "Neighbours' shortcut",
+	["msg.no_choice"] = "Find the parcel first",
+	["msg.choice_return"] = "Pete is so happy! Street reputation +{n}",
+	["msg.choice_keep"] = "Squeak squeak! Street reputation {n}",
+	["msg.rep_cosmetic"] = "Maple Street thanks you: {item}!",
+	["msg.shortcut_locked"] = "The neighbours open this path at street reputation {n}",
+	["msg.shortcut_used"] = "Through the hedges!",
+	["msg.got_parcel"] = "You carry the parcel",
+	["msg.got_glasses"] = "You carry the glasses carefully",
+	["msg.rep_only"] = "This is a reputation reward",
 	["panel.Species"] = "Choose your new body",
 	["panel.Tricks"] = "Tricks",
 	["panel.Shop"] = "Pet boutique",
@@ -1525,8 +1561,8 @@ LocaleEn.Strings = {
 	["species.rare_title"] = "Rare and legendary species",
 	["species.rare_desc"] = "On a Spark Night a grown pet can be reborn as a rare species. They can't be bought - only earned by playing.",
 	["hud.level"] = "Lv {n} · {age}",
-	["hud.chapter"] = "Chapter 1 · step {i}/{total}",
-	["hud.chapter_done"] = "Chapter 1 complete",
+	["hud.chapter"] = "Chapter {c} · step {i}/{total}",
+	["hud.chapter_done"] = "All chapters complete",
 	["hud.free_play"] = "Explore Lumen Hills and do daily tasks",
 	["hud.daily"] = "Daily tasks: {n}/{total}",
 	["mood.Happy"] = "Happy",
@@ -1630,6 +1666,23 @@ LocaleEn.Strings = {
 	["cut.reborn.1"] = "The sparks gather around you...",
 	["cut.reborn.2"] = "A new body, the same heart.",
 	["cut.reborn.3"] = "Your family still knows you. Welcome back, little one!",
+	["panel.Choice"] = "What will you do?",
+	["quests.chapter2"] = "Chapter 2: Neighbours",
+	["quests.rep_reward.Shortcut"] = "Street rep {n}: neighbours' shortcut to the park",
+	["quests.rep_reward.Discount"] = "Street rep {n}: {pct}% off in the boutique",
+	["quests.rep_reward.Cosmetic"] = "Street rep {n}: Maple Leaf Hat",
+	["shop.rep_reward"] = "Street rep {n} reward",
+	["shop.discount"] = "{n} (was {old})",
+	["shop.rep_locked"] = "Earn it with reputation",
+	["choice.parcel.title"] = "The lost parcel",
+	["choice.parcel.text"] = "You found Pete's lost parcel. It squeaks when you bite it... there is a squeaky toy inside!",
+	["choice.parcel.return"] = "Bring it back to Pete",
+	["choice.parcel.keep"] = "Keep the squeaky toy",
+	["choice.parcel.return.effect"] = "Maple Street will remember: +{rep} reputation, +{n} treats",
+	["choice.parcel.keep.effect"] = "Fun for you: +{n} treats, but {rep} street reputation",
+	["cut.ch2.1"] = "A new day on Maple Street.",
+	["cut.ch2.2"] = "The neighbours want to meet the new pet!",
+	["cut.ch2.3"] = "And the mailman looks worried...",
 }
 
 return LocaleEn
@@ -1662,7 +1715,7 @@ LocaleRu.Strings = {
 	["toast.rep_up"] = "Репутация, {place}: уровень {n}",
 	["toast.reward"] = "{what}: +{t} лакомств, +{x} опыта",
 	["toast.next_step"] = "Дальше: {step}",
-	["toast.chapter_done"] = "Глава 1 пройдена! Новые главы скоро.",
+	["toast.chapter_done"] = "Все главы пройдены! Новые скоро.",
 	["toast.gift_item"] = "{who} дарит тебе подарок: {item}!",
 	["toast.gift_treats"] = "{who} дарит тебе {n} лакомств!",
 	["age.Baby"] = "Малыш",
@@ -1860,6 +1913,42 @@ LocaleRu.Strings = {
 	["speech.noticed"] = "Эй! Я тебя вижу!",
 	["speech.snatched"] = "Стоп… где мой перекус?",
 	["speech.keeper_dog"] = "Спасибо, храбрый рыцарь!",
+	["toast.chapter_done_n"] = "Глава {n} пройдена!",
+	["quest.c2_meet"] = "Познакомься с соседями на Кленовой улице",
+	["quest.c2_mail"] = "Поздоровайся с почтальоном Петей",
+	["quest.c2_parcel"] = "Найди потерянную посылку Пети",
+	["quest.c2_choice"] = "Реши, что делать с посылкой (поговори с Петей)",
+	["quest.c2_glasses"] = "Найди очки миссис Вязовой в её клумбе",
+	["quest.c2_cheer"] = "Развесели ворчуна мистера Лютикова эмоцией",
+	["quest.c2_party"] = "Приходи на праздник Кленовой улицы",
+	["npc.Elm"] = "Миссис Вязова",
+	["npc.Buttercup"] = "Мистер Лютиков",
+	["speech.Elm.hi"] = "Ой, какая прелесть!",
+	["speech.Buttercup.hi"] = "Хм. По газону не бегать.",
+	["speech.elm_lost"] = "Не могу найти свои очки…",
+	["speech.elm_glasses"] = "Мои очки! Спасибо, милый!",
+	["speech.buttercup_grumpy"] = "Сегодня меня ничто не развеселит.",
+	["speech.buttercup_smile"] = "Хе… ладно, это было мило.",
+	["speech.mail_lost"] = "Ой-ой, я потерял посылку где-то на улице!",
+	["speech.mail_thanks"] = "Нашлась! Ты настоящий герой!",
+	["speech.mail_sad"] = "Хм, никто не видел посылку?",
+	["prompt.neighbour"] = "Поздороваться",
+	["prompt.pick_parcel"] = "Взять",
+	["prompt.pick_glasses"] = "Взять",
+	["obj.parcel"] = "Потерянная посылка",
+	["obj.glasses"] = "Очки",
+	["place.Party"] = "Праздник Кленовой улицы",
+	["prompt.shortcut"] = "Пройти тропинкой",
+	["obj.shortcut"] = "Тропинка соседей",
+	["msg.no_choice"] = "Сначала найди посылку",
+	["msg.choice_return"] = "Петя так рад! Репутация улицы +{n}",
+	["msg.choice_keep"] = "Пи-пи! Репутация улицы {n}",
+	["msg.rep_cosmetic"] = "Кленовая улица благодарит тебя: {item}!",
+	["msg.shortcut_locked"] = "Соседи откроют тропинку при репутации улицы {n}",
+	["msg.shortcut_used"] = "Сквозь живую изгородь!",
+	["msg.got_parcel"] = "Ты несёшь посылку",
+	["msg.got_glasses"] = "Ты осторожно несёшь очки",
+	["msg.rep_only"] = "Это награда за репутацию",
 	["panel.Species"] = "Выбери новое тело",
 	["panel.Tricks"] = "Трюки",
 	["panel.Shop"] = "Бутик для питомцев",
@@ -1885,8 +1974,8 @@ LocaleRu.Strings = {
 	["species.rare_title"] = "Редкие и легендарные виды",
 	["species.rare_desc"] = "В Ночь Искр взрослый питомец может переродиться в редкий вид. Их нельзя купить - только заслужить игрой.",
 	["hud.level"] = "Ур. {n} · {age}",
-	["hud.chapter"] = "Глава 1 · шаг {i}/{total}",
-	["hud.chapter_done"] = "Глава 1 пройдена",
+	["hud.chapter"] = "Глава {c} · шаг {i}/{total}",
+	["hud.chapter_done"] = "Все главы пройдены",
 	["hud.free_play"] = "Исследуй Люмен-Хиллс и выполняй задания дня",
 	["hud.daily"] = "Задания дня: {n}/{total}",
 	["mood.Happy"] = "Счастлив",
@@ -1990,6 +2079,23 @@ LocaleRu.Strings = {
 	["cut.reborn.1"] = "Искры собираются вокруг тебя…",
 	["cut.reborn.2"] = "Новое тело — то же сердце.",
 	["cut.reborn.3"] = "Семья узнаёт тебя. С возвращением, малыш!",
+	["panel.Choice"] = "Что ты сделаешь?",
+	["quests.chapter2"] = "Глава 2: Соседи",
+	["quests.rep_reward.Shortcut"] = "Репутация улицы {n}: тропинка соседей в парк",
+	["quests.rep_reward.Discount"] = "Репутация улицы {n}: скидка {pct}% в бутике",
+	["quests.rep_reward.Cosmetic"] = "Репутация улицы {n}: кленовая шляпа",
+	["shop.rep_reward"] = "Награда за репутацию {n}",
+	["shop.discount"] = "{n} (было {old})",
+	["shop.rep_locked"] = "Только за репутацию",
+	["choice.parcel.title"] = "Потерянная посылка",
+	["choice.parcel.text"] = "Ты нашёл потерянную посылку почтальона Пети. Если её куснуть, она пищит… внутри игрушка-пищалка!",
+	["choice.parcel.return"] = "Вернуть Пете",
+	["choice.parcel.keep"] = "Оставить пищалку себе",
+	["choice.parcel.return.effect"] = "Кленовая улица запомнит: +{rep} репутации, +{n} лакомств",
+	["choice.parcel.keep.effect"] = "Весело тебе: +{n} лакомств, но {rep} репутации улицы",
+	["cut.ch2.1"] = "Новый день на Кленовой улице.",
+	["cut.ch2.2"] = "Соседи хотят познакомиться с новым питомцем!",
+	["cut.ch2.3"] = "А почтальон выглядит встревоженным…",
 }
 
 -- Перевод «данных» (имена/описания из data-модулей), ключ — английский текст
@@ -2091,6 +2197,7 @@ LocaleRu.Names = {
 	["Five wing flaps and a slow, long glide."] = "Пять взмахов и долгое плавное планирование.",
 	["Night vision"] = "Ночное зрение",
 	["See clearly at night; shards glow."] = "Ясно видит ночью; осколки светятся.",
+	["Maple Leaf Hat"] = "Кленовая шляпа",
 }
 
 return LocaleRu
@@ -3331,6 +3438,34 @@ local function cosmeticParts(item: any, anchors: any): { any }
 					{ Parent = "Head", Shape = "Ball" }
 				)
 			)
+		elseif item.Id == "hat_maple" then
+			-- кленовый лист: широкая «тарелка» и три доли листа веером
+			table.insert(
+				out,
+				P(
+					"HatBase",
+					V(1.0, 0.12, 0.9) * k,
+					top + V(0, 0.02, 0),
+					c1,
+					{ Parent = "Head", Mesh = "Sphere" }
+				)
+			)
+			for i, a in ipairs({ -38, 0, 38 }) do
+				table.insert(
+					out,
+					P(
+						"HatLeaf" .. i,
+						V(0.34, 0.62, 0.08) * k,
+						top + V(math.sin(math.rad(a)) * 0.24 * k, 0.3 * k, 0.05),
+						if i == 2 then c1 else c1:Lerp(c2, 0.35),
+						{ Parent = "Head", Mesh = "Sphere", Rot = V(-10, 0, -a) }
+					)
+				)
+			end
+			table.insert(
+				out,
+				P("HatStem", V(0.06, 0.26, 0.06) * k, top + V(0, 0.12 * k, 0.32 * k), c2, { Parent = "Head" })
+			)
 		else
 			table.insert(
 				out,
@@ -3707,7 +3842,7 @@ return Progression
 					<string name="Name">QuestData</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
 --[[
-	QuestData — глава 1 «Новый дом» и ежедневные задания.
+	QuestData — глава 1 «Новый дом», глава 2 «Соседи» и ежедневные задания.
 	Шаг главы: Kind — событие (QuestService.event(player, kind, key)), Need — сколько раз (или разных key при Distinct).
 	Награды: Treats + Xp. Тексты — ключи локализации quest.<Id> / quest.<Id>.hint.
 ]]
@@ -3733,10 +3868,56 @@ QuestData.CHAPTER1 = {
 	{ Id = "c1_dream", Kind = "dream", Need = 1, Treats = 80, Xp = 120, Target = "Bed" },
 } :: { Step }
 
-QuestData.ById = {} :: { [string]: Step }
-for _, s in ipairs(QuestData.CHAPTER1) do
-	QuestData.ById[s.Id] = s
+-- Глава 2 «Соседи» (начинается сама после главы 1): соседи Кленовой улицы, почтальон и потерянная посылка,
+-- выбор (вернуть посылку / оставить пищалку себе) влияет на репутацию улицы.
+QuestData.CHAPTER2 = {
+	{
+		Id = "c2_meet",
+		Kind = "greet_neighbour",
+		Need = 2,
+		Distinct = true,
+		Treats = 25,
+		Xp = 60,
+		Target = "Neighbours",
+	},
+	{ Id = "c2_mail", Kind = "greet_mailman", Need = 1, Treats = 15, Xp = 40, Target = "Mailman" },
+	{ Id = "c2_parcel", Kind = "parcel", Need = 1, Treats = 20, Xp = 60, Target = "Parcel" },
+	{ Id = "c2_choice", Kind = "choice", Need = 1, Treats = 0, Xp = 60, Target = "Mailman" },
+	{ Id = "c2_glasses", Kind = "glasses", Need = 1, Treats = 35, Xp = 80, Target = "Glasses" },
+	{ Id = "c2_cheer", Kind = "cheer", Need = 1, Treats = 30, Xp = 80, Target = "Buttercup" },
+	{ Id = "c2_party", Kind = "party", Need = 1, Treats = 100, Xp = 150, Target = "Party" },
+} :: { Step }
+
+QuestData.CHAPTERS = { QuestData.CHAPTER1, QuestData.CHAPTER2 }
+
+function QuestData.chapter(n: number): { Step }
+	return QuestData.CHAPTERS[n] or {}
 end
+
+QuestData.ById = {} :: { [string]: Step }
+for _, ch in ipairs(QuestData.CHAPTERS) do
+	for _, s in ipairs(ch) do
+		QuestData.ById[s.Id] = s
+	end
+end
+
+-- Выбор главы 2: что сделать с найденной посылкой. RepPts — репутация Кленовой улицы.
+QuestData.CHOICES = {
+	c2_parcel = {
+		{ Id = "return", RepPts = 30, Treats = 10 },
+		{ Id = "keep", RepPts = -10, Treats = 45 },
+	},
+}
+
+-- Награды за репутацию Кленовой улицы (уровни Progression.repLevel)
+QuestData.REP_REWARDS = {
+	{ Level = 1, Kind = "Shortcut" }, -- тропинка соседей: короткий путь от дома в парк
+	{ Level = 2, Kind = "Discount", Pct = 15 }, -- скидка в бутике
+	{ Level = 3, Kind = "Cosmetic", Item = "hat_maple" }, -- кленовая шляпа (не продаётся)
+}
+QuestData.DISCOUNT_LEVEL = 2
+QuestData.DISCOUNT_PCT = 15
+QuestData.SHORTCUT_LEVEL = 1
 
 -- Ежедневные задания: каждый день 5 из пула (детерминированно по дню и игроку)
 export type Daily = {
@@ -4133,6 +4314,7 @@ export type Item = {
 	Color: Color3,
 	Color2: Color3,
 	Order: number,
+	Rep: number?, -- не продаётся: награда за репутацию Кленовой улицы этого уровня
 }
 
 local ShopData = {}
@@ -4212,7 +4394,25 @@ ShopData.List = {
 		Color2 = c3(230, 70, 90),
 		Order = 8,
 	},
+	{
+		Id = "hat_maple",
+		Slot = "Hat",
+		Name = "Maple Leaf Hat",
+		Price = 1,
+		Color = c3(230, 110, 40),
+		Color2 = c3(250, 200, 60),
+		Order = 9,
+		Rep = 3,
+	},
 } :: { Item }
+
+-- Цена с учётом скидки за репутацию улицы (уровень DISCOUNT_LEVEL+: -DISCOUNT_PCT%)
+function ShopData.price(item: Item, streetRepLevel: number): number
+	if streetRepLevel >= 2 then
+		return math.max(1, math.floor(item.Price * 0.85 + 0.5))
+	end
+	return item.Price
+end
 
 ShopData.ById = {} :: { [string]: Item }
 for _, it in ipairs(ShopData.List) do
@@ -5255,6 +5455,16 @@ WorldData.SecretCaches = {
 -- Бродячие собаки парка (корги-рыцарь ведёт их в приют)
 WorldData.ParkDogs = { V(130, 0, 90), V(160, 0, 150), V(100, 0, 170) }
 
+-- Глава 2 «Соседи»: соседи на Кленовой улице, посылка, очки, праздник улицы; тропинка соседей (награда репутации)
+WorldData.Story2 = {
+	Elm = V(-74, 0, -21), -- миссис Вязова (садовница, дом 1)
+	Buttercup = V(86, 0, -21), -- мистер Лютиков (ворчун, дом 2)
+	Parcel = V(166, 0, -23), -- потерянная посылка: в кустах у дома 4
+	Glasses = V(-92, 0, -29), -- очки миссис Вязовой: в клумбе у её дома
+	Party = V(0, 0, 14), -- праздник улицы напротив дома
+	Shortcut = { A = V(24, 0, -24), B = V(150, 0, 96) }, -- от почтового ящика дома -> поляна апорта
+}
+
 return WorldData
 ]]></ProtectedString>
 				</Properties>
@@ -5297,6 +5507,7 @@ require(Server.AbilityService).init()
 require(Server.RareAbilities).init()
 require(Server.TrickService).init()
 require(Server.SocialService).init()
+require(Server.StoryService).init()
 require(Server.ShopService).init()
 require(Server.LanguageService).init()
 require(Server.RebirthService).init()
@@ -6290,6 +6501,20 @@ local LOOKS = {
 		Hair = c3(60, 40, 30),
 		H = 1,
 	},
+	Elm = {
+		Shirt = c3(120, 170, 90),
+		Pants = c3(110, 80, 60),
+		Skin = c3(240, 210, 190),
+		Hair = c3(200, 200, 205),
+		H = 0.95,
+	},
+	Buttercup = {
+		Shirt = c3(230, 200, 80),
+		Pants = c3(90, 90, 110),
+		Skin = c3(230, 190, 160),
+		Hair = c3(70, 60, 55),
+		H = 1.0,
+	},
 	Mailman = {
 		Shirt = c3(60, 90, 170),
 		Pants = c3(40, 50, 90),
@@ -6535,6 +6760,17 @@ function FamilyService.nearestMember(pos: Vector3, radius: number): string?
 	return best
 end
 
+-- Сюжет главы 2 перехватывает разговор с почтальоном (StoryService): true — обработано
+FamilyService.onMailman = nil :: ((Player, boolean) -> boolean)?
+
+function FamilyService.greetMailman(player: Player)
+	if FamilyService.onMailman and FamilyService.onMailman(player, false) then
+		return
+	end
+	FamilyService.say("Mailman", "speech.mail_hi")
+	QuestService.event(player, "greet_mailman")
+end
+
 function FamilyService.mailmanPos(): Vector3?
 	local m = npcs.Mailman
 	local root = m and m:FindFirstChild("HumanoidRootPart") :: BasePart?
@@ -6577,6 +6813,17 @@ function FamilyService.init()
 	makeNpc("Kid", F.Kid, 150, true)
 	makeNpc("Keeper", F.Keeper, 160, true)
 	local mail = makeNpc("Mailman", WorldData.MailmanRoute[1], 90, false)
+	-- соседи Кленовой улицы (глава 2)
+	for _, id in ipairs({ "Elm", "Buttercup" }) do
+		local nb = makeNpc(id, WorldData.Story2[id], 180, true)
+		local r = nb:FindFirstChild("HumanoidRootPart") :: BasePart
+		Interact.prompt(
+			r,
+			"Neighbour",
+			"prompt.neighbour",
+			{ Arg = id, Object = "npc." .. id, Distance = 10 }
+		)
+	end
 	-- сумка почтальона
 	local body = mail:FindFirstChild("Body") :: BasePart
 	local bag = WorldBuilder.part(
@@ -6611,11 +6858,13 @@ function FamilyService.init()
 		return interactFamily(player, arg or "")
 	end)
 	Interact.register("Mailman", function(player)
+		if FamilyService.onMailman and FamilyService.onMailman(player, true) then
+			return true, nil
+		end
 		if not Session.cooldown(player, "mailman", 10) then
 			return false, nil
 		end
-		FamilyService.say("Mailman", "speech.mail_hi")
-		QuestService.event(player, "greet_mailman")
+		FamilyService.greetMailman(player)
 		NeedsService.add(player, "Fun", 3)
 		return true, nil
 	end)
@@ -7929,6 +8178,7 @@ local Progress = {}
 -- Вызывается при смене возрастной стадии (PlayerService перестраивает риг)
 Progress.onAgeChanged = nil :: ((Player) -> ())?
 Progress.onLevel = nil :: ((Player, number) -> ())?
+Progress.onRep = nil :: ((Player, string) -> ())?
 
 function Progress.xp(player: Player, amount: number): number
 	local data = DataService.get(player)
@@ -8007,6 +8257,9 @@ function Progress.rep(player: Player, district: string, amount: number)
 	local after = Progression.repLevel(data.Rep[district])
 	if after > before then
 		Notify.send(player, Locale.m("toast.rep_up", { place = "place." .. district, n = after }), "reward")
+		if Progress.onRep then
+			task.spawn(Progress.onRep, player, district)
+		end
 	end
 	State.markCore(player)
 end
@@ -8036,7 +8289,7 @@ return Progress
 					<string name="Name">QuestService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
 --[[
-	QuestService — глава 1 «Новый дом» (по шагам) и 5 ежедневных заданий (обновляются в полночь UTC).
+	QuestService — главы сюжета (1 «Новый дом», 2 «Соседи»; по шагам) и 5 ежедневных заданий (обновляются в полночь UTC).
 	QuestService.event(player, kind, key?) — единая точка: сервисы сообщают о событиях (eat, trick, cuddle, shard…).
 	Награды выдаются автоматически при выполнении (Progress.reward) — без лишних кликов.
 	Также: газета (почтовый ящик) и «потерянная игрушка» (своя для каждого игрока).
@@ -8062,9 +8315,17 @@ local QuestService = {}
 
 QuestService.onStepDone = nil :: ((Player, string) -> ())?
 
--- Текущий шаг главы (или nil, если глава пройдена)
+-- Текущий шаг сюжета (или nil, если все главы пройдены). Пройденная глава сама переходит в следующую.
 function QuestService.currentStep(data: any): QuestData.Step?
-	return QuestData.CHAPTER1[data.Story.Step]
+	local story = data.Story
+	story.Chapter = story.Chapter or 1
+	while story.Step > #QuestData.chapter(story.Chapter) and story.Chapter < #QuestData.CHAPTERS do
+		story.Chapter += 1
+		story.Step = 1
+		story.P = 0
+		story.Seen = {}
+	end
+	return QuestData.chapter(story.Chapter)[story.Step]
 end
 
 function QuestService.stepId(player: Player): string?
@@ -8113,12 +8374,17 @@ local function advanceStory(player: Player, data: any, kind: string, key: string
 	end
 	data.Story.P += 1
 	if data.Story.P >= step.Need then
+		local chapter = data.Story.Chapter or 1
 		data.Story.Step += 1
 		data.Story.P = 0
 		data.Story.Seen = {}
 		Progress.reward(player, { Treats = step.Treats, Xp = step.Xp }, "quest." .. step.Id)
 		Remotes.getEvent("Fx"):FireClient(player, "Quest", step.Id)
 		local nextStep = QuestService.currentStep(data)
+		if data.Story.Chapter ~= chapter then
+			Notify.send(player, Locale.m("toast.chapter_done_n", { n = chapter }), "reward")
+			Remotes.getEvent("Cutscene"):FireClient(player, "Chapter" .. data.Story.Chapter)
+		end
 		if nextStep then
 			Notify.send(player, Locale.m("toast.next_step", { step = "quest." .. nextStep.Id }), "info")
 		else
@@ -8249,8 +8515,9 @@ function QuestService.init()
 	State.providers.Story = function(_player, data)
 		local step = QuestService.currentStep(data)
 		return {
+			Chapter = data.Story.Chapter or 1,
 			Index = data.Story.Step,
-			Total = #QuestData.CHAPTER1,
+			Total = #QuestData.chapter(data.Story.Chapter or 1),
 			Id = step and step.Id or "",
 			P = data.Story.P,
 			Need = step and step.Need or 0,
@@ -9226,11 +9493,15 @@ function ShopService.init()
 		if data.Cosmetics.Owned[item.Id] then
 			return false, "msg.owned"
 		end
+		if item.Rep then
+			return false, "msg.rep_only"
+		end
 		local pos = AntiExploit.rootPos(player)
 		if not pos or WorldData.zoneAt(pos) ~= "Home" then
 			return false, "msg.shop_home_only"
 		end
-		if not Progress.spend(player, item.Price) then
+		local price = ShopData.price(item, Progression.repLevel(data.Rep.Street or 0))
+		if not Progress.spend(player, price) then
 			return false, "msg.not_enough"
 		end
 		data.Cosmetics.Owned[item.Id] = true
@@ -9323,6 +9594,9 @@ SocialService.EMOTES = { "Wag", "Sniff", "Voice", "PlayBow", "Roll", "Mimic" }
 
 local pairCd: { [string]: number } = {}
 
+-- Внешние подписчики на эмоции (сюжет: «развесели соседа»; друзья: комбо). fn(player, emoteId, pos)
+SocialService.emoteHooks = {} :: { (Player, string, Vector3) -> () }
+
 local function pairKey(a: number, b: number): string
 	return if a < b then a .. ":" .. b else b .. ":" .. a
 end
@@ -9397,8 +9671,10 @@ function SocialService.init()
 		-- почтальон и семья радуются
 		local mp = FamilyService.mailmanPos()
 		if mp and (mp - pos).Magnitude <= 16 then
-			FamilyService.say("Mailman", "speech.mail_hi")
-			QuestService.event(player, "greet_mailman")
+			FamilyService.greetMailman(player)
+		end
+		for _, hook in ipairs(SocialService.emoteHooks) do
+			task.spawn(hook, player, id, pos)
 		end
 		local member = FamilyService.nearestMember(pos, 14)
 		if member and Session.cooldown(player, "emotelove", 20) then
@@ -9538,6 +9814,323 @@ return State
 			</Item>
 			<Item class="ModuleScript" referent="RBX00000000000000000000000000000035">
 				<Properties>
+					<string name="Name">StoryService</string>
+					<ProtectedString name="Source"><![CDATA[--!strict
+--[[
+	StoryService — глава 2 «Соседи» и награды за репутацию Кленовой улицы.
+	  * соседи (миссис Вязова, мистер Лютиков): поздороваться, вернуть очки, развеселить эмоцией;
+	  * почтальон потерял посылку: найти её (своя для каждого игрока) и решить — вернуть (+репутация улицы)
+	    или оставить пищалку себе (лакомства, -репутация). Выбор сохраняется (data.Choices);
+	  * праздник улицы — финал главы;
+	  * награды репутации (QuestData.REP_REWARDS): тропинка соседей (короткий путь в парк), скидка в бутике
+	    (ShopData.price), кленовая шляпа (не продаётся).
+]]
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Shared = ReplicatedStorage.Shared
+
+local Locale = require(Shared.Locale)
+local Progression = require(Shared.Progression)
+local QuestData = require(Shared.QuestData)
+local Remotes = require(Shared.Remotes)
+local ShopData = require(Shared.ShopData)
+local WorldData = require(Shared.WorldData)
+
+local AntiExploit = require(script.Parent.AntiExploit)
+local DataService = require(script.Parent.DataService)
+local FamilyService = require(script.Parent.FamilyService)
+local Interact = require(script.Parent.Interact)
+local NeedsService = require(script.Parent.NeedsService)
+local Notify = require(script.Parent.Notify)
+local Progress = require(script.Parent.Progress)
+local QuestService = require(script.Parent.QuestService)
+local Router = require(script.Parent.Router)
+local Session = require(script.Parent.Session)
+local SocialService = require(script.Parent.SocialService)
+local State = require(script.Parent.State)
+local WorldBuilder = require(script.Parent.WorldBuilder)
+
+local StoryService = {}
+
+local S2 = WorldData.Story2
+
+-- -------------------------------------------------------------- предметы сюжета (свои у каждого игрока)
+type ItemDef = { Step: string, Pos: Vector3, Size: Vector3, Color: Color3 }
+local ITEMS: { [string]: ItemDef } = {
+	Parcel = {
+		Step = "c2_parcel",
+		Pos = S2.Parcel,
+		Size = Vector3.new(2, 1.4, 1.6),
+		Color = Color3.fromRGB(190, 140, 90),
+	},
+	Glasses = {
+		Step = "c2_glasses",
+		Pos = S2.Glasses,
+		Size = Vector3.new(1.2, 0.4, 0.5),
+		Color = Color3.fromRGB(60, 60, 80),
+	},
+}
+local spawned: { [Player]: { [string]: BasePart } } = {}
+
+local function removeItem(player: Player, kind: string)
+	local t = spawned[player]
+	local p = t and t[kind]
+	if p then
+		p:Destroy()
+		t[kind] = nil
+	end
+end
+
+local function spawnItems(player: Player)
+	local s = Session.get(player)
+	local step = QuestService.stepId(player)
+	spawned[player] = spawned[player] or {}
+	for kind, def in pairs(ITEMS) do
+		local want = step == def.Step and s ~= nil and s.Carrying ~= kind
+		local have = spawned[player][kind]
+		if want and not have then
+			local p = WorldBuilder.part(
+				WorldBuilder.folder("Dynamic"),
+				"Story_" .. kind .. "_" .. player.UserId,
+				def.Size,
+				def.Pos + Vector3.new(0, def.Size.Y / 2 + 0.1, 0),
+				def.Color,
+				{ CanCollide = false }
+			)
+			p:SetAttribute("Owner", player.UserId)
+			p:SetAttribute("StoryItem", kind)
+			Interact.prompt(
+				p,
+				"PickStory",
+				"prompt.pick_" .. string.lower(kind),
+				{ Arg = kind .. ":" .. player.UserId, Object = "obj." .. string.lower(kind), Distance = 8 }
+			)
+			spawned[player][kind] = p
+		elseif not want and have then
+			removeItem(player, kind)
+		end
+	end
+end
+
+function StoryService.itemPos(player: Player, kind: string): Vector3?
+	local t = spawned[player]
+	local p = t and t[kind]
+	return p and p.Position
+end
+
+-- ------------------------------------------------------------------------- выбор с посылкой
+function StoryService.choose(player: Player, choiceId: any, option: any): (boolean, any)
+	local data = DataService.get(player)
+	local s = Session.get(player)
+	if not data or not s or choiceId ~= "c2_parcel" or type(option) ~= "string" then
+		return false, "err.bad_request"
+	end
+	if QuestService.stepId(player) ~= "c2_choice" or s.Carrying ~= "Parcel" then
+		return false, "msg.no_choice"
+	end
+	local opt
+	for _, o in ipairs(QuestData.CHOICES.c2_parcel) do
+		if o.Id == option then
+			opt = o
+		end
+	end
+	if not opt then
+		return false, "err.bad_request"
+	end
+	s.Carrying = nil
+	data.Choices.c2_parcel = opt.Id
+	if opt.RepPts > 0 then
+		Progress.rep(player, "Street", opt.RepPts)
+	else
+		data.Rep.Street = math.max(0, data.Rep.Street + opt.RepPts)
+	end
+	Progress.treats(player, opt.Treats)
+	FamilyService.say("Mailman", if opt.Id == "return" then "speech.mail_thanks" else "speech.mail_sad")
+	QuestService.event(player, "choice", opt.Id)
+	State.markCore(player)
+	return true, Locale.m("msg.choice_" .. opt.Id, { n = opt.RepPts })
+end
+
+-- --------------------------------------------------------------------------- награды репутации
+function StoryService.repLevel(data: any): number
+	return Progression.repLevel(data.Rep.Street or 0)
+end
+
+function StoryService.grantRepRewards(player: Player)
+	local data = DataService.get(player)
+	if not data then
+		return
+	end
+	local lvl = StoryService.repLevel(data)
+	for _, r in ipairs(QuestData.REP_REWARDS) do
+		if r.Kind == "Cosmetic" and lvl >= r.Level and r.Item and not data.Cosmetics.Owned[r.Item] then
+			data.Cosmetics.Owned[r.Item] = true
+			local item = ShopData.ById[r.Item]
+			Notify.send(
+				player,
+				Locale.m("msg.rep_cosmetic", { item = item and item.Name or r.Item }),
+				"reward"
+			)
+			State.markCore(player)
+		end
+	end
+end
+
+function StoryService.shortcut(player: Player, side: string): (boolean, any)
+	local data = DataService.get(player)
+	if not data then
+		return false, nil
+	end
+	if StoryService.repLevel(data) < QuestData.SHORTCUT_LEVEL then
+		return false, Locale.m("msg.shortcut_locked", { n = QuestData.SHORTCUT_LEVEL })
+	end
+	local from = if side == "A" then S2.Shortcut.A else S2.Shortcut.B
+	local to = if side == "A" then S2.Shortcut.B else S2.Shortcut.A
+	if not AntiExploit.near(player, from, 10) then
+		return false, nil
+	end
+	local ch = player.Character
+	local root = ch and ch:FindFirstChild("HumanoidRootPart") :: BasePart?
+	if not root then
+		return false, nil
+	end
+	AntiExploit.markTeleport(player)
+	root.CFrame = CFrame.new(to + Vector3.new(0, 3, 4))
+	Remotes.getEvent("Fx"):FireClient(player, "Burrow", to)
+	return true, "msg.shortcut_used"
+end
+
+-- ------------------------------------------------------------------------------------- init
+function StoryService.init()
+	Interact.register("Neighbour", function(player, _prompt, arg)
+		local s = Session.get(player)
+		if not s or (arg ~= "Elm" and arg ~= "Buttercup") then
+			return false, nil
+		end
+		local id = arg :: string
+		if id == "Elm" and s.Carrying == "Glasses" then
+			s.Carrying = nil
+			FamilyService.say("Elm", "speech.elm_glasses")
+			QuestService.event(player, "glasses")
+			Progress.rep(player, "Street", 8)
+			State.markCore(player)
+			return true, nil
+		end
+		if not Session.cooldown(player, "neighbour:" .. id, 4) then
+			return false, nil
+		end
+		local step = QuestService.stepId(player)
+		local line = "speech." .. id .. ".hi"
+		if step == "c2_glasses" and id == "Elm" then
+			line = "speech.elm_lost"
+		elseif step == "c2_cheer" and id == "Buttercup" then
+			line = "speech.buttercup_grumpy"
+		end
+		FamilyService.say(id, line)
+		NeedsService.add(player, "Fun", 2)
+		QuestService.event(player, "greet_neighbour", id)
+		return true, nil
+	end)
+	FamilyService.onMailman = function(player, fromPrompt)
+		local s = Session.get(player)
+		local step = QuestService.stepId(player)
+		if step == "c2_mail" then
+			FamilyService.say("Mailman", "speech.mail_lost")
+			QuestService.event(player, "greet_mailman")
+			return true
+		elseif step == "c2_choice" and s and s.Carrying == "Parcel" and fromPrompt then
+			Remotes.getEvent("OpenUi"):FireClient(player, "Choice")
+			return true
+		end
+		return false
+	end
+	Interact.register("PickStory", function(player, _prompt, arg)
+		local s = Session.get(player)
+		local kind, uid = string.match(arg or "", "^(%a+):(%d+)$")
+		if not s or not kind or not ITEMS[kind] or uid ~= tostring(player.UserId) then
+			return false, "msg.not_your_toy"
+		end
+		if QuestService.stepId(player) ~= ITEMS[kind].Step then
+			return false, nil
+		end
+		if s.Carrying then
+			return false, "msg.mouth_full"
+		end
+		s.Carrying = kind
+		removeItem(player, kind)
+		State.markCore(player)
+		if kind == "Parcel" then
+			QuestService.event(player, "parcel")
+			Remotes.getEvent("OpenUi"):FireClient(player, "Choice")
+			return true, "msg.got_parcel"
+		end
+		return true, "msg.got_glasses"
+	end)
+	Router.register("StoryChoice", 1, 3, StoryService.choose)
+	Interact.register("Shortcut", function(player, _prompt, arg)
+		return StoryService.shortcut(player, arg or "")
+	end)
+	table.insert(SocialService.emoteHooks, function(player, _id, pos)
+		local m = FamilyService.npcs.Buttercup
+		local r = m and m:FindFirstChild("HumanoidRootPart") :: BasePart?
+		if r and (r.Position - pos).Magnitude <= 12 and QuestService.stepId(player) == "c2_cheer" then
+			FamilyService.say("Buttercup", "speech.buttercup_smile")
+			QuestService.event(player, "cheer")
+		end
+	end)
+	local prevRep = Progress.onRep
+	Progress.onRep = function(player, district)
+		if prevRep then
+			prevRep(player, district)
+		end
+		if district == "Street" then
+			StoryService.grantRepRewards(player)
+		end
+	end
+	State.providers.StoryItems = function(player)
+		return {
+			Parcel = StoryService.itemPos(player, "Parcel"),
+			Glasses = StoryService.itemPos(player, "Glasses"),
+		}
+	end
+	State.providers.Choices = function(_player, data)
+		return data.Choices
+	end
+	State.providers.Discount = function(_player, data)
+		return if StoryService.repLevel(data) >= QuestData.DISCOUNT_LEVEL then QuestData.DISCOUNT_PCT else 0
+	end
+	task.spawn(function()
+		while true do
+			task.wait(1)
+			for _, player in ipairs(Players:GetPlayers()) do
+				local s = Session.get(player)
+				local data = DataService.get(player)
+				if s and s.Ready and data and data.Species ~= "" then
+					pcall(spawnItems, player)
+					if
+						QuestService.stepId(player) == "c2_party" and AntiExploit.near(player, S2.Party, 12)
+					then
+						QuestService.event(player, "party")
+					end
+					StoryService.grantRepRewards(player)
+				end
+			end
+		end
+	end)
+	Players.PlayerRemoving:Connect(function(player)
+		for kind in pairs(ITEMS) do
+			removeItem(player, kind)
+		end
+		spawned[player] = nil
+	end)
+end
+
+return StoryService
+]]></ProtectedString>
+				</Properties>
+			</Item>
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000036">
+				<Properties>
 					<string name="Name">TrickService</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
 --[[
@@ -9671,7 +10264,7 @@ return TrickService
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="ModuleScript" referent="RBX00000000000000000000000000000036">
+			<Item class="ModuleScript" referent="RBX00000000000000000000000000000037">
 				<Properties>
 					<string name="Name">WorldBuilder</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -10595,6 +11188,71 @@ local function buildRare()
 	end
 end
 
+-- Глава 2: праздник улицы и тропинка соседей (награда репутации улицы)
+local function buildStory2()
+	local f = folder(world, "Story2")
+	local c = WorldData.Story2.Party
+	for i, x in ipairs({ -6, 6 }) do
+		part(f, "PartyTable" .. i, V(5, 0.4, 2.5), c + V(x, 2.2, 0), c3(240, 240, 235))
+		part(f, "PartyTableLeg" .. i, V(0.5, 2, 0.5), c + V(x, 1, 0), COL.Wood)
+	end
+	part(
+		f,
+		"PartyCake",
+		V(1.6, 1, 1.6),
+		c + V(-6, 2.9, 0),
+		c3(250, 200, 220),
+		{ Shape = Enum.PartType.Cylinder }
+	)
+	local colors = { c3(250, 90, 90), c3(90, 170, 250), c3(250, 220, 80), c3(140, 220, 120) }
+	for i = 1, 8 do
+		local a = i / 8 * math.pi * 2
+		part(
+			f,
+			"Balloon" .. i,
+			V(1.4, 1.7, 1.4),
+			c + V(math.cos(a) * 11, 7 + (i % 2), math.sin(a) * 7),
+			colors[(i - 1) % #colors + 1],
+			{ Shape = Enum.PartType.Ball, CanCollide = false }
+		)
+		part(
+			f,
+			"BalloonString" .. i,
+			V(0.08, 6, 0.08),
+			c + V(math.cos(a) * 11, 3.5 + (i % 2), math.sin(a) * 7),
+			c3(240, 240, 240),
+			{ CanCollide = false }
+		)
+	end
+	sign(f, c + V(0, 10, 0), "place.Party", c3(255, 230, 160), 200)
+	local sc = WorldData.Story2.Shortcut
+	for _, side in ipairs({ "A", "B" }) do
+		local pos: Vector3 = if side == "A" then sc.A else sc.B
+		local arch = part(
+			f,
+			"HedgeArch" .. side,
+			V(5, 5, 1.2),
+			pos + V(0, 2.5, 0),
+			c3(70, 150, 70),
+			{ Material = Enum.Material.Grass, CanCollide = false }
+		)
+		part(
+			f,
+			"HedgePath" .. side,
+			V(4, 0.12, 4),
+			pos + V(0, 0.07, 1.5),
+			c3(200, 170, 120),
+			{ CanCollide = false }
+		)
+		Interact.prompt(
+			arch,
+			"Shortcut",
+			"prompt.shortcut",
+			{ Arg = side, Object = "obj.shortcut", Distance = 9 }
+		)
+	end
+end
+
 -- Остров сна: тёмная площадка в небе, звёзды и Полуночный кот (катсцена «Сон»)
 local function buildDream()
 	local d = folder(world, "Dream")
@@ -10681,6 +11339,7 @@ function WorldBuilder.build()
 	buildBurrows()
 	buildShards()
 	buildRare()
+	buildStory2()
 	buildDream()
 	-- папки для динамики: NPC, мячи, игрушки
 	folder(world, "NPC")
@@ -10698,15 +11357,15 @@ return WorldBuilder
 			</Item>
 		</Item>
 	</Item>
-	<Item class="StarterPlayer" referent="RBX00000000000000000000000000000037">
+	<Item class="StarterPlayer" referent="RBX00000000000000000000000000000038">
 		<Properties>
 			<string name="Name">StarterPlayer</string>
 		</Properties>
-		<Item class="StarterPlayerScripts" referent="RBX00000000000000000000000000000038">
+		<Item class="StarterPlayerScripts" referent="RBX00000000000000000000000000000039">
 			<Properties>
 				<string name="Name">StarterPlayerScripts</string>
 			</Properties>
-			<Item class="LocalScript" referent="RBX00000000000000000000000000000039">
+			<Item class="LocalScript" referent="RBX0000000000000000000000000000003A">
 				<Properties>
 					<string name="Name">CameraController</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10790,7 +11449,7 @@ RunService.RenderStepped:Connect(step)
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="LocalScript" referent="RBX0000000000000000000000000000003A">
+			<Item class="LocalScript" referent="RBX0000000000000000000000000000003B">
 				<Properties>
 					<string name="Name">PetAnimator</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10884,6 +11543,16 @@ local CARRY = {
 		Size = Vector3.new(0.65, 0.65, 0.65),
 		Color = Color3.fromRGB(230, 230, 60),
 		Shape = Enum.PartType.Ball,
+	},
+	Parcel = {
+		Size = Vector3.new(0.9, 0.6, 0.7),
+		Color = Color3.fromRGB(190, 140, 90),
+		Shape = Enum.PartType.Block,
+	},
+	Glasses = {
+		Size = Vector3.new(0.8, 0.25, 0.2),
+		Color = Color3.fromRGB(60, 60, 80),
+		Shape = Enum.PartType.Block,
 	},
 }
 
@@ -11095,7 +11764,7 @@ end)
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="LocalScript" referent="RBX0000000000000000000000000000003B">
+			<Item class="LocalScript" referent="RBX0000000000000000000000000000003C">
 				<Properties>
 					<string name="Name">WorldLocalizer</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -11202,22 +11871,22 @@ end)
 			</Item>
 		</Item>
 	</Item>
-	<Item class="StarterGui" referent="RBX0000000000000000000000000000003C">
+	<Item class="StarterGui" referent="RBX0000000000000000000000000000003D">
 		<Properties>
 			<string name="Name">StarterGui</string>
 		</Properties>
-		<Item class="ScreenGui" referent="RBX0000000000000000000000000000003D">
+		<Item class="ScreenGui" referent="RBX0000000000000000000000000000003E">
 			<Properties>
 				<string name="Name">PawtownGui</string>
 				<bool name="ResetOnSpawn">false</bool>
 				<token name="ZIndexBehavior">1</token>
 				<double name="DisplayOrder">50</double>
 			</Properties>
-			<Item class="Folder" referent="RBX0000000000000000000000000000003E">
+			<Item class="Folder" referent="RBX0000000000000000000000000000003F">
 				<Properties>
 					<string name="Name">Modules</string>
 				</Properties>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003F">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000040">
 					<Properties>
 						<string name="Name">Abilities</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11445,7 +12114,7 @@ return Abilities
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000040">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000041">
 					<Properties>
 						<string name="Name">Actions</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11501,7 +12170,7 @@ return Actions
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000041">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000042">
 					<Properties>
 						<string name="Name">BathGame</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11727,7 +12396,112 @@ return BathGame
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000042">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000043">
+					<Properties>
+						<string name="Name">ChoicePanel</string>
+						<ProtectedString name="Source"><![CDATA[--!nonstrict
+--[[
+	ChoicePanel — сюжетный выбор главы 2: что сделать с найденной посылкой почтальона.
+	Варианты и последствия (репутация Кленовой улицы, лакомства) — из QuestData.CHOICES; решает сервер (StoryChoice).
+	Поток (UIListLayout + AutomaticSize): текст переносится, ничего не обрезается на телефоне.
+]]
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local L = require(Shared:WaitForChild("Locale"))
+local QuestData = require(Shared:WaitForChild("QuestData"))
+
+local Actions = require(script.Parent.Actions)
+local Theme = require(script.Parent.Theme)
+local Ui = require(script.Parent.Ui)
+local Widgets = require(script.Parent.Widgets)
+
+local New = Widgets.New
+local ChoicePanel = {}
+
+function ChoicePanel.init(gui: ScreenGui)
+	local panel = Widgets.panel(gui, "Choice", nil, { MinH = 380 })
+	local scroll =
+		Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -4), Position = UDim2.fromOffset(4, 0) })
+	Widgets.padding(scroll, 10)
+	Ui.list(scroll, 10)
+	local head = New("Frame", {
+		Name = "Head",
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, 64),
+		LayoutOrder = 1,
+		Parent = scroll,
+	})
+	Ui.icon("Shop", 60, { Parent = head })
+	Ui.text({
+		Name = "Title",
+		Text = L.k("choice.parcel.title"),
+		Font = Theme.Font,
+		TextSize = 22,
+		TextYAlignment = Enum.TextYAlignment.Center,
+		Size = UDim2.new(1, -72, 1, 0),
+		Position = UDim2.fromOffset(72, 0),
+		Parent = head,
+	})
+	Ui.text({
+		Name = "Story",
+		Text = L.k("choice.parcel.text"),
+		TextSize = 17,
+		TextYAlignment = Enum.TextYAlignment.Top,
+		Size = UDim2.fromScale(1, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		LayoutOrder = 2,
+		Parent = scroll,
+	})
+	for i, opt in ipairs(QuestData.CHOICES.c2_parcel) do
+		local card = Ui.card({
+			Name = "Opt_" .. opt.Id,
+			BackgroundColor3 = Theme.BgCard,
+			BackgroundTransparency = 0,
+			Size = UDim2.fromScale(1, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			LayoutOrder = 2 + i,
+			Parent = scroll,
+		})
+		Widgets.padding(card, 8)
+		Ui.list(card, 6)
+		Ui.text({
+			Name = "Effect",
+			Text = L.k("choice.parcel." .. opt.Id .. ".effect", { rep = opt.RepPts, n = opt.Treats }),
+			TextSize = 15,
+			TextColor3 = if opt.RepPts > 0 then Theme.Green else Theme.Orange,
+			Size = UDim2.fromScale(1, 0),
+			AutomaticSize = Enum.AutomaticSize.Y,
+			LayoutOrder = 2,
+			Parent = card,
+		})
+		local row = New("Frame", {
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, 0, 0, 40),
+			LayoutOrder = 1,
+			Parent = card,
+		})
+		Widgets.button({
+			Name = "Choose",
+			Text = L.k("choice.parcel." .. opt.Id),
+			Color = if opt.RepPts > 0 then Theme.Green else Theme.Orange,
+			MaxTextSize = 18,
+			Size = UDim2.new(1, 0, 0, 38),
+			Parent = row,
+			OnClick = function()
+				if Actions.call("StoryChoice", "c2_parcel", opt.Id) then
+					panel.Close()
+				end
+			end,
+		})
+	end
+	return panel
+end
+
+return ChoicePanel
+]]></ProtectedString>
+					</Properties>
+				</Item>
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000044">
 					<Properties>
 						<string name="Name">ClientState</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11845,7 +12619,7 @@ return ClientState
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000043">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000045">
 					<Properties>
 						<string name="Name">Cutscene</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11876,6 +12650,11 @@ Cutscene.SCENES = {
 		{ "MidnightCat", "cut.dream.2" },
 		{ "MidnightCat", "cut.dream.3" },
 		{ "Shard", "cut.dream.4" },
+	},
+	Chapter2 = {
+		{ "Home", "cut.ch2.1" },
+		{ "Friends", "cut.ch2.2" },
+		{ "Quest", "cut.ch2.3" },
 	},
 	Rebirth = { { "Spark", "cut.reborn.1" }, { "Xp", "cut.reborn.2" }, { "Love", "cut.reborn.3" } },
 }
@@ -11996,7 +12775,7 @@ return Cutscene
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000044">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000046">
 					<Properties>
 						<string name="Name">EmotesPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12083,7 +12862,7 @@ return EmotesPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000045">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000047">
 					<Properties>
 						<string name="Name">Fx</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12188,7 +12967,7 @@ return Fx
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000046">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000048">
 					<Properties>
 						<string name="Name">Hud</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12570,7 +13349,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		-- трекер
 		local story = core.Story or {}
 		if story.Id and story.Id ~= "" then
-			tTitle.Text = L.t("hud.chapter", { i = story.Index, total = story.Total })
+			tTitle.Text = L.t("hud.chapter", { c = story.Chapter or 1, i = story.Index, total = story.Total })
 			local stepText = L.t("quest." .. story.Id)
 			if (story.Need or 0) > 1 then
 				stepText ..= string.format(" (%d/%d)", story.P or 0, story.Need)
@@ -12610,7 +13389,7 @@ return Hud
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000047">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000049">
 					<Properties>
 						<string name="Name">Layout</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12762,12 +13541,12 @@ return Layout
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000048">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004A">
 					<Properties>
 						<string name="Name">QuestsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
 --[[
-	QuestsPanel — «Дневник»: шаги главы 1 «Новый дом», ежедневные задания, привязанность семьи
+	QuestsPanel — «Дневник»: шаги текущей главы (1 «Новый дом», 2 «Соседи»), ежедневные задания, привязанность семьи
 	(со следующим подарком), репутация районов, осколки памяти и друзья.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -12816,37 +13595,42 @@ function QuestsPanel.init(gui: ScreenGui)
 		})
 	end
 
-	-- глава
-	header("quests.chapter1", 1)
+	-- главы: показываем текущую (пройденная глава 1 сворачивается в заголовок)
 	local steps = {}
-	for i, st in ipairs(QuestData.CHAPTER1) do
-		local r = row(st.Id, 1 + i)
-		local ic = New("Frame", {
-			Name = "IconHolder",
-			BackgroundTransparency = 1,
-			Size = UDim2.fromOffset(30, 30),
-			Position = UDim2.fromOffset(8, 7),
-			Parent = r,
-		})
-		local t = Ui.text({
-			Name = "Text",
-			Text = L.k("quest." .. st.Id),
-			TextSize = 16,
-			Size = UDim2.new(1, -110, 1, -4),
-			Position = UDim2.fromOffset(46, 2),
-			Parent = r,
-		})
-		local p = Ui.text({
-			Name = "P",
-			Font = Theme.Font,
-			TextSize = 16,
-			TextXAlignment = Enum.TextXAlignment.Right,
-			Size = UDim2.fromOffset(60, 40),
-			AnchorPoint = Vector2.new(1, 0),
-			Position = UDim2.new(1, -8, 0, 2),
-			Parent = r,
-		})
-		steps[i] = { Row = r, Icon = ic, Text = t, P = p, State = "" }
+	local chapterHeaders = {}
+	for c, list in ipairs(QuestData.CHAPTERS) do
+		local base = (c - 1) * 9
+		header("quests.chapter" .. c, base + 1)
+		chapterHeaders[c] = scroll:FindFirstChild("H_quests.chapter" .. c)
+		for i, st in ipairs(list) do
+			local r = row(st.Id, base + 1 + i)
+			local ic = New("Frame", {
+				Name = "IconHolder",
+				BackgroundTransparency = 1,
+				Size = UDim2.fromOffset(30, 30),
+				Position = UDim2.fromOffset(8, 7),
+				Parent = r,
+			})
+			local t = Ui.text({
+				Name = "Text",
+				Text = L.k("quest." .. st.Id),
+				TextSize = 16,
+				Size = UDim2.new(1, -110, 1, -4),
+				Position = UDim2.fromOffset(46, 2),
+				Parent = r,
+			})
+			local p = Ui.text({
+				Name = "P",
+				Font = Theme.Font,
+				TextSize = 16,
+				TextXAlignment = Enum.TextXAlignment.Right,
+				Size = UDim2.fromOffset(60, 40),
+				AnchorPoint = Vector2.new(1, 0),
+				Position = UDim2.new(1, -8, 0, 2),
+				Parent = r,
+			})
+			table.insert(steps, { Row = r, Icon = ic, Text = t, P = p, State = "", C = c, I = i, St = st })
+		end
 	end
 	-- ежедневные
 	header("quests.daily", 20)
@@ -12887,6 +13671,26 @@ function QuestsPanel.init(gui: ScreenGui)
 	-- мир
 	header("quests.world", 40)
 	local world = row("World", 41, 92)
+	-- награды репутации Кленовой улицы
+	local rewards = row("RepRewards", 42, 8 + 24 * #QuestData.REP_REWARDS)
+	local rewardRows = {}
+	for i, r in ipairs(QuestData.REP_REWARDS) do
+		Ui.icon(
+			if r.Kind == "Shortcut" then "Home" elseif r.Kind == "Discount" then "Treat" else "Shop",
+			20,
+			{
+				Position = UDim2.fromOffset(10, 6 + (i - 1) * 24),
+				Parent = rewards,
+			}
+		)
+		rewardRows[i] = Ui.text({
+			Name = "Reward" .. r.Kind,
+			TextSize = 15,
+			Size = UDim2.new(1, -50, 0, 22),
+			Position = UDim2.fromOffset(42, 4 + (i - 1) * 24),
+			Parent = rewards,
+		})
+	end
 	Ui.icon("Shard", 26, { Position = UDim2.fromOffset(8, 6), Parent = world })
 	local shardsT = Ui.text({
 		TextSize = 16,
@@ -12912,9 +13716,17 @@ function QuestsPanel.init(gui: ScreenGui)
 	ClientState.onCore(function(core)
 		local story = core.Story or {}
 		local idx = story.Index or 1
-		for i, s in ipairs(steps) do
-			local st = QuestData.CHAPTER1[i]
-			local state = if i < idx then "done" elseif i == idx then "cur" else "todo"
+		local cur = story.Chapter or 1
+		for c, h in pairs(chapterHeaders) do
+			h.Visible = c <= cur
+		end
+		for _, s in ipairs(steps) do
+			local st, i = s.St, s.I
+			s.Row.Visible = s.C == cur
+			local state = if s.C < cur or (s.C == cur and i < idx)
+				then "done"
+				elseif s.C == cur and i == idx then "cur"
+				else "todo"
 			if s.State ~= state then
 				s.State = state
 				Widgets.clear(s.Icon)
@@ -12983,10 +13795,18 @@ function QuestsPanel.init(gui: ScreenGui)
 		end
 		shardsT.Text = L.t("quests.shards", { n = #(core.Shards or {}), total = #WorldData.Shards })
 		local rep = core.Rep or {}
+		local street = Progression.repLevel(rep.Street or 0)
 		repT.Text = L.t("quests.rep", {
-			street = Progression.repLevel(rep.Street or 0),
+			street = street,
 			park = Progression.repLevel(rep.Park or 0),
 		})
+		for i, r in ipairs(QuestData.REP_REWARDS) do
+			local t = rewardRows[i]
+			if t then
+				t.Text = L.t("quests.rep_reward." .. r.Kind, { n = r.Level, pct = r.Pct or 0 })
+				t.TextColor3 = if street >= r.Level then Theme.Green else Theme.TextDim
+			end
+		end
 		friendsT.Text = L.t("quests.friends", { n = core.FriendsCount or 0 })
 	end)
 	return panel
@@ -12996,7 +13816,7 @@ return QuestsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000049">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004B">
 					<Properties>
 						<string name="Name">RebirthPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13303,7 +14123,7 @@ return RebirthPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004A">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004C">
 					<Properties>
 						<string name="Name">SettingsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13376,7 +14196,7 @@ return SettingsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004B">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004D">
 					<Properties>
 						<string name="Name">ShopPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13387,6 +14207,7 @@ return SettingsPanel
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local L = require(Shared:WaitForChild("Locale"))
+local Progression = require(Shared:WaitForChild("Progression"))
 local ShopData = require(Shared:WaitForChild("ShopData"))
 
 local Actions = require(script.Parent.Actions)
@@ -13467,12 +14288,12 @@ function ShopPanel.init(gui: ScreenGui)
 			Parent = card,
 		})
 		Ui.icon("Treat", 22, { Position = UDim2.fromOffset(72, 52), Parent = card })
-		Ui.text({
+		local priceLabel = Ui.text({
 			Name = "Price",
 			Text = tostring(item.Price),
 			Font = Theme.Font,
 			TextSize = 18,
-			Size = UDim2.fromOffset(80, 22),
+			Size = UDim2.new(1, -106, 0, 22),
 			Position = UDim2.fromOffset(98, 52),
 			Parent = card,
 		})
@@ -13484,7 +14305,7 @@ function ShopPanel.init(gui: ScreenGui)
 			Position = UDim2.new(0, 8, 1, -48),
 			Parent = card,
 		})
-		cards[item.Id] = { Card = card, Button = btn, Item = item }
+		cards[item.Id] = { Card = card, Button = btn, Item = item, Price = priceLabel }
 		btn.Activated:Connect(function()
 			local core = ClientState.Core or {}
 			local cos = core.Cosmetics or { Owned = {}, Equipped = {} }
@@ -13503,9 +14324,17 @@ function ShopPanel.init(gui: ScreenGui)
 		local cos = core.Cosmetics or { Owned = {}, Equipped = {} }
 		for _, c in pairs(cards) do
 			c.Card.Visible = c.Item.Slot == current
-			if not cos.Owned[c.Item.Id] then
+			local price = ShopData.price(c.Item, Progression.repLevel((core.Rep or {}).Street or 0))
+			c.Price.Text = if c.Item.Rep
+				then L.t("shop.rep_reward", { n = c.Item.Rep })
+				elseif price < c.Item.Price then L.t("shop.discount", { n = price, old = c.Item.Price })
+				else tostring(price)
+			if not cos.Owned[c.Item.Id] and c.Item.Rep then
+				c.Button.Text = L.t("shop.rep_locked")
+				Widgets.setEnabled(c.Button, false)
+			elseif not cos.Owned[c.Item.Id] then
 				c.Button.Text = L.t("btn.buy")
-				Widgets.setEnabled(c.Button, (core.Treats or 0) >= c.Item.Price, Theme.Green)
+				Widgets.setEnabled(c.Button, (core.Treats or 0) >= price, Theme.Green)
 			elseif cos.Equipped[c.Item.Slot] == c.Item.Id then
 				c.Button.Text = L.t("btn.unequip")
 				Widgets.setEnabled(c.Button, true, Theme.Orange)
@@ -13542,7 +14371,7 @@ return ShopPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004C">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004E">
 					<Properties>
 						<string name="Name">SpeciesCard</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13720,7 +14549,7 @@ return SpeciesCard
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004D">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004F">
 					<Properties>
 						<string name="Name">SpeciesPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13825,7 +14654,7 @@ return SpeciesPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004E">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000050">
 					<Properties>
 						<string name="Name">TalentsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13989,7 +14818,7 @@ return TalentsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004F">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000051">
 					<Properties>
 						<string name="Name">Theme</string>
 						<ProtectedString name="Source"><![CDATA[--!strict
@@ -14049,7 +14878,7 @@ return Theme
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000050">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000052">
 					<Properties>
 						<string name="Name">Toasts</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -14214,7 +15043,7 @@ return Toasts
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000051">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000053">
 					<Properties>
 						<string name="Name">TricksPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -14623,7 +15452,7 @@ return TricksPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000052">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000054">
 					<Properties>
 						<string name="Name">Ui</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -14834,7 +15663,7 @@ return Ui
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000053">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000055">
 					<Properties>
 						<string name="Name">Widgets</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -15402,7 +16231,7 @@ return Widgets
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000054">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000056">
 					<Properties>
 						<string name="Name">WorldFx</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -15495,6 +16324,30 @@ function WorldFx.targetFor(stepId: string, core: any): Vector3?
 		return best
 	elseif stepId == "c1_dream" then
 		return H.PetBed
+	end
+	-- глава 2 «Соседи»
+	local S2 = WorldData.Story2
+	local npc = Workspace:FindFirstChild("World") and Workspace.World:FindFirstChild("NPC")
+	local function npcPos(id: string): Vector3?
+		local m = npc and npc:FindFirstChild(id)
+		local r = m and m:FindFirstChild("HumanoidRootPart")
+		return r and Vector3.new(r.Position.X, 0, r.Position.Z)
+	end
+	local items = core.StoryItems or {}
+	if stepId == "c2_meet" then
+		local pos = rootPos() or Vector3.zero
+		local a, b = S2.Elm, S2.Buttercup
+		return if (a - pos).Magnitude < (b - pos).Magnitude then a else b
+	elseif stepId == "c2_mail" or stepId == "c2_choice" then
+		return npcPos("Mailman")
+	elseif stepId == "c2_parcel" then
+		return items.Parcel or S2.Parcel
+	elseif stepId == "c2_glasses" then
+		return if core.Carrying == "Glasses" then S2.Elm else (items.Glasses or S2.Glasses)
+	elseif stepId == "c2_cheer" then
+		return S2.Buttercup
+	elseif stepId == "c2_party" then
+		return S2.Party
 	end
 	return nil
 end
@@ -15735,7 +16588,7 @@ return WorldFx
 					</Properties>
 				</Item>
 			</Item>
-			<Item class="LocalScript" referent="RBX00000000000000000000000000000055">
+			<Item class="LocalScript" referent="RBX00000000000000000000000000000057">
 				<Properties>
 					<string name="Name">UIController</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -15768,6 +16621,7 @@ panels.Talents = require(Modules:WaitForChild("TalentsPanel")).init(gui, openReb
 panels.SparkNight = require(Modules:WaitForChild("RebirthPanel")).init(gui)
 panels.Settings = require(Modules:WaitForChild("SettingsPanel")).init(gui)
 panels.Emotes = require(Modules:WaitForChild("EmotesPanel")).init(gui)
+panels.Choice = require(Modules:WaitForChild("ChoicePanel")).init(gui)
 local Bath = require(Modules:WaitForChild("BathGame")).init(gui)
 
 openPanel = function(name: string, force: boolean?)

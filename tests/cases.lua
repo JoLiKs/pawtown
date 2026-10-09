@@ -567,8 +567,10 @@ test(
 			needName(it.Name, it.Id)
 			check(en["shop.slot." .. it.Slot] ~= nil, "slot key " .. it.Slot)
 		end
-		for _, s in ipairs(S0.QuestData.CHAPTER1) do
-			check(en["quest." .. s.Id] ~= nil, "quest key " .. s.Id)
+		for _, ch in ipairs(S0.QuestData.CHAPTERS) do
+			for _, s in ipairs(ch) do
+				check(en["quest." .. s.Id] ~= nil, "quest key " .. s.Id)
+			end
 		end
 		for _, d in ipairs(S0.QuestData.DAILY_POOL) do
 			check(en["daily." .. d.Id] ~= nil, "daily key " .. d.Id)

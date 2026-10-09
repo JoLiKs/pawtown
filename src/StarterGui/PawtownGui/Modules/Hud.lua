@@ -377,7 +377,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		-- трекер
 		local story = core.Story or {}
 		if story.Id and story.Id ~= "" then
-			tTitle.Text = L.t("hud.chapter", { i = story.Index, total = story.Total })
+			tTitle.Text = L.t("hud.chapter", { c = story.Chapter or 1, i = story.Index, total = story.Total })
 			local stepText = L.t("quest." .. story.Id)
 			if (story.Need or 0) > 1 then
 				stepText ..= string.format(" (%d/%d)", story.P or 0, story.Need)
