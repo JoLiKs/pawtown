@@ -32,13 +32,13 @@ function ShopPanel.init(gui: ScreenGui)
 		Text = L.k("shop.note"),
 		TextSize = 15,
 		TextColor3 = Theme.TextDim,
-		Size = UDim2.new(1, -16, 0, 20),
-		Position = UDim2.new(0, 8, 1, -24),
+		Size = UDim2.new(1, -16, 0, 40),
+		Position = UDim2.new(0, 8, 1, -42),
 		Parent = panel.Body,
 	})
 	_ = note
 	local scroll =
-		Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -76), Position = UDim2.fromOffset(4, 48) })
+		Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -94), Position = UDim2.fromOffset(4, 48) })
 	Widgets.padding(scroll, 6)
 	New("UIGridLayout", {
 		CellSize = UDim2.new(0.5, -6, 0, 132),

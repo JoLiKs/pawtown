@@ -140,9 +140,12 @@ function Toasts.init(gui: ScreenGui)
 	-- v3.0: общий масштаб (Theme.uiScale); ширина делится на k — на телефоне тосты не сужаются
 	Widgets.autoScale(container, function(lay, k)
 		-- телефон горизонтально: уже, чтобы не задевать кнопки по краям
+		-- (между карточкой статуса и трекером главы)
 		container.Size = if lay.Mode == "landscape"
-			then UDim2.new(0.5 / k, 0, 0, 160)
+			then UDim2.new(0.4 / k, 0, 0, 160)
 			else UDim2.new(1 / k, -24 / k, 0, 200)
+		-- телефон вертикально: верх экрана занят карточкой, трекером и нуждами — тосты под ними
+		container.Position = if lay.Mode == "portrait" then UDim2.new(0.5, 0, 0, 214) else UDim2.new(0.5, 0, 0, 6)
 	end)
 	Remotes.getEvent("Notify").OnClientEvent:Connect(function(text, kind)
 		if type(text) == "string" or type(text) == "table" then

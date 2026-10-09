@@ -73,7 +73,7 @@ function Cutscene.init(gui: ScreenGui, closeAll: (() -> ())?)
 		TextSize = 26,
 		TextColor3 = Color3.fromRGB(255, 240, 220),
 		TextYAlignment = Enum.TextYAlignment.Center,
-		Size = UDim2.new(1, -300, 0, 110),
+		Size = UDim2.new(1, -170, 0, 110),
 		AnchorPoint = Vector2.new(0, 1),
 		Position = UDim2.new(0, 136, 1, -8),
 		ZIndex = 82,
@@ -85,8 +85,9 @@ function Cutscene.init(gui: ScreenGui, closeAll: (() -> ())?)
 		Color = Theme.BgLight,
 		MaxTextSize = 18,
 		Size = UDim2.fromOffset(120, 44),
-		AnchorPoint = Vector2.new(1, 1),
-		Position = UDim2.new(1, -20, 1, -40),
+		-- сверху справа: внизу справа на телефонах стоит кнопка прыжка Roblox
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -16, 0, 8),
 		ZIndex = 83,
 		Parent = inner,
 	})

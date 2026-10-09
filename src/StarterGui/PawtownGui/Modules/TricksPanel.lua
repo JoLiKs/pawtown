@@ -217,7 +217,8 @@ function TricksPanel.init(gui: ScreenGui)
 				best, bestErr = i, now - t
 			end
 		end
-		if not best or math.abs(bestErr) > 0.45 then
+		-- нажатие далеко от лапки не тратит её (без штрафа), промах — только в пределах окна
+		if not best or math.abs(bestErr) > TrickData.WINDOW_OK * run.Mult + 0.08 then
 			return
 		end
 		run.Errors[best] = bestErr

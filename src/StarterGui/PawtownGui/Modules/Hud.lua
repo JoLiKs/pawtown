@@ -142,10 +142,10 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 	})
 	local tDaily = Ui.text({
 		Name = "Daily",
-		TextSize = 16,
+		TextSize = 18,
 		TextColor3 = Theme.TextDim,
-		Size = UDim2.new(1, -20, 0, 18),
-		Position = UDim2.new(0, 10, 1, -22),
+		Size = UDim2.new(1, -20, 0, 20),
+		Position = UDim2.new(0, 10, 1, -24),
 		Parent = tracker,
 	})
 	tracker.Activated:Connect(function()
@@ -201,11 +201,11 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			Name = "Key",
 			Text = "Q", -- l10n-ok (клавиша)
 			Font = Theme.Font,
-			TextSize = 16,
+			TextSize = 18,
 			TextXAlignment = Enum.TextXAlignment.Center,
 			BackgroundTransparency = 0.2,
 			BackgroundColor3 = Theme.Bg,
-			Size = UDim2.fromOffset(22, 20),
+			Size = UDim2.fromOffset(24, 22),
 			AnchorPoint = Vector2.new(1, 1),
 			Position = UDim2.new(1, 2, 1, 2),
 			ZIndex = 7,
