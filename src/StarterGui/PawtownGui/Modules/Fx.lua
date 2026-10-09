@@ -75,6 +75,8 @@ function Fx.init(gui: ScreenGui, openUi: (string) -> ())
 			WorldFx.sniff(a)
 		elseif kind == "CrystalSight" then
 			WorldFx.crystalSight(a)
+		elseif kind == "Combo" then
+			Toasts.banner("fx.combo", "combo." .. tostring(a), Theme.Green, 2.5)
 		elseif kind == "TrialSpark" then
 			Toasts.banner("fx.trial_spark", nil, Theme.Purple, 1.4)
 		elseif kind == "AgilityStart" then

@@ -18,6 +18,7 @@ local QuestData = require(Shared.QuestData)
 
 local DataService = require(Server.DataService)
 local Session = require(Server.Session)
+local State = require(Server.State)
 local AntiExploit = require(Server.AntiExploit)
 local Interact = require(Server.Interact)
 local QuestService = require(Server.QuestService)
@@ -517,6 +518,27 @@ r = call("Ability", "NightVision")
 check("owl: night vision", r.ok, r.msg)
 r = call("Ability", "Sniff")
 check("owl: no dog abilities", r.ok == false)
+
+-- ===================================================================== 13c. Друзья
+r = call("FriendRequest", player.UserId)
+check("friends: cannot add yourself", r.ok == false)
+r = call("FriendRequest", 987654321)
+check("friends: player must be on this server", r.ok == false)
+r = call("Visit", 987654321)
+check("friends: visit non-friend refused", r.ok == false)
+r = call("FriendAccept", 987654321, true)
+check("friends: accept without request refused", r.ok == false)
+data.FriendList["987654321"] = { Name = "Ghost", Since = os.time() }
+r = call("Visit", 987654321)
+check("friends: visit offline friend refused", r.ok == false)
+local core = State.build(player)
+local fl = core and core.FriendsList
+check(
+	"friends: provider lists persisted friend offline",
+	fl ~= nil and #fl.Friends == 1 and fl.Friends[1].Online == false and fl.Max == Config.FRIEND_LIST_MAX
+)
+r = call("FriendRemove", 987654321)
+check("friends: remove", r.ok and data.FriendList["987654321"] == nil)
 
 -- ===================================================================== 14. Сохранение
 check("save: saveNow", DataService.saveNow(player) == true)

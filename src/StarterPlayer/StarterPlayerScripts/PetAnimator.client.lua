@@ -231,6 +231,28 @@ local function animatePet(m: Model, r: any, t: number)
 			rootCF *= A(0, 0, k * math.pi * 2)
 		end
 	end
+	-- комбо-эмоции друзей (FriendsLogic.COMBOS): у обоих одновременно
+	local combo, ct = parseStamp(m:GetAttribute("Combo"))
+	local dc = os.clock() - ct
+	if combo and dc < 2 then
+		local k = dc / 2
+		local hop = math.abs(math.sin(dc * 9)) * 0.6
+		if combo == "HappyDance" then
+			rootCF *= CFrame.new(0, hop, 0) * A(0, k * math.pi * 4, 0)
+			tail = A(0, math.sin(t * 24) * 0.7, 0)
+		elseif combo == "PlayFight" then
+			rootCF *= CFrame.new(0, -0.2 + hop * 0.5, 0) * A(-0.35, math.sin(dc * 8) * 0.4, 0)
+		elseif combo == "Duet" or combo == "Echo" then
+			neck = A(-0.5, math.sin(dc * 6) * 0.3, if combo == "Echo" then 0.35 else 0)
+			rootCF *= A(0, 0, math.sin(dc * 5) * 0.15)
+		elseif combo == "DoubleRoll" then
+			rootCF *= A(0, 0, k * math.pi * 4)
+		elseif combo == "NoseBoop" then
+			neck = A(0.3, 0, 0) * CFrame.new(0, 0, -0.25 * math.abs(math.sin(dc * 6)))
+		elseif combo == "Zoomies" then
+			rootCF *= CFrame.new(0, hop * 0.4, 0) * A(0, k * math.pi * 8, 0)
+		end
+	end
 	-- трюки
 	local trick, tt = parseStamp(m:GetAttribute("Trick"))
 	local dt = os.clock() - tt

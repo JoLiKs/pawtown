@@ -155,7 +155,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 	------------------------------------------------------------------ кнопки разделов
 	local menu = New(
 		"Frame",
-		{ Name = "Menu", BackgroundTransparency = 1, Size = UDim2.fromOffset(58, 58 * 5 + 32), Parent = root }
+		{ Name = "Menu", BackgroundTransparency = 1, Size = UDim2.fromOffset(58, 58 * 6 + 40), Parent = root }
 	)
 	local menuList = Ui.list(menu, 8)
 	local buttons = {}
@@ -164,6 +164,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		{ "Talents", "Talent", Theme.Purple },
 		{ "Shop", "Shop", Theme.Pink },
 		{ "Emotes", "Emote", Theme.Orange },
+		{ "Friends", "Friends", Theme.Green },
 		{ "Settings", "Settings", Theme.BgLight },
 	}) do
 		buttons[def[1]] = Ui.iconButton({
@@ -296,7 +297,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			menu.AnchorPoint = Vector2.new(1, 0.5)
 			menu.Position = UDim2.new(1, -8, 0.56, 0)
 			menuList.FillDirection = Enum.FillDirection.Vertical
-			menu.Size = UDim2.fromOffset(58, 58 * 5 + 32)
+			menu.Size = UDim2.fromOffset(58, 58 * 6 + 40)
 			abilities.AnchorPoint = Vector2.new(1, 1)
 			abilities.Position = UDim2.new(1, -8, 1, -190)
 			abilities.Size = UDim2.fromOffset(70, 70)
@@ -309,7 +310,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			menu.AnchorPoint = Vector2.new(0.5, 1)
 			menu.Position = UDim2.new(0.5, 0, 1, -8)
 			menuList.FillDirection = Enum.FillDirection.Horizontal
-			menu.Size = UDim2.fromOffset(58 * 5 + 32, 58)
+			menu.Size = UDim2.fromOffset(58 * 6 + 40, 58)
 			abilities.AnchorPoint = Vector2.new(1, 1)
 			abilities.Position = UDim2.new(1, -16, 1, -170)
 			abilities.Size = UDim2.fromOffset(70, 70)
@@ -322,7 +323,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			menu.AnchorPoint = Vector2.new(1, 0.5)
 			menu.Position = UDim2.new(1, -10, 0.55, 0)
 			menuList.FillDirection = Enum.FillDirection.Vertical
-			menu.Size = UDim2.fromOffset(58, 58 * 5 + 32)
+			menu.Size = UDim2.fromOffset(58, 58 * 6 + 40)
 			abilities.AnchorPoint = Vector2.new(0.5, 1)
 			abilities.Position = UDim2.new(0.5, 0, 1, -14)
 			abilities.Size = UDim2.fromOffset(150, 70)

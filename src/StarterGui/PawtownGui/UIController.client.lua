@@ -29,6 +29,7 @@ panels.SparkNight = require(Modules:WaitForChild("RebirthPanel")).init(gui)
 panels.Settings = require(Modules:WaitForChild("SettingsPanel")).init(gui)
 panels.Emotes = require(Modules:WaitForChild("EmotesPanel")).init(gui)
 panels.Choice = require(Modules:WaitForChild("ChoicePanel")).init(gui)
+panels.Friends = require(Modules:WaitForChild("FriendsPanel")).init(gui)
 local Bath = require(Modules:WaitForChild("BathGame")).init(gui)
 
 openPanel = function(name: string, force: boolean?)

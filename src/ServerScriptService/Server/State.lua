@@ -60,7 +60,7 @@ function State.build(player: Player): any?
 		Lang = data.Settings.Lang,
 		FriendsCount = (function()
 			local n = 0
-			for _ in pairs(data.Friends or {}) do
+			for _ in pairs(data.FriendList or {}) do
 				n += 1
 			end
 			return n

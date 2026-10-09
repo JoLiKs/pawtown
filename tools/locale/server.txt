@@ -253,3 +253,18 @@ msg.shortcut_used | Through the hedges! | Сквозь живую изгород
 msg.got_parcel | You carry the parcel | Ты несёшь посылку
 msg.got_glasses | You carry the glasses carefully | Ты осторожно несёшь очки
 msg.rep_only | This is a reputation reward | Это награда за репутацию
+
+# v0.2 — друзья
+msg.friend_not_here | That player is not on this server | Этого игрока нет на сервере
+msg.friend_already | You are already friends | Вы уже друзья
+msg.friend_full | Your friend list is full | Список друзей полон
+msg.friend_request | {player} wants to be your friend! Open Friends to answer | {player} хочет дружить! Ответь в разделе «Друзья»
+msg.friend_sent | Friend request sent to {player} | Заявка отправлена: {player}
+msg.friend_no_request | That request has expired | Заявка устарела
+msg.friend_added | {player} is now your friend! | {player} теперь твой друг!
+msg.friend_removed | Removed from friends | Убран из друзей
+msg.friend_only | You can only visit friends | В гости — только к друзьям
+msg.visit_busy | Finish what you are doing first | Сначала закончи начатое
+msg.visit_wait | Wait {n} s before the next visit | Подожди {n} с до следующего визита
+msg.visit_arrived | {player} came to visit you! | {player} пришёл к тебе в гости!
+msg.visit_to | Visiting {player} | В гостях у {player}

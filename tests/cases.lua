@@ -55,6 +55,7 @@ local function boot(label, opts)
 		"WorldData",
 		"SpeciesData",
 		"RebirthLogic",
+		"FriendsLogic",
 		"DayNight",
 		"UiGeometry",
 	}) do
@@ -351,6 +352,29 @@ test(
 		check(R.stars(data) == R.MAX_STARS, "stars capped")
 	end
 )
+
+test("FriendsLogic: список друзей, лимит, комбо", function()
+	local F = S0.FriendsLogic
+	local d = { FriendList = {} }
+	check(F.canAdd(d, 5, 1, 2), "can add")
+	check(not F.canAdd(d, 1, 1, 2), "not self")
+	F.add(d, 5, "Ann", 100)
+	check(F.isFriend(d, 5) and d.FriendList["5"].Name == "Ann", "added")
+	check(not F.canAdd(d, 5, 1, 2), "no duplicates")
+	F.add(d, 6, "Bob", 100)
+	local ok, why = F.canAdd(d, 7, 1, 2)
+	check(not ok and why == "msg.friend_full", "limit")
+	check(F.remove(d, 5) and not F.isFriend(d, 5), "removed")
+	check(F.comboFor("Wag", "Wag") == "HappyDance", "same emote combo")
+	check(
+		F.comboFor("PlayBow", "Wag") == "Zoomies" and F.comboFor("Wag", "PlayBow") == "Zoomies",
+		"symmetric"
+	)
+	check(F.comboFor("Roll", "Sniff") == nil, "no combo")
+	for _, c in ipairs(F.COMBOS) do
+		check(S0.LocaleEn.Strings["combo." .. c.Id] ~= nil, "combo key " .. c.Id)
+	end
+end)
 
 test(
 	"Экономика: только косметика за лакомства, подарки семьи существуют",

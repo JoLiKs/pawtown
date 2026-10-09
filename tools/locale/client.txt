@@ -150,3 +150,32 @@ choice.parcel.keep.effect | Fun for you: +{n} treats, but {rep} street reputatio
 cut.ch2.1 | A new day on Maple Street. | Новый день на Кленовой улице.
 cut.ch2.2 | The neighbours want to meet the new pet! | Соседи хотят познакомиться с новым питомцем!
 cut.ch2.3 | And the mailman looks worried... | А почтальон выглядит встревоженным…
+
+# v0.2 — друзья
+panel.Friends | Friends | Друзья
+friends.requests | Friend requests | Заявки в друзья
+friends.wants | wants to be your friend | хочет дружить
+friends.accept | Accept | Принять
+friends.decline | Decline | Отклонить
+friends.here | Players here ({n}) | Игроки на сервере ({n})
+friends.here_none | Nobody else is on this server yet. | На сервере пока никого нет.
+friends.player | Player | Игрок
+friends.is_friend | Your friend | Твой друг
+friends.add | Add | Добавить
+friends.sent | Sent | Отправлено
+friends.visit | Visit | В гости
+friends.remove | Remove | Убрать
+friends.list | My friends ({n}/{max}) | Мои друзья ({n}/{max})
+friends.none | No friends yet. Add players you meet! | Пока нет друзей. Добавляй игроков, которых встретишь!
+friends.online | On this server · friendship {n} | На этом сервере · дружба {n}
+friends.offline | Not on this server · friendship {n} | Не на этом сервере · дружба {n}
+friends.combos | Friend combos | Комбо с друзьями
+friends.combos_hint | Stand close to a friend and do these emotes together within 3 seconds: | Встаньте рядом с другом и сделайте эти эмоции вместе в течение 3 секунд:
+combo.HappyDance | Happy dance | Танец радости
+combo.PlayFight | Play fight | Шуточная драка
+combo.Duet | Duet | Дуэт
+combo.DoubleRoll | Double roll | Двойной кувырок
+combo.NoseBoop | Nose boop | Носик к носику
+combo.Zoomies | Zoomies | Носимся кругами
+combo.Echo | Echo | Эхо
+fx.combo | Friend combo! | Комбо с другом!
