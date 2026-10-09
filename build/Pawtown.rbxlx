@@ -4372,9 +4372,9 @@ function UiGeometry.panelRect(lay: Lay, k: number, minH: number?, area: Rect?): 
 	if area and lay.Mode ~= "wide" then
 		w = math.min(area.W, if lay.Mode == "landscape" then UiGeometry.LAND_MAX_W else area.W)
 		h = area.H
+		-- окно не выходит за безопасную область (не закрывает трекер, кнопки и прыжок)
 		w, h =
-			math.max(w, math.min(UiGeometry.MIN_W, lay.W - 16)),
-			math.max(h, math.min(UiGeometry.MIN_H, lay.H - 16))
+			math.max(w, math.min(UiGeometry.MIN_W, area.W)), math.max(h, math.min(UiGeometry.MIN_H, area.H))
 		local cx = area.X + area.W / 2
 		return { X = math.floor(cx - w / 2), Y = math.floor(area.Y), W = math.floor(w), H = math.floor(h) }
 	end
@@ -9279,6 +9279,90 @@ return WorldBuilder
 			</Properties>
 			<Item class="LocalScript" referent="RBX00000000000000000000000000000037">
 				<Properties>
+					<string name="Name">CameraController</string>
+					<ProtectedString name="Source"><![CDATA[--!nonstrict
+--[[
+	CameraController — камера в помещениях (дом, приют):
+	  * ограничение отдаления (CameraMaxZoomDistance) — камера не улетает за стены и над крышей;
+	  * стены между камерой и питомцем становятся полупрозрачными (LocalTransparencyModifier — только у этого клиента);
+	  * снаружи — обычная камера Roblox (с её собственной окклюзией «Zoom»).
+]]
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local WorldData = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("WorldData"))
+
+local player = Players.LocalPlayer
+local INSIDE_MAX, OUTSIDE_MAX = 16, 48
+local FADE = 0.75
+
+local faded: { [BasePart]: boolean } = {}
+local lastInside = nil
+
+local function isWall(p: Instance): boolean
+	return p:IsA("BasePart") and (p.Name == "Wall" or p:GetAttribute("HomeRoof") == true)
+end
+
+local function step()
+	local ch = player.Character
+	local root = ch and ch:FindFirstChild("HumanoidRootPart")
+	local cam = Workspace.CurrentCamera
+	if not root or not cam then
+		return
+	end
+	local pos = root.Position
+	local zone = WorldData.zoneAt(pos)
+	local inside = (zone == "Home" or zone == "Shelter") and pos.Y < 11
+	if inside ~= lastInside then
+		lastInside = inside
+		player.CameraMaxZoomDistance = if inside then INSIDE_MAX else OUTSIDE_MAX
+		player.CameraMinZoomDistance = 4
+	end
+	local now: { [BasePart]: boolean } = {}
+	if inside then
+		-- до 4 стен между головой питомца и камерой
+		local params = RaycastParams.new()
+		params.FilterType = Enum.RaycastFilterType.Exclude
+		local ignore = { ch }
+		local from = pos + Vector3.new(0, 1.5, 0)
+		local to = cam.CFrame.Position
+		for _ = 1, 4 do
+			params.FilterDescendantsInstances = ignore
+			local dir = to - from
+			if dir.Magnitude < 0.1 then
+				break
+			end
+			local hit = Workspace:Raycast(from, dir, params)
+			if not hit then
+				break
+			end
+			if isWall(hit.Instance) then
+				now[hit.Instance :: BasePart] = true
+			end
+			table.insert(ignore, hit.Instance)
+		end
+	end
+	for p in pairs(now) do
+		if not faded[p] then
+			p.LocalTransparencyModifier = FADE
+		end
+	end
+	for p in pairs(faded) do
+		if not now[p] and p.Parent then
+			p.LocalTransparencyModifier = 0
+		end
+	end
+	faded = now
+end
+
+RunService.RenderStepped:Connect(step)
+]]></ProtectedString>
+				</Properties>
+			</Item>
+			<Item class="LocalScript" referent="RBX00000000000000000000000000000038">
+				<Properties>
 					<string name="Name">PetAnimator</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
 --[[
@@ -9563,7 +9647,7 @@ end)
 ]]></ProtectedString>
 				</Properties>
 			</Item>
-			<Item class="LocalScript" referent="RBX00000000000000000000000000000038">
+			<Item class="LocalScript" referent="RBX00000000000000000000000000000039">
 				<Properties>
 					<string name="Name">WorldLocalizer</string>
 					<ProtectedString name="Source"><![CDATA[--!strict
@@ -9670,22 +9754,22 @@ end)
 			</Item>
 		</Item>
 	</Item>
-	<Item class="StarterGui" referent="RBX00000000000000000000000000000039">
+	<Item class="StarterGui" referent="RBX0000000000000000000000000000003A">
 		<Properties>
 			<string name="Name">StarterGui</string>
 		</Properties>
-		<Item class="ScreenGui" referent="RBX0000000000000000000000000000003A">
+		<Item class="ScreenGui" referent="RBX0000000000000000000000000000003B">
 			<Properties>
 				<string name="Name">PawtownGui</string>
 				<bool name="ResetOnSpawn">false</bool>
 				<token name="ZIndexBehavior">1</token>
 				<double name="DisplayOrder">50</double>
 			</Properties>
-			<Item class="Folder" referent="RBX0000000000000000000000000000003B">
+			<Item class="Folder" referent="RBX0000000000000000000000000000003C">
 				<Properties>
 					<string name="Name">Modules</string>
 				</Properties>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003C">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003D">
 					<Properties>
 						<string name="Name">Abilities</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -9840,7 +9924,7 @@ return Abilities
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003D">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003E">
 					<Properties>
 						<string name="Name">Actions</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -9896,7 +9980,7 @@ return Actions
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003E">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003F">
 					<Properties>
 						<string name="Name">BathGame</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10122,7 +10206,7 @@ return BathGame
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000003F">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000040">
 					<Properties>
 						<string name="Name">ClientState</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10240,7 +10324,7 @@ return ClientState
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000040">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000041">
 					<Properties>
 						<string name="Name">Cutscene</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10389,7 +10473,7 @@ return Cutscene
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000041">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000042">
 					<Properties>
 						<string name="Name">EmotesPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10476,7 +10560,7 @@ return EmotesPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000042">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000043">
 					<Properties>
 						<string name="Name">Fx</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10577,7 +10661,7 @@ return Fx
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000043">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000044">
 					<Properties>
 						<string name="Name">Hud</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -10911,8 +10995,9 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 				area = { X = 8, Y = top, W = lay.W - 16 - 66 * k, H = lay.H - top - 150 }
 			else
 				local left = 248 * k
-				-- справа внизу — кнопка прыжка Roblox (~110 px): окно её не перекрывает
-				area = { X = left, Y = 8, W = lay.W - left - 120, H = lay.H - 8 - 74 * k }
+				-- справа — трекер главы (300 px дизайна) и ниже кнопка прыжка Roblox: окно не заходит под них
+				local right = math.max(120, (300 + 20) * k)
+				area = { X = left, Y = 8, W = lay.W - left - right - 8, H = lay.H - 8 - 74 * k }
 			end
 			Layout.setPanelArea(area)
 		else
@@ -10986,7 +11071,7 @@ return Hud
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000044">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000045">
 					<Properties>
 						<string name="Name">Layout</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11138,7 +11223,7 @@ return Layout
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000045">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000046">
 					<Properties>
 						<string name="Name">QuestsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11372,7 +11457,7 @@ return QuestsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000046">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000047">
 					<Properties>
 						<string name="Name">RebirthPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11505,7 +11590,7 @@ return RebirthPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000047">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000048">
 					<Properties>
 						<string name="Name">SettingsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11578,7 +11663,7 @@ return SettingsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000048">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000049">
 					<Properties>
 						<string name="Name">ShopPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11744,7 +11829,185 @@ return ShopPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000049">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004A">
+					<Properties>
+						<string name="Name">SpeciesCard</string>
+						<ProtectedString name="Source"><![CDATA[--!nonstrict
+--[[
+	SpeciesCard — карточка вида (выбор в приюте и «Звёздная ночь»): значок, имя, описание, способности,
+	скорость/прыжок и кнопка. Вёрстка «потоком» (UIListLayout + AutomaticSize): текст переносится и
+	никогда не обрезается ни на ПК, ни на телефоне. SpeciesCard.grid раскладывает карточки в 1 или 2 колонки.
+]]
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local L = require(Shared:WaitForChild("Locale"))
+local SpeciesData = require(Shared:WaitForChild("SpeciesData"))
+
+local Layout = require(script.Parent.Layout)
+local Theme = require(script.Parent.Theme)
+local Ui = require(script.Parent.Ui)
+local Widgets = require(script.Parent.Widgets)
+
+local New = Widgets.New
+local SpeciesCard = {}
+
+local function row(parent: Instance, order: number, h: number): Frame
+	return New("Frame", {
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 0, h),
+		LayoutOrder = order,
+		Parent = parent,
+	})
+end
+
+-- opts: { Button = {Text=key, Color, OnClick}, Extra = function(card, nextOrder) }
+function SpeciesCard.build(sp: any, order: number, opts: any): Frame
+	local o = opts or {}
+	local card = Ui.card({
+		Name = sp.Id,
+		BackgroundColor3 = o.Color or Theme.BgCard,
+		BackgroundTransparency = 0,
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		LayoutOrder = order,
+	})
+	Widgets.padding(card, 8)
+	Ui.list(card, 4)
+	local head = row(card, 1, 60)
+	head.Name = "Head"
+	local iconBack = New("Frame", {
+		BackgroundColor3 = sp.Look.Body,
+		BackgroundTransparency = 0.6,
+		Size = UDim2.fromOffset(60, 60),
+		Parent = head,
+	})
+	Widgets.corner(iconBack, 30)
+	Ui.icon(
+		sp.Id,
+		52,
+		{ AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = iconBack }
+	)
+	Ui.text({
+		Name = "Title",
+		Text = L.kn(sp.Name),
+		Font = Theme.Font,
+		TextSize = 22,
+		TextYAlignment = Enum.TextYAlignment.Center,
+		Size = UDim2.new(1, -70, 1, 0),
+		Position = UDim2.fromOffset(70, 0),
+		Parent = head,
+	})
+	Ui.text({
+		Name = "Desc",
+		Text = L.kn(sp.Desc),
+		TextSize = 16,
+		TextColor3 = Theme.TextDim,
+		TextYAlignment = Enum.TextYAlignment.Top,
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		LayoutOrder = 2,
+		Parent = card,
+	})
+	local n = 10
+	for _, abId in ipairs(sp.Abilities) do
+		local ab = SpeciesData.Abilities[abId]
+		if ab then
+			n += 1
+			local r = row(card, n, 24)
+			r.Name = "Ab_" .. abId
+			Ui.icon(Ui.ABILITY_ICON[abId] or "Paw", 22, { Position = UDim2.fromOffset(2, 1), Parent = r })
+			Ui.text({
+				Text = L.kn(ab.Name),
+				TextSize = 16,
+				TextWrapped = false,
+				Size = UDim2.new(1, -32, 1, 0),
+				Position = UDim2.fromOffset(30, 0),
+				Parent = r,
+			})
+		end
+	end
+	local function stat(key: string, v: number, color: Color3)
+		n += 1
+		local r = row(card, n, 20)
+		r.Name = "Stat_" .. key
+		Ui.text({
+			Text = L.k(key),
+			TextSize = 15,
+			TextWrapped = false,
+			TextColor3 = Theme.TextDim,
+			Size = UDim2.new(0, 104, 1, 0),
+			Parent = r,
+		})
+		local _, set = Ui.bar(r, UDim2.new(0, 108, 0.5, -5), UDim2.new(1, -110, 0, 10), color)
+		set(math.clamp(v, 0.05, 1))
+	end
+	stat("species.speed", (sp.Speed - 0.7) / 0.6, Theme.Green)
+	stat("species.jump", (sp.Jump - 0.7) / 0.6, Theme.Blue)
+	if o.Extra then
+		n = o.Extra(card, n + 1) or n + 1
+	end
+	if o.Button then
+		local r = row(card, 90, 38)
+		r.Name = "Buttons"
+		o.Button.Name = o.Button.Name or "Choose"
+		local b = Widgets.button({
+			Name = o.Button.Name,
+			Text = L.k(o.Button.Text),
+			Color = o.Button.Color or Theme.Green,
+			MaxTextSize = 18,
+			Size = UDim2.new(1, 0, 0, 36),
+			Position = UDim2.fromOffset(0, 2),
+			Parent = r,
+			OnClick = o.Button.OnClick,
+		})
+		card:SetAttribute("HasButton", true)
+		o.Button.Instance = b
+	end
+	return card
+end
+
+-- Раскладка карточек: 2 колонки (ПК, телефон горизонтально) или 1 (телефон вертикально).
+-- Карточки кладутся в строки-фреймы; при смене режима строки пересобираются.
+function SpeciesCard.grid(scroll: ScrollingFrame, cards: { Frame })
+	Ui.list(scroll, 8)
+	local rows = {}
+	local function arrange(lay)
+		local cols = if lay.Mode == "portrait" then 1 else 2
+		for _, c in ipairs(cards) do
+			c.Parent = nil
+		end
+		for _, r in ipairs(rows) do
+			r:Destroy()
+		end
+		table.clear(rows)
+		for i, c in ipairs(cards) do
+			local ri = math.ceil(i / cols)
+			local r = rows[ri]
+			if not r then
+				r = New("Frame", {
+					Name = "Row" .. ri,
+					BackgroundTransparency = 1,
+					Size = UDim2.new(1, 0, 0, 0),
+					AutomaticSize = Enum.AutomaticSize.Y,
+					LayoutOrder = ri,
+					Parent = scroll,
+				})
+				Ui.list(r, 8, true)
+				rows[ri] = r
+			end
+			c.Size = UDim2.new(1 / cols, if cols == 1 then 0 else -4, 0, 0)
+			c.LayoutOrder = i
+			c.Parent = r
+		end
+	end
+	Layout.onChanged(arrange)
+end
+
+return SpeciesCard
+]]></ProtectedString>
+					</Properties>
+				</Item>
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004B">
 					<Properties>
 						<string name="Name">SpeciesPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -11759,6 +12022,7 @@ local L = require(Shared:WaitForChild("Locale"))
 local SpeciesData = require(Shared:WaitForChild("SpeciesData"))
 
 local Actions = require(script.Parent.Actions)
+local SpeciesCard = require(script.Parent.SpeciesCard)
 local ClientState = require(script.Parent.ClientState)
 local Theme = require(script.Parent.Theme)
 local Ui = require(script.Parent.Ui)
@@ -11772,139 +12036,70 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 	local scroll =
 		Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -4), Position = UDim2.fromOffset(4, 0) })
 	Widgets.padding(scroll, 8)
-	local grid = New("UIGridLayout", {
-		CellSize = UDim2.new(0.5, -6, 0, 262),
-		CellPadding = UDim2.fromOffset(8, 8),
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Parent = scroll,
-	})
-	_ = grid
 	local chooseButtons = {}
+	local cards = {}
 	for i, sp in ipairs(SpeciesData.Standard) do
 		local id = sp.Id
-		local card = Ui.card({
-			Name = id,
-			BackgroundColor3 = Theme.BgCard,
-			BackgroundTransparency = 0,
-			LayoutOrder = i,
-			Parent = scroll,
-		})
-		local iconBack = New("Frame", {
-			BackgroundColor3 = sp.Look.Body,
-			BackgroundTransparency = 0.6,
-			Size = UDim2.fromOffset(64, 64),
-			Position = UDim2.fromOffset(8, 8),
-			Parent = card,
-		})
-		Widgets.corner(iconBack, 32)
-		Ui.icon(
-			id,
-			56,
-			{ AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = iconBack }
-		)
-		Ui.text({
-			Name = "Title",
-			Text = L.kn(sp.Name),
-			Font = Theme.Font,
-			TextSize = 22,
-			Size = UDim2.new(1, -84, 0, 26),
-			Position = UDim2.fromOffset(80, 8),
-			Parent = card,
-		})
-		Ui.text({
-			Name = "Desc",
-			Text = L.kn(sp.Desc),
-			TextSize = 15,
-			TextColor3 = Theme.TextDim,
-			TextYAlignment = Enum.TextYAlignment.Top,
-			Size = UDim2.new(1, -84, 0, 66),
-			Position = UDim2.fromOffset(80, 34),
-			Parent = card,
-		})
-		local y = 104
-		for _, abId in ipairs(sp.Abilities) do
-			local ab = SpeciesData.Abilities[abId]
-			if ab then
-				Ui.icon(
-					Ui.ABILITY_ICON[abId] or "Paw",
-					22,
-					{ Position = UDim2.fromOffset(10, y), Parent = card }
-				)
-				Ui.text({
-					Text = L.kn(ab.Name),
-					TextSize = 15,
-					Size = UDim2.new(1, -44, 0, 22),
-					Position = UDim2.fromOffset(38, y),
-					Parent = card,
-				})
-				y += 24
-			end
-		end
-		-- скорость и прыжок
-		local function stat(label: string, v: number, yy: number, color: Color3)
-			Ui.text({
-				Text = L.k(label),
-				TextSize = 15,
-				TextColor3 = Theme.TextDim,
-				Size = UDim2.fromOffset(70, 18),
-				Position = UDim2.fromOffset(10, yy),
-				Parent = card,
-			})
-			local _, set = Ui.bar(card, UDim2.fromOffset(84, yy + 4), UDim2.new(1, -96, 0, 10), color)
-			set(v)
-		end
-		stat("species.speed", (sp.Speed - 0.7) / 0.6, 182, Theme.Green)
-		stat("species.jump", (sp.Jump - 0.7) / 0.6, 202, Theme.Blue)
-		chooseButtons[id] = Widgets.button({
-			Name = "Choose",
-			Text = L.k("btn.choose"),
-			Color = Theme.Green,
-			MaxTextSize = 18,
-			Size = UDim2.new(1, -16, 0, 30),
-			Position = UDim2.new(0, 8, 1, -36),
-			Parent = card,
+		local btn = {
+			Text = "btn.choose",
 			OnClick = function()
 				if Actions.call("ChooseSpecies", id) then
 					panel.Close()
 				end
 			end,
-		})
+		}
+		table.insert(cards, SpeciesCard.build(sp, i, { Button = btn }))
+		chooseButtons[id] = btn.Instance
 	end
+	-- редкие виды: «Звёздная ночь»
 	local rare = Ui.card({
 		Name = "Rare",
 		BackgroundColor3 = Color3.fromRGB(60, 40, 90),
 		BackgroundTransparency = 0,
-		LayoutOrder = 10,
-		Parent = scroll,
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
 	})
-	Ui.icon("Spark", 48, { Position = UDim2.fromOffset(10, 12), Parent = rare })
+	Widgets.padding(rare, 8)
+	Ui.list(rare, 6)
+	local rh = New(
+		"Frame",
+		{ BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 48), LayoutOrder = 1, Parent = rare }
+	)
+	Ui.icon("Spark", 46, { Parent = rh })
 	Ui.text({
 		Text = L.k("species.rare_title"),
 		Font = Theme.Font,
 		TextSize = 20,
-		Size = UDim2.new(1, -70, 0, 26),
-		Position = UDim2.fromOffset(66, 10),
-		Parent = rare,
+		TextYAlignment = Enum.TextYAlignment.Center,
+		Size = UDim2.new(1, -56, 1, 0),
+		Position = UDim2.fromOffset(56, 0),
+		Parent = rh,
 	})
 	Ui.text({
 		Text = L.k("species.rare_desc"),
-		TextSize = 15,
+		TextSize = 16,
 		TextColor3 = Theme.TextDim,
-		TextYAlignment = Enum.TextYAlignment.Top,
-		Size = UDim2.new(1, -20, 0, 100),
-		Position = UDim2.fromOffset(10, 70),
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		LayoutOrder = 2,
 		Parent = rare,
 	})
+	local rb = New(
+		"Frame",
+		{ BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 38), LayoutOrder = 3, Parent = rare }
+	)
 	Widgets.button({
 		Name = "SparkNight",
 		Text = L.k("btn.look"),
 		Color = Theme.Purple,
 		MaxTextSize = 18,
-		Size = UDim2.new(1, -16, 0, 30),
-		Position = UDim2.new(0, 8, 1, -36),
-		Parent = rare,
+		Size = UDim2.new(1, 0, 0, 36),
+		Position = UDim2.fromOffset(0, 2),
+		Parent = rb,
 		OnClick = openRebirth,
 	})
+	table.insert(cards, rare)
+	SpeciesCard.grid(scroll, cards)
 	ClientState.onCore(function(core)
 		for _, b in pairs(chooseButtons) do
 			b.Visible = core.Species == ""
@@ -11917,7 +12112,7 @@ return SpeciesPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004A">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004C">
 					<Properties>
 						<string name="Name">TalentsPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12081,7 +12276,7 @@ return TalentsPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004B">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004D">
 					<Properties>
 						<string name="Name">Theme</string>
 						<ProtectedString name="Source"><![CDATA[--!strict
@@ -12141,7 +12336,7 @@ return Theme
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004C">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004E">
 					<Properties>
 						<string name="Name">Toasts</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12306,7 +12501,7 @@ return Toasts
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004D">
+				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004F">
 					<Properties>
 						<string name="Name">TricksPanel</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12715,7 +12910,7 @@ return TricksPanel
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004E">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000050">
 					<Properties>
 						<string name="Name">Ui</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -12915,7 +13110,7 @@ return Ui
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX0000000000000000000000000000004F">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000051">
 					<Properties>
 						<string name="Name">Widgets</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13483,7 +13678,7 @@ return Widgets
 ]]></ProtectedString>
 					</Properties>
 				</Item>
-				<Item class="ModuleScript" referent="RBX00000000000000000000000000000050">
+				<Item class="ModuleScript" referent="RBX00000000000000000000000000000052">
 					<Properties>
 						<string name="Name">WorldFx</string>
 						<ProtectedString name="Source"><![CDATA[--!nonstrict
@@ -13718,7 +13913,7 @@ return WorldFx
 					</Properties>
 				</Item>
 			</Item>
-			<Item class="LocalScript" referent="RBX00000000000000000000000000000051">
+			<Item class="LocalScript" referent="RBX00000000000000000000000000000053">
 				<Properties>
 					<string name="Name">UIController</string>
 					<ProtectedString name="Source"><![CDATA[--!nonstrict
