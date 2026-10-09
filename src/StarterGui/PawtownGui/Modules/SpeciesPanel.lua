@@ -44,7 +44,7 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 		Name = "Rare",
 		BackgroundColor3 = Color3.fromRGB(60, 40, 90),
 		BackgroundTransparency = 0,
-		Size = UDim2.new(1, 0, 0, 0),
+		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 	})
 	Widgets.padding(rare, 8)
@@ -67,7 +67,7 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 		Text = L.k("species.rare_desc"),
 		TextSize = 16,
 		TextColor3 = Theme.TextDim,
-		Size = UDim2.new(1, 0, 0, 0),
+		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		LayoutOrder = 2,
 		Parent = rare,

@@ -33,7 +33,7 @@ function SpeciesCard.build(sp: any, order: number, opts: any): Frame
 		Name = sp.Id,
 		BackgroundColor3 = o.Color or Theme.BgCard,
 		BackgroundTransparency = 0,
-		Size = UDim2.new(1, 0, 0, 0),
+		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		LayoutOrder = order,
 	})
@@ -69,7 +69,7 @@ function SpeciesCard.build(sp: any, order: number, opts: any): Frame
 		TextSize = 16,
 		TextColor3 = Theme.TextDim,
 		TextYAlignment = Enum.TextYAlignment.Top,
-		Size = UDim2.new(1, 0, 0, 0),
+		Size = UDim2.fromScale(1, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		LayoutOrder = 2,
 		Parent = card,
@@ -153,7 +153,7 @@ function SpeciesCard.grid(scroll: ScrollingFrame, cards: { Frame })
 				r = New("Frame", {
 					Name = "Row" .. ri,
 					BackgroundTransparency = 1,
-					Size = UDim2.new(1, 0, 0, 0),
+					Size = UDim2.fromScale(1, 0),
 					AutomaticSize = Enum.AutomaticSize.Y,
 					LayoutOrder = ri,
 					Parent = scroll,
