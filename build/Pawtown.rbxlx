@@ -1820,9 +1820,9 @@ LocaleEn.Strings = {
 	["quest.c2_meet"] = "Meet the neighbours on Maple Street",
 	["quest.c2_mail"] = "Say hi to Pete the mailman",
 	["quest.c2_parcel"] = "Find Pete's lost parcel",
-	["quest.c2_choice"] = "Decide what to do with the parcel (talk to Pete)",
+	["quest.c2_choice"] = "Decide what to do with the parcel",
 	["quest.c2_glasses"] = "Find Mrs. Elm's glasses in her flowerbed",
-	["quest.c2_cheer"] = "Cheer up grumpy Mr. Buttercup with an emote",
+	["quest.c2_cheer"] = "Cheer up Mr. Buttercup with an emote",
 	["quest.c2_party"] = "Join the Maple Street party",
 	["npc.Elm"] = "Mrs. Elm",
 	["npc.Buttercup"] = "Mr. Buttercup",
@@ -2283,9 +2283,9 @@ LocaleRu.Strings = {
 	["quest.c2_meet"] = "Познакомься с соседями на Кленовой улице",
 	["quest.c2_mail"] = "Поздоровайся с почтальоном Петей",
 	["quest.c2_parcel"] = "Найди потерянную посылку Пети",
-	["quest.c2_choice"] = "Реши, что делать с посылкой (поговори с Петей)",
-	["quest.c2_glasses"] = "Найди очки миссис Вязовой в её клумбе",
-	["quest.c2_cheer"] = "Развесели ворчуна мистера Лютикова эмоцией",
+	["quest.c2_choice"] = "Реши, что делать с посылкой",
+	["quest.c2_glasses"] = "Найди очки миссис Вязовой",
+	["quest.c2_cheer"] = "Развесели мистера Лютикова эмоцией",
 	["quest.c2_party"] = "Приходи на праздник Кленовой улицы",
 	["npc.Elm"] = "Миссис Вязова",
 	["npc.Buttercup"] = "Мистер Лютиков",
@@ -11935,7 +11935,8 @@ local function buildStory2()
 			{ CanCollide = false }
 		)
 	end
-	sign(f, c + V(0, 10, 0), "place.Party", c3(255, 230, 160), 200)
+	-- видна только с улицы (не сквозь дом через дорогу)
+	sign(f, c + V(0, 10, 0), "place.Party", c3(255, 230, 160), 200).MaxDistance = 55
 	local sc = WorldData.Story2.Shortcut
 	for _, side in ipairs({ "A", "B" }) do
 		local pos: Vector3 = if side == "A" then sc.A else sc.B
@@ -14080,7 +14081,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		AutoButtonColor = false,
 		BackgroundColor3 = Theme.Bg,
 		BackgroundTransparency = 0.12,
-		Size = UDim2.fromOffset(300, 92),
+		Size = UDim2.fromOffset(300, 102),
 		AnchorPoint = Vector2.new(1, 0),
 		Position = UDim2.new(1, -10, 0, 10),
 		Parent = root,
@@ -14097,10 +14098,12 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		Position = UDim2.fromOffset(42, 8),
 		Parent = tracker,
 	})
+	-- шаг — не больше двух строк (длинный текст обрезается многоточием, не налезает на «Задания дня»)
 	local tStep = Ui.text({
 		Name = "Step",
 		TextSize = 18,
-		Size = UDim2.new(1, -20, 0, 40),
+		TextTruncate = Enum.TextTruncate.AtEnd,
+		Size = UDim2.new(1, -20, 0, 42),
 		Position = UDim2.fromOffset(10, 34),
 		TextYAlignment = Enum.TextYAlignment.Top,
 		Parent = tracker,
@@ -14256,8 +14259,8 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			layoutNeeds(true)
 			tracker.AnchorPoint = Vector2.new(0, 0)
 			tracker.Position = UDim2.fromOffset(10, 100)
-			tracker.Size = UDim2.fromOffset(W - 20, 92)
-			needs.Position = UDim2.fromOffset(10, 200)
+			tracker.Size = UDim2.fromOffset(W - 20, 102)
+			needs.Position = UDim2.fromOffset(10, 210)
 			needs.Size = UDim2.fromOffset(W - 20, 58)
 			menu.AnchorPoint = Vector2.new(1, 0.5)
 			menu.Position = UDim2.new(1, -8, 0.56, 0)
@@ -14270,7 +14273,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			layoutNeeds(false)
 			tracker.AnchorPoint = Vector2.new(1, 0)
 			tracker.Position = UDim2.new(1, -10, 0, 10)
-			tracker.Size = UDim2.fromOffset(300, 92)
+			tracker.Size = UDim2.fromOffset(300, 102)
 			needs.Position = UDim2.fromOffset(10, 100)
 			menu.AnchorPoint = Vector2.new(0.5, 1)
 			menu.Position = UDim2.new(0.5, 0, 1, -8)
@@ -14283,7 +14286,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			layoutNeeds(false)
 			tracker.AnchorPoint = Vector2.new(1, 0)
 			tracker.Position = UDim2.new(1, -10, 0, 10)
-			tracker.Size = UDim2.fromOffset(300, 92)
+			tracker.Size = UDim2.fromOffset(300, 102)
 			needs.Position = UDim2.fromOffset(10, 100)
 			menu.AnchorPoint = Vector2.new(1, 0.5)
 			menu.Position = UDim2.new(1, -10, 0.55, 0)
@@ -15286,10 +15289,10 @@ function RebirthPanel.init(gui: ScreenGui)
 	Widgets.padding(top, 8)
 	Ui.list(top, 6)
 	local intro = flowText(top, "Intro", 1, 16, Theme.Text)
-	intro.Text = L.k("rebirth.intro")
+	L.bind(intro, "Text", L.k("rebirth.intro"))
 	local stars = flowText(top, "Stars", 2, 16, Theme.Gold)
 	local keep = flowText(top, "Keep", 3, 15, Theme.TextDim)
-	keep.Text = L.k("rebirth.keep")
+	L.bind(keep, "Text", L.k("rebirth.keep"))
 	local inhRow = New("Frame", {
 		Name = "InheritRow",
 		BackgroundTransparency = 1,
