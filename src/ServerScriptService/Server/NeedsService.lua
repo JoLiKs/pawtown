@@ -188,6 +188,10 @@ function NeedsService.init()
 		NeedsService.add(player, "Fun", 6)
 		Progress.xp(player, math.floor(12 + 18 * sc))
 		QuestService.event(player, "bath")
+		local ch = player.Character
+		if ch then
+			ch:SetAttribute("Action", "Shake:" .. os.clock())
+		end
 		return true, Locale.m("msg.bath_done", { n = math.floor(sc * 100) })
 	end)
 	Router.register("BathCancel", 2, 4, function(player)

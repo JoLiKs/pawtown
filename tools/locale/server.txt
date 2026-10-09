@@ -1,0 +1,169 @@
+# key | en | ru
+err.unknown_action | Unknown action | Неизвестное действие
+err.loading | Still loading... | Ещё загружается…
+err.slow_down | Slow down! | Не так быстро!
+err.server | Server error | Ошибка сервера
+err.connection | Connection problem, try again | Проблема со связью, попробуйте ещё раз
+err.bad_request | Can't do that right now | Сейчас так нельзя
+kick.suspicious | Disconnected: suspicious activity | Отключено: подозрительная активность
+kick.session | Your progress is open in another server | Ваш прогресс открыт на другом сервере
+kick.load_failed | Couldn't load your progress, please rejoin ({err}) | Не удалось загрузить прогресс, зайдите снова ({err})
+welcome.new | Welcome to Lumen Hills! | Добро пожаловать в Люмен-Хиллс!
+welcome.back | Welcome back! Your family missed you. | С возвращением! Семья по тебе скучала.
+toast.level_up | Level {n}! | Уровень {n}!
+toast.age_up | You grew up: {age}! | Ты подрос: {age}!
+toast.rep_up | {place} reputation: level {n} | Репутация, {place}: уровень {n}
+toast.reward | {what}: +{t} treats, +{x} XP | {what}: +{t} лакомств, +{x} опыта
+toast.next_step | Next: {step} | Дальше: {step}
+toast.chapter_done | Chapter 1 complete! More chapters are coming. | Глава 1 пройдена! Новые главы скоро.
+toast.gift_item | {who} gave you a gift: {item}! | {who} дарит тебе подарок: {item}!
+toast.gift_treats | {who} gave you {n} treats! | {who} дарит тебе {n} лакомств!
+age.Baby | Baby | Малыш
+age.Teen | Teen | Подросток
+age.Adult | Adult | Взрослый
+place.Street | Maple Street | Кленовая улица
+place.Home | Home | Дом
+place.Garden | Neighbour's garden | Сад соседей
+place.Shelter | Warm Nose shelter | Приют «Тёплый нос»
+place.Park | Dandelion Park | Парк Одуванчиков
+place.Agility | Agility course | Полоса препятствий
+place.Fetch | Fetch field | Поляна апорта
+place.Dream | Dream | Сон
+prompt.fetch | Play fetch | Апорт
+prompt.shop | Boutique | Бутик
+prompt.tricks | Tricks | Трюки
+prompt.eat | Eat | Есть
+prompt.drink | Drink | Пить
+prompt.beg | Beg | Выпрашивать
+prompt.sleep | Sleep | Спать
+prompt.bath | Bath | Купаться
+prompt.newspaper | Take newspaper | Взять газету
+prompt.species | Choose | Выбрать
+prompt.agility | Start | Старт
+prompt.dig | Dig | Копать
+prompt.burrow | Crawl under | Пролезть
+prompt.shard | Take shard | Взять осколок
+prompt.pick_toy | Pick up | Подобрать
+prompt.grab_ball | Grab ball | Схватить мяч
+prompt.family | Cuddle | Приласкаться
+prompt.keeper | Talk | Поговорить
+prompt.mailman | Greet | Поприветствовать
+obj.toybox | Toy box | Ящик с игрушками
+obj.boutique | Pet boutique | Бутик для питомцев
+obj.trickmat | Trick mat | Коврик для трюков
+obj.bowl | Food bowl | Миска
+obj.water | Water bowl | Поилка
+obj.table | Dinner table | Обеденный стол
+obj.petbed | Pet bed | Лежанка
+obj.tub | Bathtub | Ванна
+obj.mailbox | Mailbox | Почтовый ящик
+obj.pedestal | New friend | Новый друг
+obj.agility | Agility course | Полоса препятствий
+obj.launcher | Ball launcher | Мячомёт
+obj.digspot | Loose soil | Рыхлая земля
+obj.gap | Gap under fence | Лаз под забором
+obj.shard | Memory shard | Осколок памяти
+obj.toy | Lost toy | Потерянная игрушка
+obj.ball | Ball | Мяч
+agility.cp | {n} | {n}
+quest.c1_species | Choose your new body at the shelter | Выбери новое тело в приюте
+quest.c1_home | Follow your family home | Иди за семьёй домой
+quest.c1_eat | Eat from your bowl | Поешь из миски
+quest.c1_trick | Do your first trick on the mat | Покажи первый трюк на коврике
+quest.c1_family | Cuddle Dad, Grandma and Mia | Приласкайся к папе, бабушке и Мие
+quest.c1_shards | Find 3 memory shards | Найди 3 осколка памяти
+quest.c1_dream | Sleep in your bed | Поспи на лежанке
+daily.d_newspaper | Bring Dad the newspaper | Принеси папе газету
+daily.d_lost_toy | Find Mia's lost toy | Найди потерянную игрушку Мии
+daily.d_wake | Wake Dad up in the morning | Разбуди папу утром
+daily.d_fetch | Play fetch 3 times | Сыграй в апорт 3 раза
+daily.d_tricks | Get 2 silver medals in tricks | Получи 2 серебряные медали за трюки
+daily.d_bath | Take a bath | Искупайся
+daily.d_mailman | Greet the mailman with an emote | Поприветствуй почтальона эмоцией
+daily.d_agility | Finish the agility course | Пройди полосу препятствий
+msg.no_newspaper | No newspaper yet. Come back tomorrow! | Газеты пока нет. Приходи завтра!
+msg.mouth_full | Your mouth is full! | У тебя уже что-то в зубах!
+msg.got_newspaper | Got the newspaper! Bring it to Dad. | Газета у тебя! Отнеси её папе.
+msg.not_your_toy | That's not your toy to find | Эту игрушку ищет кто-то другой
+msg.got_toy | Found the toy! Bring it to Mia. | Игрушка найдена! Отнеси её Мие.
+msg.not_sleepy | You're not sleepy | Спать пока не хочется
+msg.sleep_night | Good night... | Спокойной ночи…
+msg.sleep_nap | A short nap... | Короткий сон…
+msg.morning | Good morning! | Доброе утро!
+msg.not_thirsty | You're not thirsty | Пить не хочется
+msg.drink | Slurp! | Хлюп-хлюп!
+msg.not_hungry | You're not hungry | Есть не хочется
+msg.chewing | Still chewing... | Ещё жуёшь…
+msg.yum | Yum! | Вкуснятина!
+msg.beg_wait | Grandma says: later! ({n} s) | Бабушка говорит: попозже! ({n} с)
+msg.beg_ok | Grandma slipped you a snack! | Бабушка тайком угостила тебя!
+msg.bath_done | Squeaky clean! ({n}%) | Чистота блестит! ({n}%)
+msg.woke_dad | Dad is up! | Папа проснулся!
+msg.cuddle_wait | {who} needs a little break | {who} хочет немного отдохнуть
+msg.fetch_done | Good fetch! | Отличный апорт!
+msg.fetch_busy | You're already playing fetch | Ты уже играешь в апорт
+msg.fetch_timeout | The ball got away... | Мяч укатился…
+msg.fetch_go | Go get the ball! | Беги за мячом!
+msg.not_your_ball | That's someone else's ball | Это чужой мяч
+msg.ball_home | Bring the ball to Mia | Принеси мяч Мие
+msg.ball_park | Bring the ball back to the launcher | Принеси мяч обратно к мячомёту
+msg.agility_timeout | Too slow, try again! | Слишком медленно, попробуй ещё!
+msg.agility_done | Course done in {t} s: {medal} | Полоса пройдена за {t} с: {medal}
+msg.agility_running | You're on the course already | Ты уже на полосе
+msg.agility_go | Go! Run through all the gates! | Вперёд! Пробеги все ворота!
+msg.shard_have | You already have this shard | Этот осколок уже у тебя
+msg.shard_found | Memory shard {n}/{total}! A memory flickers... | Осколок памяти {n}/{total}! Мелькнуло воспоминание…
+msg.only_dog | Only dogs can dig here | Копать здесь умеют только собаки
+msg.dig_empty | Nothing here... | Здесь пусто…
+msg.dig_found | You dug up {n} treats! | Ты выкопал {n} лакомств!
+msg.only_rabbit | Only rabbits fit through here | Сюда пролезет только кролик
+msg.no_ability | Your species can't do that | Твой вид так не умеет
+msg.sniff_found | You smell something! ({n}) | Чуешь что-то! ({n})
+msg.sniff_none | Nothing interesting nearby | Поблизости ничего интересного
+msg.bought | Bought: {item} | Куплено: {item}
+msg.owned | You already own it | Это уже твоё
+msg.not_enough | Not enough treats | Не хватает лакомств
+msg.shop_home_only | Shop at the boutique at home | Покупать можно в бутике дома
+msg.sleeping | You're asleep | Ты спишь
+msg.species_chosen | You already have a home | У тебя уже есть дом
+msg.trick_level | Unlocks at level {n} | Откроется на уровне {n}
+msg.friendship | Friendship with {player}: {n} | Дружба с {player}: {n}
+npc.Dad | Dad | Папа
+npc.Grandma | Grandma | Бабушка
+npc.Kid | Mia | Мия
+npc.Keeper | Shelter keeper Ann | Смотрительница Анна
+npc.Mailman | Mailman Bob | Почтальон Боб
+speech.zzz | Zzz... | Хррр…
+speech.dad_wake | Morning, buddy! Who's a good alarm? | Доброе утро, дружок! Кто тут лучший будильник?
+speech.dad_paper | The newspaper! Thank you! | Газета! Спасибо!
+speech.kid_toy | My toy! You found it! | Моя игрушка! Ты её нашёл!
+speech.kid_fetch | Again! Again! | Ещё! Ещё!
+speech.kid_throw | Catch! | Лови!
+speech.mail | Mail's here! | Почта!
+speech.mail_hi | Hello there, fluffy! | Привет, пушистик!
+speech.grandma_sleep | Sweet dreams, little one. | Сладких снов, малыш.
+speech.Dad.busy | Give me a minute, pal. | Дай мне минутку, дружок.
+speech.Grandma.busy | Later, sweetie. | Попозже, милый.
+speech.Kid.busy | I'm busy, let's play later! | Я занята, поиграем потом!
+speech.Dad.1 | Who's a good pet? You are! | Кто тут хороший? Ты!
+speech.Dad.2 | Want to go for a walk later? | Пойдём потом гулять?
+speech.Dad.3 | Don't tell Grandma I fed you. | Только бабушке не говори, что я тебя кормил.
+speech.Grandma.1 | Oh, you're so fluffy! | Ох, какой ты пушистый!
+speech.Grandma.2 | Have you eaten today, dear? | Ты сегодня кушал, милый?
+speech.Grandma.3 | You remind me of someone... | Ты мне кого-то напоминаешь…
+speech.Kid.1 | You're my best friend! | Ты мой лучший друг!
+speech.Kid.2 | Let's play! | Давай играть!
+speech.Kid.3 | I'll teach you a new trick! | Я научу тебя новому трюку!
+speech.Keeper | Pick a friend, and a family will come for you! | Выбери облик — и за тобой придёт семья!
+speech.trick.1 | Nice try! | Неплохо!
+speech.trick.2 | Great job! | Здорово!
+speech.trick.3 | Wow, a superstar! | Ого, настоящая звезда!
+medal.0 | no medal | без медали
+medal.1 | bronze | бронза
+medal.2 | silver | серебро
+medal.3 | gold | золото
+talent.maxed | Talent is maxed | Талант на максимуме
+talent.locked | Learn the first talent of the branch first | Сначала изучи первый талант ветки
+talent.no_points | No talent points | Нет очков талантов
+tag.pet | Lv {n} {species} | Ур. {n} · {species}
+tag.new | waiting for a family | ждёт семью
