@@ -73,6 +73,10 @@ function Fx.init(gui: ScreenGui, openUi: (string) -> ())
 			Toasts.banner("fx.shard", "fx.shard_sub", Color3.fromRGB(150, 200, 255), 3.5)
 		elseif kind == "Sniff" then
 			WorldFx.sniff(a)
+		elseif kind == "CrystalSight" then
+			WorldFx.crystalSight(a)
+		elseif kind == "TrialSpark" then
+			Toasts.banner("fx.trial_spark", nil, Theme.Purple, 1.4)
 		elseif kind == "AgilityStart" then
 			agStart, agNext = os.clock(), 1
 			agility.Visible = true

@@ -197,7 +197,9 @@ local function tree(parent: Instance, pos: Vector3, h: number, r: number, color:
 	return m
 end
 
+WorldBuilder.bushes = {} :: { Vector3 } -- центры кустов (лиса прячется в них: RareAbilities)
 local function bush(parent: Instance, pos: Vector3, s: number)
+	table.insert(WorldBuilder.bushes, pos)
 	part(
 		parent,
 		"Bush",
@@ -809,7 +811,7 @@ end
 local function buildShards()
 	local f = folder(world, "Shards")
 	for _, s in ipairs(WorldData.Shards) do
-		if s.Id ~= "s_dig" then
+		if not WorldData.isDugShard(s.Id) then
 			local p = part(
 				f,
 				s.Id,
@@ -825,6 +827,95 @@ local function buildShards()
 			p:SetAttribute("ShardId", s.Id)
 			Interact.prompt(p, "Shard", "prompt.shard", { Arg = s.Id, Object = "obj.shard", Distance = 8 })
 		end
+	end
+end
+
+-- v0.2: алтарь Искр, мусорные баки и сараи (енот), логово енота, тайники (хрустальный кролик)
+local function buildRare()
+	local f = folder(world, "SparkNight")
+	local c = WorldData.SparkShrine
+	part(f, "ShrineBase", V(8, 1, 8), c + V(0, 0.5, 0), c3(120, 110, 150), { Material = Enum.Material.Slate })
+	part(f, "ShrineStep", V(5, 1, 5), c + V(0, 1.5, 0), c3(140, 130, 175), { Material = Enum.Material.Slate })
+	local crystal = part(
+		f,
+		"ShrineCrystal",
+		V(1.8, 4.2, 1.8),
+		CFrame.new(c + V(0, 4.2, 0)) * CFrame.Angles(0, math.rad(45), math.rad(8)),
+		COL.Neon,
+		{ Material = Enum.Material.Neon, Transparency = 0.15 }
+	)
+	for i = 0, 5 do
+		local a = math.rad(i * 60)
+		part(
+			f,
+			"ShrineStone",
+			V(1, 2.4, 1),
+			c + V(math.cos(a) * 6.5, 1.2, math.sin(a) * 6.5),
+			c3(170, 160, 200),
+			{ Material = Enum.Material.Slate }
+		)
+	end
+	sign(f, c + V(0, 9, 0), "place.Shrine", c3(220, 200, 255), 200)
+	Interact.prompt(crystal, "SparkShrine", "prompt.shrine", { Object = "obj.shrine", Distance = 12 })
+
+	local bins = folder(world, "TrashBins")
+	for i, pos in ipairs(WorldData.TrashBins) do
+		local m = model(bins, "Bin" .. i)
+		part(m, "BinBody", V(2.4, 3, 2.4), pos + V(0, 1.5, 0), c3(90, 130, 100))
+		local lid = part(m, "BinLid", V(2.7, 0.4, 2.7), pos + V(0, 3.2, 0), c3(70, 105, 80))
+		Interact.prompt(
+			lid,
+			"Unlock",
+			"prompt.bin",
+			{ Arg = "bin" .. i, Species = "Unlock", Hold = 0.6, Object = "obj.bin", Distance = 8 }
+		)
+	end
+	local sheds = folder(world, "ShedLocks")
+	for i in ipairs(WorldData.Neighbours) do
+		local sp = WorldData.shedPos(i)
+		local side = if WorldData.Neighbours[i].Center.X < 0 then 1 else -1
+		local door = part(sheds, "ShedDoor" .. i, V(0.3, 4, 2.6), sp + V(side * 2.6, 2, 0), COL.Wood)
+		part(sheds, "Padlock" .. i, V(0.4, 0.7, 0.6), sp + V(side * 2.85, 2.2, 0.6), c3(230, 190, 70))
+		Interact.prompt(
+			door,
+			"Unlock",
+			"prompt.shed",
+			{ Arg = "shed" .. i, Species = "Unlock", Hold = 1.2, Object = "obj.shed", Distance = 8 }
+		)
+	end
+	local den = part(
+		folder(world, "Den"),
+		"RaccoonDen",
+		V(4, 1.6, 3),
+		WorldData.RaccoonDen + V(0, 0.8, 0),
+		c3(110, 85, 60),
+		{ Material = Enum.Material.WoodPlanks }
+	)
+	part(
+		den.Parent :: Instance,
+		"DenHole",
+		V(2, 1.1, 0.2),
+		WorldData.RaccoonDen + V(0, 0.6, 1.55),
+		c3(30, 22, 18)
+	)
+	Interact.prompt(den, "Stash", "prompt.stash", { Species = "Stash", Object = "obj.den", Distance = 8 })
+	local caches = folder(world, "SecretCaches")
+	for _, cc in ipairs(WorldData.SecretCaches) do
+		local p = part(
+			caches,
+			cc.Id,
+			V(0.8, 1.2, 0.8),
+			CFrame.new(cc.Pos) * CFrame.Angles(0, 0, math.rad(20)),
+			c3(150, 230, 255),
+			{ Material = Enum.Material.Neon, CanCollide = false, Transparency = 0.55 }
+		)
+		p:SetAttribute("Secret", true)
+		Interact.prompt(
+			p,
+			"Cache",
+			"prompt.cache",
+			{ Arg = cc.Id, Species = "CrystalSight", Object = "obj.cache", Distance = 8 }
+		)
 	end
 end
 
@@ -900,6 +991,7 @@ function WorldBuilder.build()
 	if old then
 		old:Destroy()
 	end
+	table.clear(WorldBuilder.bushes)
 	world = Instance.new("Folder")
 	world.Name = "World"
 	world.Parent = Workspace
@@ -912,6 +1004,7 @@ function WorldBuilder.build()
 	buildDigSpots()
 	buildBurrows()
 	buildShards()
+	buildRare()
 	buildDream()
 	-- папки для динамики: NPC, мячи, игрушки
 	folder(world, "NPC")

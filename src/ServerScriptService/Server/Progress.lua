@@ -1,6 +1,7 @@
 --!strict
 --[[
 	Progress — единая выдача наград: опыт (с множителем настроения), лакомства (Treats), привязанность, репутация.
+	Звёзды перерождений (RebirthLogic.mult) постоянно увеличивают опыт и лакомства.
 	Повышение уровня: очки талантов, возрастная стадия (масштаб рига), эффект LevelUp.
 ]]
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -9,6 +10,7 @@ local Shared = ReplicatedStorage.Shared
 local Locale = require(Shared.Locale)
 local NeedsLogic = require(Shared.NeedsLogic)
 local Progression = require(Shared.Progression)
+local RebirthLogic = require(Shared.RebirthLogic)
 local Remotes = require(Shared.Remotes)
 local SpeciesData = require(Shared.SpeciesData)
 
@@ -28,7 +30,7 @@ function Progress.xp(player: Player, amount: number): number
 		return 0
 	end
 	local mood = NeedsLogic.mood(data.Needs)
-	local gain = math.floor(amount * NeedsLogic.xpMult(mood) + 0.5)
+	local gain = math.floor(amount * NeedsLogic.xpMult(mood) * RebirthLogic.mult(data) + 0.5)
 	local oldAge = Progression.age(data.Level)
 	local level, xp, gained = Progression.addXp(data.Level, data.Xp, gain)
 	data.Level = level
@@ -57,7 +59,7 @@ function Progress.treats(player: Player, amount: number): number
 	if not data or amount <= 0 then
 		return 0
 	end
-	local mult = if NeedsLogic.glowing(data.Needs) then 1.1 else 1
+	local mult = (if NeedsLogic.glowing(data.Needs) then 1.1 else 1) * RebirthLogic.mult(data)
 	local gain = math.floor(amount * mult + 0.5)
 	data.Treats += gain
 	data.TotalTreats += gain

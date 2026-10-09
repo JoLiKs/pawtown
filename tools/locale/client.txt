@@ -66,7 +66,7 @@ talents.points | Talent points: {n} | Очки талантов: {n}
 branch.Nose | Nose | Нюх
 branch.Agility | Agility | Ловкость
 branch.Charm | Charm | Обаяние
-rebirth.intro | Reach the requirements to be reborn on a Spark Night. Coming in a future update! | Выполни условия, чтобы переродиться в Ночь Искр. Появится в следующих обновлениях!
+rebirth.intro | On a Spark Night an adult pet can be reborn as a rare species. Follow a path from your species, pass its trial at level 50 with 20 memory shards and a loving family. | В Ночь Искр взрослый питомец может переродиться редким видом. Иди по пути своего вида, пройди испытание на 50 уровне, собрав 20 осколков памяти и заслужив любовь семьи.
 rebirth.soon | Coming soon | Скоро
 tier.Rare | Rare | Редкий
 tier.Legendary | Legendary | Легендарный
@@ -104,3 +104,30 @@ cut.dream.1 | You fall asleep... and the stars begin to fall. | Ты засып�
 cut.dream.2 | On a lonely hill a black cat with starry eyes is waiting. | На одиноком холме ждёт чёрный кот со звёздными глазами.
 cut.dream.3 | Midnight Cat: "Your spark got lost on Starfall night. Find your memories." | Полуночный Кот: «Твоя искра потерялась в ночь Звездопада. Найди свои воспоминания».
 cut.dream.4 | Chapter 1 complete. The story continues in the next update! | Глава 1 пройдена. История продолжится в следующем обновлении!
+
+# v0.2 — «Ночь Искр»
+rebirth.keep | You keep: friends, cosmetics, home and family bond, reputation, shards and one talent. Level resets: you become a baby again. | Останется: друзья, косметика, дом и привязанность семьи, репутация, осколки и один талант. Уровень сбросится: снова станешь малышом.
+rebirth.change | Change | Сменить
+rebirth.inherit | Inherited talent: {talent} | Наследуемый талант: {talent}
+rebirth.none | none | нет
+rebirth.path | {tier} path from: {from} | {tier}: путь из — {from}
+rebirth.trial | Start trial | Начать испытание
+rebirth.trial_ok | Trial passed | Испытание пройдено
+rebirth.trial_running_btn | Trial in progress | Испытание идёт
+rebirth.reborn | Be reborn | Переродиться
+rebirth.dev | Dev: meet requirements (Studio) | Разраб.: выполнить условия (Studio)
+rebirth.stars | Rebirth stars: {n}/{max} (+{pct}% XP and treats) | Звёзды перерождений: {n}/{max} (+{pct}% опыта и лакомств)
+rebirth.trial_progress | Trial of the {species}: sparks {n}/{total}, {sec} s left | Испытание ({species}): искры {n}/{total}, осталось {sec} с
+req.Path | Path | Путь
+req.Age | Adult | Взрослый
+req.Trial | Species trial | Испытание вида
+req.Path.ok | Path open | Путь открыт
+req.Path.no | Wrong path: play as a listed species first | Не тот путь: сначала стань видом из списка
+req.Trial.ok | Species trial passed | Испытание вида пройдено
+req.Trial.no | Species trial not passed yet | Испытание вида ещё не пройдено
+req.Age.ok | Adult | Взрослый
+req.Age.no | Must be an adult | Нужно стать взрослым
+fx.trial_spark | Spark caught! | Искра поймана!
+cut.reborn.1 | The sparks gather around you... | Искры собираются вокруг тебя…
+cut.reborn.2 | A new body, the same heart. | Новое тело — то же сердце.
+cut.reborn.3 | Your family still knows you. Welcome back, little one! | Семья узнаёт тебя. С возвращением, малыш!

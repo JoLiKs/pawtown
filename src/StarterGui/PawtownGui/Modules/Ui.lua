@@ -188,6 +188,17 @@ Ui.ABILITY_ICON = {
 	Flap = "Glide",
 	Mimic = "Emote",
 	BestBond = "Love",
+	Stealth = "Leaf",
+	Snatch = "Shop",
+	HugeLeap = "Jump",
+	RoofSprint = "Home",
+	ShieldRoll = "Shield",
+	CommandDogs = "Friends",
+	CrystalSight = "Eye",
+	Unlock = "Lock",
+	Stash = "Shop",
+	LongFlight = "Glide",
+	NightVision = "Energy",
 }
 Ui.MEDAL_ICON = { [1] = "Bronze", [2] = "Silver", [3] = "Gold" }
 

@@ -13,7 +13,7 @@ local NeedsLogic = require(Shared:WaitForChild("NeedsLogic"))
 local SpeciesData = require(Shared:WaitForChild("SpeciesData"))
 local WorldData = require(Shared:WaitForChild("WorldData"))
 
-local Actions = require(script.Parent.Actions)
+local Abilities = require(script.Parent.Abilities)
 local ClientState = require(script.Parent.ClientState)
 local Layout = require(script.Parent.Layout)
 local Theme = require(script.Parent.Theme)
@@ -194,7 +194,7 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 			Size = 66,
 			Parent = abilities,
 			OnClick = function()
-				Actions.call("Ability", id)
+				Abilities.use(id)
 			end,
 		})
 		local key = Ui.text({
@@ -215,8 +215,14 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		b.Visible = false
 		abilityButtons[id] = { Button = b, Key = key }
 	end
+	-- активные способности: основная (Q) и вторая (F) — по SpeciesData.Primary / Secondary
 	abilityButton("Sniff", "Sniff", Color3.fromRGB(150, 110, 70))
 	abilityButton("Dash", "Dash", Color3.fromRGB(90, 190, 140))
+	abilityButton("HugeLeap", "Jump", Color3.fromRGB(150, 180, 230))
+	abilityButton("ShieldRoll", "Shield", Color3.fromRGB(220, 170, 70))
+	abilityButton("CommandDogs", "Friends", Color3.fromRGB(200, 130, 80))
+	abilityButton("CrystalSight", "Eye", Color3.fromRGB(120, 170, 250))
+	abilityButton("NightVision", "Energy", Color3.fromRGB(90, 110, 170))
 
 	------------------------------------------------------------------ сон
 	local sleepVeil = New("Frame", {
@@ -392,8 +398,14 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		tDaily.Visible = chosen
 		menu.Visible = chosen
 		talentDot.Visible = (core.TalentFree or 0) > 0
-		abilityButtons.Sniff.Button.Visible = SpeciesData.has(core.Species, "Sniff")
-		abilityButtons.Dash.Button.Visible = SpeciesData.has(core.Species, "Dash")
+		local spec = SpeciesData.ById[core.Species]
+		for id, ab in pairs(abilityButtons) do
+			local primary = spec ~= nil and spec.Primary == id
+			local secondary = spec ~= nil and spec.Secondary == id
+			ab.Button.Visible = primary or secondary
+			ab.Key.Text = if secondary then "F" else "Q" -- l10n-ok (клавиши)
+			ab.Button.LayoutOrder = if secondary then 2 else 1
+		end
 		sleepVeil.Visible = core.Sleeping == true
 		relayout(Layout.get())
 	end)

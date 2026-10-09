@@ -265,18 +265,90 @@ test(
 				end
 			end
 		end
-		check(R.AVAILABLE == false, "rebirth is 'coming soon' in v0.1")
+		check(R.AVAILABLE == true and R.available("Fox") and not R.available("MidnightCat"), "rare only")
 		local data = {
+			Species = "Dog",
 			Level = 30,
 			Talents = { KeenNose = 3, TreasureHunter = 1 },
 			Shards = { a = true, b = true },
 			Bond = { Dad = 50 },
 			Tricks = { Sit = { Best = 3 } },
+			Lineage = {},
+			Trials = {},
 		}
 		local list, all = R.check(data, "Fox")
-		check(#list == 3 and not all, "Fox: 3 requirements, not all met")
-		check(list[1].Key == "Level" and list[1].Ok, "level requirement met")
+		check(#list == 7 and not all, "Fox: path + 5 common + Nose, not all met")
+		check(list[1].Key == "Path" and list[1].Ok, "Dog -> Fox path open")
+		check(list[2].Key == "Age" and list[2].Ok, "adult at 30")
+		check(list[3].Key == "Level" and not list[3].Ok and list[3].Need == 50, "level 50 needed")
 		check(R.stat(data, "Gold") == 1 and R.stat(data, "Bond") == 50, "stats")
+		check(not R.pathOk(data, "SnowLeopard") and not R.pathOk(data, "Owl"), "Dog has no cat/parrot path")
+		data.Lineage.Cat = true
+		check(R.pathOk(data, "SnowLeopard"), "lineage opens path")
+		for _, sp in ipairs(Sp.List) do
+			if sp.Tier == "Rare" then
+				check(sp.From ~= nil and #sp.From > 0, sp.Id .. " has path")
+				check(S0.WorldData.Trials[sp.Id] ~= nil, sp.Id .. " has trial")
+				check(#Sp.Abilities[sp.Abilities[1]].Name > 0, sp.Id .. " ability")
+			end
+		end
+	end
+)
+
+test(
+	"RebirthLogic: ускоренные условия, перерождение, что сохраняется, звёзды и наследуемый талант",
+	function()
+		local R, P = S0.RebirthLogic, S0.Progression
+		local data = {
+			Species = "Cat",
+			Level = 12,
+			Xp = 5,
+			Talents = { LightPaws = 2 },
+			Shards = { s_home = true },
+			Bond = { Dad = 10, Grandma = 10, Kid = 10 },
+			Tricks = {},
+			Rep = { Street = 33, Park = 7 },
+			Cosmetics = { Owned = { BlueCollar = true }, Equipped = { Collar = "BlueCollar" } },
+			Friends = { ["42"] = 5 },
+			FriendList = { ["42"] = { Name = "Ann", Since = 1 } },
+			Lineage = {},
+			Trials = {},
+			Needs = {},
+			Rebirths = 0,
+			Stars = 0,
+		}
+		local ok0 = R.canTrial(data, "SnowLeopard")
+		check(not ok0, "trial needs adult")
+		check(select(2, R.check(data, "SnowLeopard")) == false, "not ready")
+		R.fastTrack(data, "SnowLeopard")
+		local list, all = R.check(data, "SnowLeopard")
+		check(all, "fast-track meets all requirements")
+		for _, r in ipairs(list) do
+			check(r.Ok, "req ok " .. r.Key)
+		end
+		check(R.stat(data, "Shards") >= 20 and data.Level >= 50, "20 shards, level 50")
+		check(not R.apply(data, "Owl", nil), "wrong path refused")
+		check(not R.apply(data, "SnowLeopard", "KeenNose"), "cannot inherit unlearned talent")
+		local ok = R.apply(data, "SnowLeopard", "LightPaws")
+		check(ok, "rebirth applied")
+		check(data.Species == "SnowLeopard" and data.Level == 1 and data.Xp == 0, "level reset")
+		check(P.age(data.Level) == "Baby", "baby again")
+		check(data.Lineage.Cat and data.Lineage.SnowLeopard, "lineage kept")
+		check(data.Rebirths == 1 and R.stars(data) == 1, "star +1")
+		check(math.abs(R.mult(data) - 1.1) < 1e-9, "+10% bonus")
+		check(data.Rep.Street == 33 and data.Cosmetics.Owned.BlueCollar, "rep and cosmetics kept")
+		check(data.FriendList["42"] ~= nil and data.Friends["42"] == 5, "friends kept")
+		check(R.stat(data, "Shards") >= 20, "shards kept")
+		check(data.Bond.Dad >= 70, "family bond kept")
+		local inhRank = P.rank(data.Talents, "LightPaws")
+		check(inhRank >= 2, "inherited talent rank kept")
+		check(P.spent(data.Talents) == 0, "inherited talent is free")
+		check(P.rank(data.Talents, "SpringLegs") == 0, "other talents reset")
+		check(not data.Trials.SnowLeopard, "trial consumed")
+		for _ = 1, 10 do
+			data.Stars += 1
+		end
+		check(R.stars(data) == R.MAX_STARS, "stars capped")
 	end
 )
 
@@ -338,7 +410,8 @@ test("Migrations: v1 -> v2 и починка битых данных", function(
 	}
 	local changed = M.run(d)
 	check(changed, "changed")
-	check(d.Version == 2 and d.Treats == 77 and d.Coins == nil, "coins -> treats")
+	check(d.Version == 3 and d.Treats == 77 and d.Coins == nil, "coins -> treats")
+	check(type(d.Lineage) == "table" and type(d.Trials) == "table" and d.Stars == 0, "v3 rebirth fields")
 	check(d.Bond.Dad == 10 and d.Bond.Kid == 30, "bond array -> map")
 	check(d.Needs.Hunger == 50 and d.Needs.Health == 100, "needs normalized")
 	check(d.Species == "", "unknown species reset to choice")

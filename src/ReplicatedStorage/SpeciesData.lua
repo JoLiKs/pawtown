@@ -1,8 +1,8 @@
 --!strict
 --[[
 	SpeciesData — виды питомцев. Игрок всегда ровно ОДИН вид (data.Species).
-	Standard — выбор в приюте «Тёплый нос»; Rare/Legendary — перерождение «Звёздная ночь» (v0.2+, в MVP —
-	только модель данных и проверка требований: RebirthLogic.check).
+	Standard — выбор в приюте «Тёплый нос»; Rare — перерождение «Ночь Искр» (RebirthLogic, RebirthService);
+	Legendary — пока только модель данных («скоро»).
 	Look: цвета для процедурного рига (PetRig), Shape — форма тела.
 	Abilities — id способностей (AbilityData ниже), которые реально работают в MVP.
 ]]
@@ -27,7 +27,10 @@ export type Species = {
 	Abilities: { string },
 	Look: Look,
 	Voice: string, -- эмоция «голос»: bark / meow / squeak / chirp
-	Req: { [string]: number }?, -- требования перерождения (Rare/Legendary)
+	Req: { [string]: number }?, -- требования перерождения сверх общих (RebirthLogic.COMMON): ветка талантов, медали
+	From: { string }?, -- «путь»: из каких видов (когда-либо сыгранных — data.Lineage) открывается вид
+	Primary: string?, -- активная способность на Q / кнопке
+	Secondary: string?, -- вторая активная способность на F / второй кнопке
 }
 
 local SpeciesData = {}
@@ -47,6 +50,63 @@ SpeciesData.Abilities = {
 		Name = "Best friend",
 		Desc = "Bond with owners grows 25% faster.",
 		Key = "",
+	},
+	-- редкие виды (перерождение «Ночь Искр»)
+	Stealth = {
+		Id = "Stealth",
+		Name = "Bush stealth",
+		Desc = "Hide in bushes: nobody notices you.",
+		Key = "",
+	},
+	Snatch = {
+		Id = "Snatch",
+		Name = "Snatch",
+		Desc = "Sneak out of a bush and snatch a treat from a person.",
+		Key = "E",
+	},
+	HugeLeap = { Id = "HugeLeap", Name = "Huge leap", Desc = "A giant leap forward and up.", Key = "Q" },
+	RoofSprint = {
+		Id = "RoofSprint",
+		Name = "Roof sprint",
+		Desc = "Sprint across rooftops even faster.",
+		Key = "",
+	},
+	ShieldRoll = {
+		Id = "ShieldRoll",
+		Name = "Shield roll",
+		Desc = "Roll forward behind your shield.",
+		Key = "Q",
+	},
+	CommandDogs = {
+		Id = "CommandDogs",
+		Name = "Lead the pack",
+		Desc = "Park dogs follow you. Lead them to the shelter.",
+		Key = "F",
+	},
+	CrystalSight = {
+		Id = "CrystalSight",
+		Name = "Crystal sight",
+		Desc = "See secrets through walls.",
+		Key = "Q",
+	},
+	Unlock = { Id = "Unlock", Name = "Nimble paws", Desc = "Open locked sheds and trash bins.", Key = "E" },
+	Stash = {
+		Id = "Stash",
+		Name = "Stash",
+		Desc = "Keep trinkets in your den and trade them for treats.",
+		Key = "E",
+	},
+	LongFlight = {
+		Id = "LongFlight",
+		Name = "Long flight",
+		Desc = "Five wing flaps and a slow, long glide.",
+		Key = "Space",
+	},
+	NightVision = {
+		Id = "NightVision",
+		Name = "Night vision",
+		Desc = "See clearly at night; shards glow.",
+		Key = "Q",
 	},
 }
 
@@ -88,6 +148,7 @@ local list: { Species } = {
 			Nose = c3(40, 30, 30),
 		},
 		Voice = "bark",
+		Primary = "Sniff",
 	},
 	{
 		Id = "Rabbit",
@@ -107,6 +168,7 @@ local list: { Species } = {
 			Nose = c3(250, 150, 170),
 		},
 		Voice = "squeak",
+		Primary = "Dash",
 	},
 	{
 		Id = "Parrot",
@@ -127,7 +189,8 @@ local list: { Species } = {
 		},
 		Voice = "chirp",
 	},
-	-- Редкие (перерождение «Звёздная ночь», v0.2+). Req: Level, Nose/Agility/Charm (очки в ветке), Shards, Bond (сумма), Gold (золотых трюков)
+	-- Редкие (перерождение «Ночь Искр», v0.2). Общие условия — RebirthLogic.COMMON (взрослый, ур. 50, 20 осколков,
+	-- привязанность семьи, испытание вида); Req — ветка талантов/медали; From — путь (из каких видов)
 	{
 		Id = "Fox",
 		Tier = "Rare",
@@ -136,7 +199,7 @@ local list: { Species } = {
 		Speed = 1.08,
 		Jump = 1.05,
 		BondMult = 1.1,
-		Abilities = { "Sniff", "Dig", "Dash" },
+		Abilities = { "Stealth", "Snatch", "Dash", "Dig" },
 		Look = {
 			Shape = "Dog",
 			Body = c3(230, 110, 40),
@@ -146,7 +209,9 @@ local list: { Species } = {
 			Nose = c3(30, 25, 25),
 		},
 		Voice = "squeak",
-		Req = { Level = 25, Nose = 4, Shards = 8 },
+		Req = { Nose = 4 },
+		From = { "Dog", "Cat" },
+		Primary = "Dash",
 	},
 	{
 		Id = "SnowLeopard",
@@ -156,7 +221,7 @@ local list: { Species } = {
 		Speed = 1.08,
 		Jump = 1.15,
 		BondMult = 1,
-		Abilities = { "DoubleJump", "RoofRun", "Dash" },
+		Abilities = { "HugeLeap", "RoofSprint", "DoubleJump", "RoofRun" },
 		Look = {
 			Shape = "Cat",
 			Body = c3(225, 228, 235),
@@ -166,7 +231,9 @@ local list: { Species } = {
 			Nose = c3(200, 140, 150),
 		},
 		Voice = "meow",
-		Req = { Level = 25, Agility = 4, Shards = 8 },
+		Req = { Agility = 4 },
+		From = { "Cat" },
+		Primary = "HugeLeap",
 	},
 	{
 		Id = "CorgiKnight",
@@ -176,7 +243,7 @@ local list: { Species } = {
 		Speed = 1.0,
 		Jump = 1.0,
 		BondMult = 1.4,
-		Abilities = { "Sniff", "Dig", "BestBond" },
+		Abilities = { "ShieldRoll", "CommandDogs", "Dig", "BestBond" },
 		Look = {
 			Shape = "Dog",
 			Body = c3(235, 160, 70),
@@ -186,7 +253,10 @@ local list: { Species } = {
 			Nose = c3(30, 25, 25),
 		},
 		Voice = "bark",
-		Req = { Level = 25, Charm = 4, Bond = 200 },
+		Req = { Charm = 4 },
+		From = { "Dog" },
+		Primary = "ShieldRoll",
+		Secondary = "CommandDogs",
 	},
 	{
 		Id = "CrystalRabbit",
@@ -196,7 +266,7 @@ local list: { Species } = {
 		Speed = 1.18,
 		Jump = 1.15,
 		BondMult = 1,
-		Abilities = { "Dash", "Burrow" },
+		Abilities = { "CrystalSight", "Dash", "Burrow" },
 		Look = {
 			Shape = "Rabbit",
 			Body = c3(170, 220, 255),
@@ -206,7 +276,10 @@ local list: { Species } = {
 			Nose = c3(250, 170, 210),
 		},
 		Voice = "squeak",
-		Req = { Level = 30, Agility = 3, Gold = 3 },
+		Req = { Agility = 3, Gold = 3 },
+		From = { "Rabbit" },
+		Primary = "CrystalSight",
+		Secondary = "Dash",
 	},
 	{
 		Id = "Raccoon",
@@ -216,7 +289,7 @@ local list: { Species } = {
 		Speed = 1.02,
 		Jump = 1.05,
 		BondMult = 1,
-		Abilities = { "Dig", "Burrow", "DoubleJump" },
+		Abilities = { "Unlock", "Stash", "DoubleJump", "Burrow" },
 		Look = {
 			Shape = "Cat",
 			Body = c3(130, 130, 140),
@@ -226,7 +299,8 @@ local list: { Species } = {
 			Nose = c3(30, 30, 30),
 		},
 		Voice = "squeak",
-		Req = { Level = 25, Nose = 2, Agility = 2, Shards = 6 },
+		Req = { Nose = 2, Agility = 2 },
+		From = { "Cat", "Rabbit" },
 	},
 	{
 		Id = "Owl",
@@ -236,7 +310,7 @@ local list: { Species } = {
 		Speed = 0.98,
 		Jump = 1.05,
 		BondMult = 1,
-		Abilities = { "Flap", "Glide", "Sniff" },
+		Abilities = { "LongFlight", "NightVision", "Flap", "Glide" },
 		Look = {
 			Shape = "Parrot",
 			Body = c3(150, 110, 75),
@@ -246,7 +320,9 @@ local list: { Species } = {
 			Nose = c3(230, 170, 70),
 		},
 		Voice = "chirp",
-		Req = { Level = 30, Nose = 3, Charm = 2 },
+		Req = { Nose = 3, Charm = 2 },
+		From = { "Parrot" },
+		Primary = "NightVision",
 	},
 	-- Легендарные
 	{
@@ -304,6 +380,11 @@ end
 function SpeciesData.isStandard(id: any): boolean
 	local s = type(id) == "string" and SpeciesData.ById[id] or nil
 	return s ~= nil and s.Tier == "Standard"
+end
+
+function SpeciesData.isRare(id: any): boolean
+	local s = type(id) == "string" and SpeciesData.ById[id] or nil
+	return s ~= nil and s.Tier == "Rare"
 end
 
 function SpeciesData.has(speciesId: string?, ability: string): boolean

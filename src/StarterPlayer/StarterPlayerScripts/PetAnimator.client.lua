@@ -193,6 +193,13 @@ local function animatePet(m: Model, r: any, t: number)
 			neck = A(0.5, math.sin(da * 10) * 0.3, 0)
 		elseif act == "Shake" then
 			rootCF *= A(0, 0, math.sin(da * 30) * 0.35 * (1 - da / 1.6))
+		elseif act == "Roll" and da < 0.7 then
+			-- перекат корги-рыцаря со щитом: кувырок вперёд
+			rootCF *= CFrame.new(0, 0.4 * math.sin(da / 0.7 * math.pi), 0) * A(
+				-(da / 0.7) * math.pi * 2,
+				0,
+				0
+			)
 		end
 	end
 	-- эмоции
@@ -233,6 +240,18 @@ local function animatePet(m: Model, r: any, t: number)
 				{ LegFL = A(0.2, 0, 0), LegFR = A(0.2, 0, 0), LegBL = A(-0.2, 0, 0), LegBR = A(-0.2, 0, 0) }
 		elseif trick == "Spin" then
 			rootCF *= A(0, k * math.pi * 4, 0)
+		end
+	end
+	-- лиса в кусте: полупрозрачна (себе — 0.5, другим — почти не видно)
+	local hidden = m:GetAttribute("Hidden") == true
+	if hidden ~= (r.Hidden == true) then
+		r.Hidden = hidden
+		local own = m == game:GetService("Players").LocalPlayer.Character
+		local ltm = if hidden then (if own then 0.5 else 0.85) else 0
+		for _, d in ipairs(m:GetDescendants()) do
+			if d:IsA("BasePart") and d.Name ~= "HumanoidRootPart" then
+				d.LocalTransparencyModifier = ltm
+			end
 		end
 	end
 	setT(J.Root, rootCF)

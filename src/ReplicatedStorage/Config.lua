@@ -2,7 +2,7 @@
 -- Общие настройки Pawtown (клиент + сервер). Все балансные числа — здесь и в data-модулях.
 local Config = {}
 
-Config.VERSION = "0.1.0"
+Config.VERSION = "0.2.0"
 Config.GAME_NAME = "Pawtown" -- l10n-ok (имя собственное; RU-название — строка game.title_ru)
 
 -- Веб-демо (roblox2web) включает быстрый день/ночь и подсказки; в Roblox всегда false
@@ -73,5 +73,37 @@ Config.FETCH_TIME_LIMIT = 30
 Config.AGILITY_TIME_LIMIT = 90
 Config.BATH_MIN_SECONDS = 5
 Config.SLEEP_SECONDS = 6
+
+-- «Ночь Искр» (перерождение). DEV_FAST_REBIRTH — кнопка «выполнить условия» для проверки в Studio:
+-- работает ТОЛЬКО при RunService:IsStudio() (на живых серверах действие даже не регистрируется).
+Config.DEV_FAST_REBIRTH = true
+
+-- Способности редких видов
+Config.ROOF_SPRINT_MULT = 1.6 -- снежный барс на крышах
+Config.LEAP_COOLDOWN = 3
+Config.LEAP_TIME = 1.6 -- окно повышенной легальной скорости
+Config.LEAP_FORWARD = 46 -- студ/с вперёд
+Config.LEAP_UP_MULT = 1.75 -- от силы прыжка
+Config.ROLL_COOLDOWN = 3
+Config.ROLL_TIME = 0.7
+Config.STEALTH_RADIUS = 3.6 -- от центра куста
+Config.STEALTH_LINGER = 4 -- секунд «невидимости» после выхода из куста
+Config.SNATCH_COOLDOWN = 60 -- на NPC
+Config.SIGHT_COOLDOWN = 12
+Config.SIGHT_TIME = 10
+Config.SIGHT_RADIUS = 170
+Config.BIN_COOLDOWN = 120
+Config.SHED_COOLDOWN = 600
+Config.STASH_MAX = 20
+Config.STASH_TREATS = 6
+Config.DOGS_FOLLOW_TIME = 60
+Config.DOGS_COMMAND_RADIUS = 40
+Config.OWL_FLAPS = 5
+Config.OWL_GLIDE_FALL = -4
+
+-- Друзья
+Config.FRIEND_LIST_MAX = 50
+Config.VISIT_COOLDOWN = 10
+Config.COMBO_WINDOW = 3 -- секунд: оба друга делают одну эмоцию рядом -> комбо
 
 return Config

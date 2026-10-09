@@ -24,6 +24,7 @@ local Movement = require(script.Parent.Movement)
 local NeedsService = require(script.Parent.NeedsService)
 local Progress = require(script.Parent.Progress)
 local QuestService = require(script.Parent.QuestService)
+local RareAbilities = require(script.Parent.RareAbilities)
 local Router = require(script.Parent.Router)
 local Session = require(script.Parent.Session)
 local State = require(script.Parent.State)
@@ -73,7 +74,7 @@ end
 function AbilityService.init()
 	Interact.register("Shard", function(player, _prompt, arg)
 		local s = arg and shardById[arg]
-		if not s or s.Id == "s_dig" then
+		if not s or WorldData.isDugShard(s.Id) then
 			return false, nil
 		end
 		if not AntiExploit.near(player, s.Pos, WorldData.SHARD_RADIUS + 4) then
@@ -198,7 +199,7 @@ function AbilityService.init()
 			end)
 			return true, nil
 		end
-		return false, "msg.no_ability"
+		return RareAbilities.ability(player, name, data, s)
 	end)
 end
 

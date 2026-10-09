@@ -57,6 +57,8 @@ function Movement.walkSpeed(player: Player): number
 	local v = Movement.baseSpeed(data)
 	if s.DashUntil > os.clock() then
 		v *= Config.DASH_MULT
+	elseif s.OnRoof and SpeciesData.has(data.Species, "RoofSprint") then
+		v *= Config.ROOF_SPRINT_MULT
 	elseif s.OnRoof and SpeciesData.has(data.Species, "RoofRun") then
 		v *= Config.ROOF_SPEED_MULT
 	end
@@ -69,7 +71,20 @@ function Movement.legalSpeed(player: Player): number
 	if not data then
 		return Config.BASE_WALKSPEED
 	end
-	return Movement.baseSpeed(data) * math.max(Config.DASH_MULT, Config.ROOF_SPEED_MULT)
+	local s = Session.get(player)
+	if s and s.LeapUntil > os.clock() then
+		-- прыжок барса: горизонтальная скорость задаётся клиентом, сервер разрешил её на LEAP_TIME
+		return math.max(Config.LEAP_FORWARD * 1.15, Movement.baseSpeed(data) * Config.DASH_MULT)
+	end
+	return Movement.baseSpeed(data)
+		* math.max(Config.DASH_MULT, Config.ROOF_SPEED_MULT, Movement.roofMult(data))
+end
+
+function Movement.roofMult(data: any): number
+	if SpeciesData.has(data.Species, "RoofSprint") then
+		return Config.ROOF_SPRINT_MULT
+	end
+	return Config.ROOF_SPEED_MULT
 end
 
 function Movement.jumpPower(player: Player): number

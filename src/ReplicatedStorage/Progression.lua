@@ -117,12 +117,24 @@ function Progression.bonus(talents: any, id: string): number
 	return if t then t.Per * Progression.rank(talents, id) else 0
 end
 
+-- Потрачено очков. Унаследованный при перерождении талант (talents.Inherit = id, talents.InheritRank = ранги)
+-- даётся бесплатно: его ранги не тратят очки.
 function Progression.spent(talents: any): number
 	local n = 0
 	for id in pairs(Progression.Talents) do
 		n += Progression.rank(talents, id)
 	end
-	return n
+	if
+		type(talents) == "table"
+		and type(talents.Inherit) == "string"
+		and Progression.Talents[talents.Inherit]
+	then
+		local free = if type(talents.InheritRank) == "number"
+			then math.clamp(math.floor(talents.InheritRank), 0, 3)
+			else 0
+		n -= math.min(free, Progression.rank(talents, talents.Inherit))
+	end
+	return math.max(0, n)
 end
 
 function Progression.branchPoints(talents: any, branch: string): number
