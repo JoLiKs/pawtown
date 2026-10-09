@@ -59,7 +59,12 @@ function ShopService.init()
 	-- id = "" — снять косметику со слота
 	Router.register("Equip", 3, 6, function(player, slot: any, id: any)
 		local data = DataService.get(player)
-		if not data or type(slot) ~= "string" or data.Cosmetics.Equipped[slot] == nil or type(id) ~= "string" then
+		if
+			not data
+			or type(slot) ~= "string"
+			or data.Cosmetics.Equipped[slot] == nil
+			or type(id) ~= "string"
+		then
 			return false, "err.bad_request"
 		end
 		if id ~= "" then

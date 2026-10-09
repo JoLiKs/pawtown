@@ -46,7 +46,8 @@ function PlayerService.spawnPoint(data: any): CFrame
 	if data.Species == "" then
 		return CFrame.new(WorldData.SPAWN_SHELTER) * CFrame.Angles(0, math.rad(180), 0)
 	end
-	if QuestService.currentStep(data) and QuestService.currentStep(data).Id == "c1_home" then
+	local step = QuestService.currentStep(data)
+	if step and step.Id == "c1_home" then
 		return CFrame.new(SHELTER_EXIT)
 	end
 	return CFrame.new(WorldData.SPAWN_HOME) * CFrame.Angles(0, math.rad(180), 0)
@@ -110,7 +111,11 @@ function PlayerService.spawn(player: Player, at: CFrame?)
 	local cf = at or PlayerService.spawnPoint(data)
 	local scale = Progression.AGE_SCALE[Progression.age(data.Level)] or 1
 	local speciesId = if data.Species ~= "" then data.Species else "Dog"
-	local rig = PetRig.build(speciesId, cf, { Scale = scale, Cosmetics = data.Cosmetics.Equipped, Name = player.Name })
+	local rig = PetRig.build(
+		speciesId,
+		cf,
+		{ Scale = scale, Cosmetics = data.Cosmetics.Equipped, Name = player.Name }
+	)
 	if data.Species == "" then
 		-- до выбора вида — «питомец в коробке»: серый безликий силуэт
 		for _, d in ipairs(rig:GetDescendants()) do
@@ -160,7 +165,10 @@ local function playDream(player: Player)
 	local root = rootOf(player)
 	if root then
 		AntiExploit.markTeleport(player)
-		root.CFrame = CFrame.lookAt(WorldData.SPAWN_DREAM + Vector3.new(0, 2, 6), WorldData.SPAWN_DREAM + Vector3.new(0, 2, -12))
+		root.CFrame = CFrame.lookAt(
+			WorldData.SPAWN_DREAM + Vector3.new(0, 2, 6),
+			WorldData.SPAWN_DREAM + Vector3.new(0, 2, -12)
+		)
 	end
 	Remotes.getEvent("Cutscene"):FireClient(player, "Dream")
 	task.wait(11)

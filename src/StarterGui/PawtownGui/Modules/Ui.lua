@@ -78,7 +78,13 @@ function Ui.icon(kind: string, size: number, props: { [string]: any }?): Frame
 end
 
 -- Полоса прогресса: возвращает рамку и функцию set(0..1)
-function Ui.bar(parent: Instance, pos: UDim2, size: UDim2, color: Color3, name: string?): (Frame, (number) -> ())
+function Ui.bar(
+	parent: Instance,
+	pos: UDim2,
+	size: UDim2,
+	color: Color3,
+	name: string?
+): (Frame, (number) -> ())
 	local back = New("Frame", {
 		Name = name or "Bar",
 		Position = pos,
@@ -164,9 +170,9 @@ Ui.NEED_COLORS = {
 }
 Ui.MEDAL_COLORS = {
 	[0] = Theme.Disabled,
-	Color3.fromRGB(205, 127, 50),
-	Color3.fromRGB(200, 205, 215),
-	Color3.fromRGB(255, 205, 60),
+	[1] = Color3.fromRGB(205, 127, 50),
+	[2] = Color3.fromRGB(200, 205, 215),
+	[3] = Color3.fromRGB(255, 205, 60),
 }
 Ui.ABILITY_ICON = {
 	DoubleJump = "Jump",

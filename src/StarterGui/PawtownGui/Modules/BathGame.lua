@@ -35,9 +35,36 @@ function BathGame.init(gui: ScreenGui)
 		ZIndex = 30,
 		Parent = layer,
 	})
-	local title = Ui.text({ Name = "Title", Text = L.k("bath.title"), Font = Theme.Font, TextSize = 24, Size = UDim2.new(1, -120, 0, 30), Position = UDim2.fromOffset(14, 10), ZIndex = 31, Parent = box })
-	local hint = Ui.text({ Name = "Hint", Text = L.k("bath.hint"), TextSize = 17, Size = UDim2.new(1, -28, 0, 22), Position = UDim2.fromOffset(14, 42), ZIndex = 31, Parent = box })
-	local timer = Ui.text({ Name = "Timer", Font = Theme.Font, TextSize = 22, TextXAlignment = Enum.TextXAlignment.Right, Size = UDim2.fromOffset(100, 30), AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -14, 0, 10), ZIndex = 31, Parent = box })
+	local title = Ui.text({
+		Name = "Title",
+		Text = L.k("bath.title"),
+		Font = Theme.Font,
+		TextSize = 24,
+		Size = UDim2.new(1, -120, 0, 30),
+		Position = UDim2.fromOffset(14, 10),
+		ZIndex = 31,
+		Parent = box,
+	})
+	local hint = Ui.text({
+		Name = "Hint",
+		Text = L.k("bath.hint"),
+		TextSize = 17,
+		Size = UDim2.new(1, -28, 0, 22),
+		Position = UDim2.fromOffset(14, 42),
+		ZIndex = 31,
+		Parent = box,
+	})
+	local timer = Ui.text({
+		Name = "Timer",
+		Font = Theme.Font,
+		TextSize = 22,
+		TextXAlignment = Enum.TextXAlignment.Right,
+		Size = UDim2.fromOffset(100, 30),
+		AnchorPoint = Vector2.new(1, 0),
+		Position = UDim2.new(1, -14, 0, 10),
+		ZIndex = 31,
+		Parent = box,
+	})
 	local stage = New("Frame", {
 		Name = "Stage",
 		BackgroundColor3 = Color3.fromRGB(200, 235, 250),
@@ -48,9 +75,38 @@ function BathGame.init(gui: ScreenGui)
 		Parent = box,
 	})
 	Widgets.corner(stage, 20)
-	local petHolder = New("Frame", { Name = "Pet", BackgroundTransparency = 1, Size = UDim2.fromOffset(240, 240), AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), ZIndex = 32, Parent = stage })
-	local shake = Widgets.button({ Name = "Shake", Text = L.k("bath.shake"), Color = Theme.Orange, MaxTextSize = 22, Size = UDim2.fromOffset(200, 50), AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -14), ZIndex = 33, Visible = false, Parent = box })
-	local cancel = Widgets.button({ Name = "Cancel", Text = L.k("btn.cancel"), Color = Theme.BgLight, MaxTextSize = 18, Size = UDim2.fromOffset(120, 40), AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 14, 1, -18), ZIndex = 33, Parent = box })
+	local petHolder = New("Frame", {
+		Name = "Pet",
+		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(240, 240),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.fromScale(0.5, 0.5),
+		ZIndex = 32,
+		Parent = stage,
+	})
+	local shake = Widgets.button({
+		Name = "Shake",
+		Text = L.k("bath.shake"),
+		Color = Theme.Orange,
+		MaxTextSize = 22,
+		Size = UDim2.fromOffset(200, 50),
+		AnchorPoint = Vector2.new(0.5, 1),
+		Position = UDim2.new(0.5, 0, 1, -14),
+		ZIndex = 33,
+		Visible = false,
+		Parent = box,
+	})
+	local cancel = Widgets.button({
+		Name = "Cancel",
+		Text = L.k("btn.cancel"),
+		Color = Theme.BgLight,
+		MaxTextSize = 18,
+		Size = UDim2.fromOffset(120, 40),
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.new(0, 14, 1, -18),
+		ZIndex = 33,
+		Parent = box,
+	})
 	local petScale = New("UIScale", { Parent = petHolder })
 
 	local run = nil :: any

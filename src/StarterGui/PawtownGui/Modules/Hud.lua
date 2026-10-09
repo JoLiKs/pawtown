@@ -35,7 +35,12 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 	local root, getK = Ui.root(gui, "Hud", 2)
 
 	------------------------------------------------------------------ карточка питомца
-	local status = Ui.card({ Name = "Status", Size = UDim2.fromOffset(290, 82), Position = UDim2.fromOffset(10, 10), Parent = root })
+	local status = Ui.card({
+		Name = "Status",
+		Size = UDim2.fromOffset(290, 82),
+		Position = UDim2.fromOffset(10, 10),
+		Parent = root,
+	})
 	local headHolder = New("Frame", {
 		Name = "Head",
 		BackgroundColor3 = Theme.BgLight,
@@ -52,22 +57,56 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 		Position = UDim2.fromOffset(82, 8),
 		Parent = status,
 	})
-	local _, setXp = Ui.bar(status, UDim2.fromOffset(82, 33), UDim2.fromOffset(196, 10), Color3.fromRGB(150, 120, 255), "XpBar")
+	local _, setXp = Ui.bar(
+		status,
+		UDim2.fromOffset(82, 33),
+		UDim2.fromOffset(196, 10),
+		Color3.fromRGB(150, 120, 255),
+		"XpBar"
+	)
 	Ui.icon("Treat", 24, { Position = UDim2.fromOffset(82, 50), Parent = status })
-	local treats = Ui.text({ Name = "Treats", Font = Theme.Font, TextSize = 20, Size = UDim2.fromOffset(90, 24), Position = UDim2.fromOffset(110, 50), Parent = status })
+	local treats = Ui.text({
+		Name = "Treats",
+		Font = Theme.Font,
+		TextSize = 20,
+		Size = UDim2.fromOffset(90, 24),
+		Position = UDim2.fromOffset(110, 50),
+		Parent = status,
+	})
 	Ui.icon("Shard", 24, { Position = UDim2.fromOffset(200, 50), Parent = status })
-	local shards = Ui.text({ Name = "Shards", Font = Theme.Font, TextSize = 20, Size = UDim2.fromOffset(60, 24), Position = UDim2.fromOffset(228, 50), Parent = status })
+	local shards = Ui.text({
+		Name = "Shards",
+		Font = Theme.Font,
+		TextSize = 20,
+		Size = UDim2.fromOffset(60, 24),
+		Position = UDim2.fromOffset(228, 50),
+		Parent = status,
+	})
 
 	------------------------------------------------------------------ потребности
-	local needs = Ui.card({ Name = "Needs", Size = UDim2.fromOffset(230, 186), Position = UDim2.fromOffset(10, 100), Parent = root })
+	local needs = Ui.card({
+		Name = "Needs",
+		Size = UDim2.fromOffset(230, 186),
+		Position = UDim2.fromOffset(10, 100),
+		Parent = root,
+	})
 	local needRows = {}
 	for i, key in ipairs(NEEDS) do
-		local row = New("Frame", { Name = key, BackgroundTransparency = 1, Size = UDim2.fromOffset(210, 28), Parent = needs })
+		local row = New(
+			"Frame",
+			{ Name = key, BackgroundTransparency = 1, Size = UDim2.fromOffset(210, 28), Parent = needs }
+		)
 		Ui.icon(key, 26, { Position = UDim2.fromOffset(0, 1), Parent = row })
 		local back, set = Ui.bar(row, UDim2.fromOffset(34, 8), UDim2.fromOffset(170, 13), Ui.NEED_COLORS[key])
 		needRows[key] = { Row = row, Set = set, Back = back, Order = i }
 	end
-	local mood = Ui.text({ Name = "Mood", Font = Theme.Font, TextSize = 18, Size = UDim2.fromOffset(210, 22), Parent = needs })
+	local mood = Ui.text({
+		Name = "Mood",
+		Font = Theme.Font,
+		TextSize = 18,
+		Size = UDim2.fromOffset(210, 22),
+		Parent = needs,
+	})
 
 	------------------------------------------------------------------ трекер задания
 	local tracker = New("TextButton", {
@@ -84,15 +123,40 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 	Widgets.corner(tracker, 12)
 	Widgets.stroke(tracker, Color3.new(0, 0, 0), 2).Transparency = 0.55
 	Ui.icon("Quest", 26, { Position = UDim2.fromOffset(10, 8), Parent = tracker })
-	local tTitle = Ui.text({ Name = "Title", Font = Theme.Font, TextSize = 18, TextColor3 = Theme.Gold, Size = UDim2.new(1, -50, 0, 24), Position = UDim2.fromOffset(42, 8), Parent = tracker })
-	local tStep = Ui.text({ Name = "Step", TextSize = 18, Size = UDim2.new(1, -20, 0, 40), Position = UDim2.fromOffset(10, 34), TextYAlignment = Enum.TextYAlignment.Top, Parent = tracker })
-	local tDaily = Ui.text({ Name = "Daily", TextSize = 16, TextColor3 = Theme.TextDim, Size = UDim2.new(1, -20, 0, 18), Position = UDim2.new(0, 10, 1, -22), Parent = tracker })
+	local tTitle = Ui.text({
+		Name = "Title",
+		Font = Theme.Font,
+		TextSize = 18,
+		TextColor3 = Theme.Gold,
+		Size = UDim2.new(1, -50, 0, 24),
+		Position = UDim2.fromOffset(42, 8),
+		Parent = tracker,
+	})
+	local tStep = Ui.text({
+		Name = "Step",
+		TextSize = 18,
+		Size = UDim2.new(1, -20, 0, 40),
+		Position = UDim2.fromOffset(10, 34),
+		TextYAlignment = Enum.TextYAlignment.Top,
+		Parent = tracker,
+	})
+	local tDaily = Ui.text({
+		Name = "Daily",
+		TextSize = 16,
+		TextColor3 = Theme.TextDim,
+		Size = UDim2.new(1, -20, 0, 18),
+		Position = UDim2.new(0, 10, 1, -22),
+		Parent = tracker,
+	})
 	tracker.Activated:Connect(function()
 		openPanel("Quests")
 	end)
 
 	------------------------------------------------------------------ кнопки разделов
-	local menu = New("Frame", { Name = "Menu", BackgroundTransparency = 1, Size = UDim2.fromOffset(58, 58 * 5 + 32), Parent = root })
+	local menu = New(
+		"Frame",
+		{ Name = "Menu", BackgroundTransparency = 1, Size = UDim2.fromOffset(58, 58 * 5 + 32), Parent = root }
+	)
 	local menuList = Ui.list(menu, 8)
 	local buttons = {}
 	for i, def in ipairs({
@@ -116,7 +180,10 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 	local talentDot = Widgets.dot(buttons.Talents)
 
 	------------------------------------------------------------------ способности
-	local abilities = New("Frame", { Name = "Abilities", BackgroundTransparency = 1, Size = UDim2.fromOffset(150, 70), Parent = root })
+	local abilities = New(
+		"Frame",
+		{ Name = "Abilities", BackgroundTransparency = 1, Size = UDim2.fromOffset(150, 70), Parent = root }
+	)
 	Ui.list(abilities, 10, true).HorizontalAlignment = Enum.HorizontalAlignment.Center
 	local abilityButtons = {}
 	local function abilityButton(id: string, icon: string, color: Color3)

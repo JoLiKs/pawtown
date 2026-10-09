@@ -16,7 +16,14 @@ local SettingsPanel = {}
 function SettingsPanel.init(gui: ScreenGui)
 	local panel = Widgets.panel(gui, "Settings")
 	local body = panel.Body
-	Ui.text({ Text = L.k("settings.lang"), Font = Theme.Font, TextSize = 19, Size = UDim2.new(1, -20, 0, 26), Position = UDim2.fromOffset(12, 8), Parent = body })
+	Ui.text({
+		Text = L.k("settings.lang"),
+		Font = Theme.Font,
+		TextSize = 19,
+		Size = UDim2.new(1, -20, 0, 26),
+		Position = UDim2.fromOffset(12, 8),
+		Parent = body,
+	})
 	local buttons = {}
 	for i, choice in ipairs({ "auto", "en", "ru" }) do
 		buttons[choice] = Widgets.button({

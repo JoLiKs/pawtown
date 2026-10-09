@@ -137,7 +137,11 @@ function NeedsService.init()
 	end)
 	Interact.register("Beg", function(player)
 		if not Session.cooldown(player, "beg", Config.BEG_COOLDOWN) then
-			return false, Locale.m("msg.beg_wait", { n = math.ceil(Session.cooldownLeft(player, "beg", Config.BEG_COOLDOWN)) })
+			return false,
+				Locale.m(
+					"msg.beg_wait",
+					{ n = math.ceil(Session.cooldownLeft(player, "beg", Config.BEG_COOLDOWN)) }
+				)
 		end
 		NeedsService.add(player, "Hunger", 15)
 		NeedsService.add(player, "Love", 8)
@@ -219,7 +223,11 @@ function NeedsService.init()
 				if s and s.Ready and data and data.Species ~= "" then
 					local sleeping = s.SleepUntil > os.clock()
 					local zone = s.Zone
-					NeedsLogic.step(data.Needs, dt, { Sleeping = sleeping, Activity = if zone == "Dream" then 0 else 1 })
+					NeedsLogic.step(
+						data.Needs,
+						dt,
+						{ Sleeping = sleeping, Activity = if zone == "Dream" then 0 else 1 }
+					)
 					data.NeedsAt = os.time()
 					local pos = AntiExploit.rootPos(player)
 					if pos then

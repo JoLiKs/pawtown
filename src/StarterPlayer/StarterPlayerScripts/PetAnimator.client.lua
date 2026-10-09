@@ -30,7 +30,15 @@ local function scan(m: Instance)
 	if not joints.Root then
 		return
 	end
-	rigs[m] = { Root = root, Hum = hum, J = joints, Phase = math.random() * 10, Human = m:GetAttribute("Human") == true, Carry = nil, CarryKind = "" }
+	rigs[m] = {
+		Root = root,
+		Hum = hum,
+		J = joints,
+		Phase = math.random() * 10,
+		Human = m:GetAttribute("Human") == true,
+		Carry = nil,
+		CarryKind = "",
+	}
 end
 
 local function watch(folder: Instance)
@@ -67,9 +75,21 @@ local function parseStamp(v: any): (string?, number, string?)
 end
 
 local CARRY = {
-	Newspaper = { Size = Vector3.new(0.35, 0.35, 1.3), Color = Color3.fromRGB(235, 235, 225), Shape = Enum.PartType.Cylinder },
-	Toy = { Size = Vector3.new(0.7, 0.7, 0.7), Color = Color3.fromRGB(240, 110, 170), Shape = Enum.PartType.Ball },
-	Ball = { Size = Vector3.new(0.65, 0.65, 0.65), Color = Color3.fromRGB(230, 230, 60), Shape = Enum.PartType.Ball },
+	Newspaper = {
+		Size = Vector3.new(0.35, 0.35, 1.3),
+		Color = Color3.fromRGB(235, 235, 225),
+		Shape = Enum.PartType.Cylinder,
+	},
+	Toy = {
+		Size = Vector3.new(0.7, 0.7, 0.7),
+		Color = Color3.fromRGB(240, 110, 170),
+		Shape = Enum.PartType.Ball,
+	},
+	Ball = {
+		Size = Vector3.new(0.65, 0.65, 0.65),
+		Color = Color3.fromRGB(230, 230, 60),
+		Shape = Enum.PartType.Ball,
+	},
 }
 
 local function updateCarry(m: Model, r: any)
@@ -128,7 +148,8 @@ local function animatePet(m: Model, r: any, t: number)
 	local rootCF = CFrame.new(0, math.abs(math.sin(ph)) * 0.12 * moving + math.sin(t * 2) * 0.02, 0)
 	local neck = A(math.sin(t * 1.7 + r.Phase) * 0.05, math.sin(t * 0.9 + r.Phase) * 0.12, 0)
 	local tail = A(0, math.sin(t * 7) * 0.35, 0)
-	local legs = { LegFL = A(swing, 0, 0), LegBR = A(swing, 0, 0), LegFR = A(-swing, 0, 0), LegBL = A(-swing, 0, 0) }
+	local legs =
+		{ LegFL = A(swing, 0, 0), LegBR = A(swing, 0, 0), LegFR = A(-swing, 0, 0), LegBL = A(-swing, 0, 0) }
 	local wing = 0
 	if air then
 		legs = { LegFL = A(0.5, 0, 0), LegFR = A(0.5, 0, 0), LegBL = A(-0.5, 0, 0), LegBR = A(-0.5, 0, 0) }
@@ -201,7 +222,8 @@ local function animatePet(m: Model, r: any, t: number)
 			rootCF *= A(0, 0, k * math.pi * 2)
 		elseif trick == "PlayDead" then
 			rootCF = CFrame.new(0, -0.4, 0) * A(0, 0, math.rad(170) * math.min(1, k * 2))
-			legs = { LegFL = A(0.2, 0, 0), LegFR = A(0.2, 0, 0), LegBL = A(-0.2, 0, 0), LegBR = A(-0.2, 0, 0) }
+			legs =
+				{ LegFL = A(0.2, 0, 0), LegFR = A(0.2, 0, 0), LegBL = A(-0.2, 0, 0), LegBR = A(-0.2, 0, 0) }
 		elseif trick == "Spin" then
 			rootCF *= A(0, k * math.pi * 4, 0)
 		end

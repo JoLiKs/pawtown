@@ -101,7 +101,7 @@ function AbilityService.init()
 		NeedsService.add(player, "Fun", 6)
 		NeedsService.add(player, "Hygiene", -4)
 		Remotes.getEvent("Fx"):FireClient(player, "Dig", spot.Pos)
-		if spot.Shard and not data.Shards[spot.Shard] then
+		if spot.Shard ~= "" and not data.Shards[spot.Shard] then
 			return AbilityService.giveShard(player, spot.Shard)
 		end
 		local t = math.floor(rng:NextInteger(5, 15) * (1 + Progression.bonus(data.Talents, "TreasureHunter")))
@@ -136,7 +136,8 @@ function AbilityService.init()
 		end
 		AntiExploit.markTeleport(player)
 		local look = (to - from).Unit
-		root.CFrame = CFrame.lookAt(to + Vector3.new(0, 2, 0) + look * 1.5, to + Vector3.new(0, 2, 0) + look * 3)
+		root.CFrame =
+			CFrame.lookAt(to + Vector3.new(0, 2, 0) + look * 1.5, to + Vector3.new(0, 2, 0) + look * 3)
 		NeedsService.add(player, "Hygiene", -3)
 		NeedsService.add(player, "Fun", 4)
 		Remotes.getEvent("Fx"):FireClient(player, "Burrow", to)

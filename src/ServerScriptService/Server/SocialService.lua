@@ -51,7 +51,11 @@ local function addFriend(player: Player, other: Player)
 		end
 	end
 	data.Friends[key] = (data.Friends[key] or 0) + 1
-	Notify.send(player, Locale.m("msg.friendship", { player = other.DisplayName, n = data.Friends[key] }), "reward")
+	Notify.send(
+		player,
+		Locale.m("msg.friendship", { player = other.DisplayName, n = data.Friends[key] }),
+		"reward"
+	)
 	Progress.xp(player, 5)
 	NeedsService.add(player, "Fun", 5)
 	State.markCore(player)
@@ -76,7 +80,7 @@ function SocialService.init()
 		end
 		local now = os.clock()
 		ch:SetAttribute("Emote", id .. ":" .. now)
-		s.LastEmote = { Id = id, Time = now }
+		s.LastEmote = { Id = id :: string, Time = now } :: any
 		local pos = AntiExploit.rootPos(player)
 		if not pos then
 			return true, nil

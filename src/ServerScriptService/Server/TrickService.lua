@@ -32,7 +32,8 @@ local TrickService = {}
 local rng = Random.new()
 
 function TrickService.windowMult(data: any): number
-	return NeedsLogic.trickMult(NeedsLogic.mood(data.Needs)) * (1 + Progression.bonus(data.Talents, "Showstopper"))
+	return NeedsLogic.trickMult(NeedsLogic.mood(data.Needs))
+		* (1 + Progression.bonus(data.Talents, "Showstopper"))
 end
 
 function TrickService.init()

@@ -33,11 +33,41 @@ local FamilyService = {}
 
 local c3 = Color3.fromRGB
 local LOOKS = {
-	Dad = { Shirt = c3(70, 120, 200), Pants = c3(60, 60, 80), Skin = c3(240, 200, 170), Hair = c3(90, 60, 40), H = 1.05 },
-	Grandma = { Shirt = c3(200, 110, 160), Pants = c3(120, 90, 140), Skin = c3(245, 210, 185), Hair = c3(225, 225, 230), H = 0.95 },
-	Kid = { Shirt = c3(250, 190, 70), Pants = c3(80, 150, 220), Skin = c3(240, 205, 175), Hair = c3(140, 80, 40), H = 0.7 },
-	Keeper = { Shirt = c3(90, 180, 140), Pants = c3(70, 90, 110), Skin = c3(235, 195, 160), Hair = c3(60, 40, 30), H = 1 },
-	Mailman = { Shirt = c3(60, 90, 170), Pants = c3(40, 50, 90), Skin = c3(220, 180, 150), Hair = c3(40, 30, 25), H = 1.05 },
+	Dad = {
+		Shirt = c3(70, 120, 200),
+		Pants = c3(60, 60, 80),
+		Skin = c3(240, 200, 170),
+		Hair = c3(90, 60, 40),
+		H = 1.05,
+	},
+	Grandma = {
+		Shirt = c3(200, 110, 160),
+		Pants = c3(120, 90, 140),
+		Skin = c3(245, 210, 185),
+		Hair = c3(225, 225, 230),
+		H = 0.95,
+	},
+	Kid = {
+		Shirt = c3(250, 190, 70),
+		Pants = c3(80, 150, 220),
+		Skin = c3(240, 205, 175),
+		Hair = c3(140, 80, 40),
+		H = 0.7,
+	},
+	Keeper = {
+		Shirt = c3(90, 180, 140),
+		Pants = c3(70, 90, 110),
+		Skin = c3(235, 195, 160),
+		Hair = c3(60, 40, 30),
+		H = 1,
+	},
+	Mailman = {
+		Shirt = c3(60, 90, 170),
+		Pants = c3(40, 50, 90),
+		Skin = c3(220, 180, 150),
+		Hair = c3(40, 30, 25),
+		H = 1.05,
+	},
 }
 
 local npcs: { [string]: Model } = {}
@@ -147,7 +177,9 @@ local function placeDad()
 		m:PivotTo(CFrame.new(WorldData.Family.DadAsleep) * CFrame.Angles(math.rad(-90), 0, 0))
 		FamilyService.say("Dad", "speech.zzz")
 	else
-		m:PivotTo(CFrame.new(WorldData.Family.Dad + Vector3.new(0, 3.15, 0)) * CFrame.Angles(0, math.rad(200), 0))
+		m:PivotTo(
+			CFrame.new(WorldData.Family.Dad + Vector3.new(0, 3.15, 0)) * CFrame.Angles(0, math.rad(200), 0)
+		)
 	end
 end
 
@@ -170,9 +202,17 @@ local function checkGifts(player: Player, member: string)
 			end
 			Remotes.getEvent("Fx"):FireClient(player, "Gift", member, g.Item or "", g.Treats or 0)
 			if g.Item then
-				Notify.send(player, Locale.m("toast.gift_item", { who = "npc." .. member, item = ShopData.ById[g.Item].Name }), "reward")
+				Notify.send(
+					player,
+					Locale.m("toast.gift_item", { who = "npc." .. member, item = ShopData.ById[g.Item].Name }),
+					"reward"
+				)
 			else
-				Notify.send(player, Locale.m("toast.gift_treats", { who = "npc." .. member, n = g.Treats or 0 }), "reward")
+				Notify.send(
+					player,
+					Locale.m("toast.gift_treats", { who = "npc." .. member, n = g.Treats or 0 }),
+					"reward"
+				)
 			end
 			State.markCore(player)
 		end
@@ -310,7 +350,14 @@ function FamilyService.init()
 	local mail = makeNpc("Mailman", WorldData.MailmanRoute[1], 90, false)
 	-- сумка почтальона
 	local body = mail:FindFirstChild("Body") :: BasePart
-	local bag = WorldBuilder.part(mail, "Bag", Vector3.new(1.2, 1.4, 0.6), body.CFrame * CFrame.new(1.1, -0.4, 0.4), c3(150, 100, 60), { Anchored = false, CanCollide = false, Massless = true })
+	local bag = WorldBuilder.part(
+		mail,
+		"Bag",
+		Vector3.new(1.2, 1.4, 0.6),
+		body.CFrame * CFrame.new(1.1, -0.4, 0.4),
+		c3(150, 100, 60),
+		{ Anchored = false, CanCollide = false, Massless = true }
+	)
 	local w = Instance.new("Weld")
 	w.Part0 = body
 	w.Part1 = bag
@@ -319,7 +366,12 @@ function FamilyService.init()
 	for _, def in ipairs(FamilyData.List) do
 		local m = npcs[def.Id]
 		local root = m:FindFirstChild("HumanoidRootPart") :: BasePart
-		Interact.prompt(root, "Family", "prompt.family", { Arg = def.Id, Object = "npc." .. def.Id, Distance = 10 })
+		Interact.prompt(
+			root,
+			"Family",
+			"prompt.family",
+			{ Arg = def.Id, Object = "npc." .. def.Id, Distance = 10 }
+		)
 	end
 	local keeperRoot = npcs.Keeper:FindFirstChild("HumanoidRootPart") :: BasePart
 	Interact.prompt(keeperRoot, "Species", "prompt.keeper", { Object = "npc.Keeper", Distance = 12 })

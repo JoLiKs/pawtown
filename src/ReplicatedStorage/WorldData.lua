@@ -77,11 +77,12 @@ WorldData.Shards = {
 WorldData.SHARD_RADIUS = 6
 
 -- Ямки для копания (собаки): Shard — осколок, который выкапывается только тут
+-- (Shard = "" — без осколка)
 WorldData.DigSpots = {
 	{ Id = "dig_park1", Pos = V(170, 0, 70), Shard = "s_dig" },
-	{ Id = "dig_park2", Pos = V(95, 0, 185) },
-	{ Id = "dig_park3", Pos = V(190, 0, 130) },
-	{ Id = "dig_yard", Pos = V(10, 0, -88) },
+	{ Id = "dig_park2", Pos = V(95, 0, 185), Shard = "" },
+	{ Id = "dig_park3", Pos = V(190, 0, 130), Shard = "" },
+	{ Id = "dig_yard", Pos = V(10, 0, -88), Shard = "" },
 }
 
 -- Лазы под забором (кролики): A <-> B
@@ -106,7 +107,8 @@ WorldData.Fetch = {
 }
 
 -- Почтальон: маршрут по тротуару
-WorldData.MailmanRoute = { V(-180, 0, 15), V(-60, 0, 15), V(9, 0, 15), V(9, 0, -18), V(9, 0, 15), V(180, 0, 15) }
+WorldData.MailmanRoute =
+	{ V(-180, 0, 15), V(-60, 0, 15), V(9, 0, 15), V(9, 0, -18), V(9, 0, 15), V(180, 0, 15) }
 
 -- Места для «потерянной игрушки» (выбирается одно на день)
 WorldData.ToySpots = { V(-70, 0, -20), V(40, 0, 20), V(130, 0, 60), V(70, 0, 180), V(-95, 0, 22) }

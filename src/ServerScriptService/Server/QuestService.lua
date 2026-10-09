@@ -149,11 +149,18 @@ function QuestService.spawnToy(player: Player)
 	local spots = WorldData.ToySpots
 	local spot = spots[(QuestData.dayNumber(os.time()) + player.UserId) % #spots + 1]
 	local dyn = WorldBuilder.folder("Dynamic")
-	local toy = WorldBuilder.part(dyn, "LostToy_" .. player.UserId, Vector3.new(1.6, 1.6, 1.6), spot + Vector3.new(0, 0.8, 0), Color3.fromRGB(255, 120, 200), {
-		Shape = Enum.PartType.Ball,
-		CanCollide = false,
-		Material = Enum.Material.SmoothPlastic,
-	})
+	local toy = WorldBuilder.part(
+		dyn,
+		"LostToy_" .. player.UserId,
+		Vector3.new(1.6, 1.6, 1.6),
+		spot + Vector3.new(0, 0.8, 0),
+		Color3.fromRGB(255, 120, 200),
+		{
+			Shape = Enum.PartType.Ball,
+			CanCollide = false,
+			Material = Enum.Material.SmoothPlastic,
+		}
+	)
 	toy:SetAttribute("Owner", player.UserId)
 	toy:SetAttribute("LostToy", true)
 	Interact.prompt(toy, "PickToy", "prompt.pick_toy", { Arg = tostring(player.UserId), Object = "obj.toy" })
@@ -220,7 +227,15 @@ function QuestService.init()
 		for id, st in pairs(data.Daily.Items) do
 			local d = QuestData.DAILY_BY_ID[id]
 			if d then
-				table.insert(out, { Id = id, Kind = d.Kind, P = st.P, Need = d.Need, Done = st.Done, Treats = d.Treats, Xp = d.Xp })
+				table.insert(out, {
+					Id = id,
+					Kind = d.Kind,
+					P = st.P,
+					Need = d.Need,
+					Done = st.Done,
+					Treats = d.Treats,
+					Xp = d.Xp,
+				})
 			end
 		end
 		table.sort(out, function(a, b)

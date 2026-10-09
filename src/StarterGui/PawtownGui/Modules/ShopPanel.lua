@@ -19,27 +19,82 @@ local ShopPanel = {}
 
 function ShopPanel.init(gui: ScreenGui)
 	local panel = Widgets.panel(gui, "Shop", nil, { MinH = 480 })
-	local tabs = New("Frame", { Name = "Tabs", BackgroundTransparency = 1, Size = UDim2.new(1, -16, 0, 40), Position = UDim2.fromOffset(8, 4), Parent = panel.Body })
+	local tabs = New("Frame", {
+		Name = "Tabs",
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, -16, 0, 40),
+		Position = UDim2.fromOffset(8, 4),
+		Parent = panel.Body,
+	})
 	Ui.list(tabs, 6, true)
-	local note = Ui.text({ Name = "Note", Text = L.k("shop.note"), TextSize = 15, TextColor3 = Theme.TextDim, Size = UDim2.new(1, -16, 0, 20), Position = UDim2.new(0, 8, 1, -24), Parent = panel.Body })
+	local note = Ui.text({
+		Name = "Note",
+		Text = L.k("shop.note"),
+		TextSize = 15,
+		TextColor3 = Theme.TextDim,
+		Size = UDim2.new(1, -16, 0, 20),
+		Position = UDim2.new(0, 8, 1, -24),
+		Parent = panel.Body,
+	})
 	_ = note
-	local scroll = Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -76), Position = UDim2.fromOffset(4, 48) })
+	local scroll =
+		Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -76), Position = UDim2.fromOffset(4, 48) })
 	Widgets.padding(scroll, 6)
-	New("UIGridLayout", { CellSize = UDim2.new(0.5, -6, 0, 132), CellPadding = UDim2.fromOffset(8, 8), SortOrder = Enum.SortOrder.LayoutOrder, Parent = scroll })
+	New("UIGridLayout", {
+		CellSize = UDim2.new(0.5, -6, 0, 132),
+		CellPadding = UDim2.fromOffset(8, 8),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Parent = scroll,
+	})
 
 	local current = "Collar"
 	local tabButtons = {}
 	local cards = {}
 	for i, item in ipairs(ShopData.List) do
-		local card = Ui.card({ Name = item.Id, BackgroundColor3 = Theme.BgCard, BackgroundTransparency = 0, LayoutOrder = i, Parent = scroll })
-		local sw = New("Frame", { Name = "Swatch", BackgroundColor3 = item.Color, Size = UDim2.fromOffset(54, 54), Position = UDim2.fromOffset(10, 10), Parent = card })
+		local card = Ui.card({
+			Name = item.Id,
+			BackgroundColor3 = Theme.BgCard,
+			BackgroundTransparency = 0,
+			LayoutOrder = i,
+			Parent = scroll,
+		})
+		local sw = New("Frame", {
+			Name = "Swatch",
+			BackgroundColor3 = item.Color,
+			Size = UDim2.fromOffset(54, 54),
+			Position = UDim2.fromOffset(10, 10),
+			Parent = card,
+		})
 		Widgets.corner(sw, if item.Slot == "Hat" then 8 else 27)
 		Widgets.stroke(sw, Color3.new(0, 0, 0), 2).Transparency = 0.4
-		local stripe = New("Frame", { BackgroundColor3 = item.Color2, Size = UDim2.new(1, -16, 0, 10), AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = sw })
+		local stripe = New("Frame", {
+			BackgroundColor3 = item.Color2,
+			Size = UDim2.new(1, -16, 0, 10),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.fromScale(0.5, 0.5),
+			Parent = sw,
+		})
 		Widgets.corner(stripe, 5)
-		Ui.text({ Name = "Title", Text = L.kn(item.Name), Font = Theme.Font, TextSize = 18, Size = UDim2.new(1, -80, 0, 44), Position = UDim2.fromOffset(72, 8), TextYAlignment = Enum.TextYAlignment.Top, Parent = card })
+		Ui.text({
+			Name = "Title",
+			Text = L.kn(item.Name),
+			Font = Theme.Font,
+			TextSize = 18,
+			Size = UDim2.new(1, -80, 0, 44),
+			Position = UDim2.fromOffset(72, 8),
+			TextYAlignment = Enum.TextYAlignment.Top,
+			Parent = card,
+		})
 		Ui.icon("Treat", 22, { Position = UDim2.fromOffset(72, 52), Parent = card })
-		Ui.text({ Name = "Price", Text = tostring(item.Price), Font = Theme.Font, TextSize = 18, Size = UDim2.fromOffset(80, 22), Position = UDim2.fromOffset(98, 52), Parent = card })
+		Ui.text({
+			Name = "Price",
+			Text = tostring(item.Price),
+			Font = Theme.Font,
+			TextSize = 18,
+			Size = UDim2.fromOffset(80, 22),
+			Position = UDim2.fromOffset(98, 52),
+			Parent = card,
+		})
 		local btn = Widgets.button({
 			Name = "Action",
 			Text = "",

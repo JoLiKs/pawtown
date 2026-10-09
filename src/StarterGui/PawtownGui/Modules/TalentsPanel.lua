@@ -17,13 +17,30 @@ local Widgets = require(script.Parent.Widgets)
 local New = Widgets.New
 local TalentsPanel = {}
 
-local BRANCHES = { { "Nose", "Sniff", Color3.fromRGB(170, 120, 80) }, { "Agility", "Dash", Color3.fromRGB(80, 170, 120) }, { "Charm", "Love", Color3.fromRGB(220, 100, 150) } }
+local BRANCHES = {
+	{ "Nose", "Sniff", Color3.fromRGB(170, 120, 80) },
+	{ "Agility", "Dash", Color3.fromRGB(80, 170, 120) },
+	{ "Charm", "Love", Color3.fromRGB(220, 100, 150) },
+}
 
 function TalentsPanel.init(gui: ScreenGui, openRebirth: () -> ())
 	local panel = Widgets.panel(gui, "Talents", nil, { MinH = 500 })
-	local top = New("Frame", { Name = "Top", BackgroundTransparency = 1, Size = UDim2.new(1, -16, 0, 44), Position = UDim2.fromOffset(8, 4), Parent = panel.Body })
+	local top = New("Frame", {
+		Name = "Top",
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, -16, 0, 44),
+		Position = UDim2.fromOffset(8, 4),
+		Parent = panel.Body,
+	})
 	Ui.icon("Talent", 32, { Position = UDim2.fromOffset(0, 6), Parent = top })
-	local points = Ui.text({ Name = "Points", Font = Theme.Font, TextSize = 20, Size = UDim2.new(1, -230, 1, 0), Position = UDim2.fromOffset(40, 0), Parent = top })
+	local points = Ui.text({
+		Name = "Points",
+		Font = Theme.Font,
+		TextSize = 20,
+		Size = UDim2.new(1, -230, 1, 0),
+		Position = UDim2.fromOffset(40, 0),
+		Parent = top,
+	})
 	Widgets.button({
 		Name = "SparkNight",
 		Text = L.k("btn.spark_night"),
@@ -35,16 +52,31 @@ function TalentsPanel.init(gui: ScreenGui, openRebirth: () -> ())
 		Parent = top,
 		OnClick = openRebirth,
 	})
-	local scroll = Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -56), Position = UDim2.fromOffset(4, 52) })
+	local scroll =
+		Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -56), Position = UDim2.fromOffset(4, 52) })
 	Widgets.padding(scroll, 6)
 	Ui.list(scroll, 6)
 	local rows = {}
 	local order = 0
 	for _, br in ipairs(BRANCHES) do
 		order += 1
-		local h = New("Frame", { Name = "Branch" .. br[1], BackgroundTransparency = 1, Size = UDim2.new(1, -4, 0, 30), LayoutOrder = order, Parent = scroll })
+		local h = New("Frame", {
+			Name = "Branch" .. br[1],
+			BackgroundTransparency = 1,
+			Size = UDim2.new(1, -4, 0, 30),
+			LayoutOrder = order,
+			Parent = scroll,
+		})
 		Ui.icon(br[2], 26, { Position = UDim2.fromOffset(2, 2), Parent = h })
-		Ui.text({ Text = L.k("branch." .. br[1]), Font = Theme.Font, TextSize = 19, TextColor3 = br[3], Size = UDim2.new(1, -40, 1, 0), Position = UDim2.fromOffset(36, 0), Parent = h })
+		Ui.text({
+			Text = L.k("branch." .. br[1]),
+			Font = Theme.Font,
+			TextSize = 19,
+			TextColor3 = br[3],
+			Size = UDim2.new(1, -40, 1, 0),
+			Position = UDim2.fromOffset(36, 0),
+			Parent = h,
+		})
 		local list = {}
 		for _, t in pairs(Progression.Talents) do
 			if t.Branch == br[1] then
@@ -56,12 +88,40 @@ function TalentsPanel.init(gui: ScreenGui, openRebirth: () -> ())
 		end)
 		for _, t in ipairs(list) do
 			order += 1
-			local card = Ui.card({ Name = t.Id, BackgroundColor3 = Theme.BgCard, BackgroundTransparency = 0, Size = UDim2.new(1, -4, 0, 64), LayoutOrder = order, Parent = scroll })
-			Ui.text({ Text = L.kn(t.Name), Font = Theme.Font, TextSize = 18, Size = UDim2.new(1, -230, 0, 24), Position = UDim2.fromOffset(10, 6), Parent = card })
-			Ui.text({ Text = L.kn(t.Desc), TextSize = 15, TextColor3 = Theme.TextDim, Size = UDim2.new(1, -230, 0, 30), Position = UDim2.fromOffset(10, 30), TextYAlignment = Enum.TextYAlignment.Top, Parent = card })
+			local card = Ui.card({
+				Name = t.Id,
+				BackgroundColor3 = Theme.BgCard,
+				BackgroundTransparency = 0,
+				Size = UDim2.new(1, -4, 0, 64),
+				LayoutOrder = order,
+				Parent = scroll,
+			})
+			Ui.text({
+				Text = L.kn(t.Name),
+				Font = Theme.Font,
+				TextSize = 18,
+				Size = UDim2.new(1, -230, 0, 24),
+				Position = UDim2.fromOffset(10, 6),
+				Parent = card,
+			})
+			Ui.text({
+				Text = L.kn(t.Desc),
+				TextSize = 15,
+				TextColor3 = Theme.TextDim,
+				Size = UDim2.new(1, -230, 0, 30),
+				Position = UDim2.fromOffset(10, 30),
+				TextYAlignment = Enum.TextYAlignment.Top,
+				Parent = card,
+			})
 			local pips = {}
 			for i = 1, t.Max do
-				local p = New("Frame", { BackgroundColor3 = Theme.Disabled, Size = UDim2.fromOffset(16, 16), AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -110 - (t.Max - i) * 20, 0.5, 0), Parent = card })
+				local p = New("Frame", {
+					BackgroundColor3 = Theme.Disabled,
+					Size = UDim2.fromOffset(16, 16),
+					AnchorPoint = Vector2.new(1, 0.5),
+					Position = UDim2.new(1, -110 - (t.Max - i) * 20, 0.5, 0),
+					Parent = card,
+				})
 				Widgets.corner(p, 8)
 				pips[i] = p
 			end

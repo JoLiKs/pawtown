@@ -6,13 +6,40 @@
 ]]
 local TrickData = {}
 
-export type Trick = { Id: string, Name: string, Level: number, Beats: number, Interval: number, Xp: number, Treats: number, Order: number }
+export type Trick = {
+	Id: string,
+	Name: string,
+	Level: number,
+	Beats: number,
+	Interval: number,
+	Xp: number,
+	Treats: number,
+	Order: number,
+}
 
 TrickData.List = {
 	{ Id = "Sit", Name = "Sit", Level = 1, Beats = 4, Interval = 0.85, Xp = 20, Treats = 6, Order = 1 },
 	{ Id = "Paw", Name = "Paw", Level = 2, Beats = 5, Interval = 0.8, Xp = 26, Treats = 8, Order = 2 },
-	{ Id = "Roll", Name = "Roll Over", Level = 4, Beats = 6, Interval = 0.75, Xp = 34, Treats = 10, Order = 3 },
-	{ Id = "PlayDead", Name = "Play Dead", Level = 6, Beats = 6, Interval = 0.7, Xp = 40, Treats = 12, Order = 4 },
+	{
+		Id = "Roll",
+		Name = "Roll Over",
+		Level = 4,
+		Beats = 6,
+		Interval = 0.75,
+		Xp = 34,
+		Treats = 10,
+		Order = 3,
+	},
+	{
+		Id = "PlayDead",
+		Name = "Play Dead",
+		Level = 6,
+		Beats = 6,
+		Interval = 0.7,
+		Xp = 40,
+		Treats = 12,
+		Order = 4,
+	},
 	{ Id = "Spin", Name = "Spin", Level = 8, Beats = 7, Interval = 0.65, Xp = 48, Treats = 14, Order = 5 },
 } :: { Trick }
 

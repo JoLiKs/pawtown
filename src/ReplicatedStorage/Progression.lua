@@ -48,12 +48,60 @@ end
 -- Таланты: 3 ветки по 2 таланта (MVP), до 3 рангов каждый. Per — бонус за ранг.
 Progression.Branches = { "Nose", "Agility", "Charm" }
 Progression.Talents = {
-	KeenNose = { Id = "KeenNose", Branch = "Nose", Name = "Keen Nose", Desc = "Sniff reaches farther.", Max = 3, Per = 0.25, Order = 1 },
-	TreasureHunter = { Id = "TreasureHunter", Branch = "Nose", Name = "Treasure Hunter", Desc = "More treats from finds and digs.", Max = 3, Per = 0.15, Order = 2 },
-	LightPaws = { Id = "LightPaws", Branch = "Agility", Name = "Light Paws", Desc = "Run faster.", Max = 3, Per = 0.04, Order = 1 },
-	SpringLegs = { Id = "SpringLegs", Branch = "Agility", Name = "Spring Legs", Desc = "Jump higher.", Max = 3, Per = 0.06, Order = 2 },
-	PuppyEyes = { Id = "PuppyEyes", Branch = "Charm", Name = "Puppy Eyes", Desc = "Owners bond with you faster.", Max = 3, Per = 0.15, Order = 1 },
-	Showstopper = { Id = "Showstopper", Branch = "Charm", Name = "Showstopper", Desc = "Wider timing window in tricks.", Max = 3, Per = 0.05, Order = 2 },
+	KeenNose = {
+		Id = "KeenNose",
+		Branch = "Nose",
+		Name = "Keen Nose",
+		Desc = "Sniff reaches farther.",
+		Max = 3,
+		Per = 0.25,
+		Order = 1,
+	},
+	TreasureHunter = {
+		Id = "TreasureHunter",
+		Branch = "Nose",
+		Name = "Treasure Hunter",
+		Desc = "More treats from finds and digs.",
+		Max = 3,
+		Per = 0.15,
+		Order = 2,
+	},
+	LightPaws = {
+		Id = "LightPaws",
+		Branch = "Agility",
+		Name = "Light Paws",
+		Desc = "Run faster.",
+		Max = 3,
+		Per = 0.04,
+		Order = 1,
+	},
+	SpringLegs = {
+		Id = "SpringLegs",
+		Branch = "Agility",
+		Name = "Spring Legs",
+		Desc = "Jump higher.",
+		Max = 3,
+		Per = 0.06,
+		Order = 2,
+	},
+	PuppyEyes = {
+		Id = "PuppyEyes",
+		Branch = "Charm",
+		Name = "Puppy Eyes",
+		Desc = "Owners bond with you faster.",
+		Max = 3,
+		Per = 0.15,
+		Order = 1,
+	},
+	Showstopper = {
+		Id = "Showstopper",
+		Branch = "Charm",
+		Name = "Showstopper",
+		Desc = "Wider timing window in tricks.",
+		Max = 3,
+		Per = 0.05,
+		Order = 2,
+	},
 }
 
 function Progression.rank(talents: any, id: string): number

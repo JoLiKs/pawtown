@@ -128,7 +128,10 @@ function WorldFx.init()
 		local inside = (zone == "Home" or zone == "Shelter") and pos ~= nil and pos.Y < 11
 		for _, r in ipairs(roofs) do
 			if r.Parent then
-				local near = inside and pos and (Vector3.new(r.Position.X, 0, r.Position.Z) - Vector3.new(pos.X, 0, pos.Z)).Magnitude < 45
+				local near = inside
+					and pos
+					and (Vector3.new(r.Position.X, 0, r.Position.Z) - Vector3.new(pos.X, 0, pos.Z)).Magnitude
+						< 45
 				local t = if near then 0.88 else 0
 				if r.Transparency ~= t then
 					r.Transparency = t
@@ -205,7 +208,11 @@ function WorldFx.sniff(list: any)
 	end
 	for _, f in ipairs(list) do
 		if typeof(f.Pos) == "Vector3" then
-			local p = makeGlow("SniffMark", if f.Kind == "Shard" then Color3.fromRGB(150, 200, 255) else Color3.fromRGB(230, 170, 90), 1)
+			local p = makeGlow(
+				"SniffMark",
+				if f.Kind == "Shard" then Color3.fromRGB(150, 200, 255) else Color3.fromRGB(230, 170, 90),
+				1
+			)
 			p.Shape = Enum.PartType.Block
 			p.Size = Vector3.new(0.8, 14, 0.8)
 			p.Transparency = 0.45

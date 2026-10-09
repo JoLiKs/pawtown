@@ -22,9 +22,19 @@ local TIER_COLOR = { Rare = Color3.fromRGB(90, 150, 255), Legendary = Color3.fro
 
 function RebirthPanel.init(gui: ScreenGui)
 	local panel = Widgets.panel(gui, "SparkNight", nil, { MinH = 520 })
-	local intro = Ui.text({ Name = "Intro", Text = L.k("rebirth.intro"), TextSize = 15, TextColor3 = Theme.TextDim, Size = UDim2.new(1, -16, 0, 44), Position = UDim2.fromOffset(8, 4), TextYAlignment = Enum.TextYAlignment.Top, Parent = panel.Body })
+	local intro = Ui.text({
+		Name = "Intro",
+		Text = L.k("rebirth.intro"),
+		TextSize = 15,
+		TextColor3 = Theme.TextDim,
+		Size = UDim2.new(1, -16, 0, 44),
+		Position = UDim2.fromOffset(8, 4),
+		TextYAlignment = Enum.TextYAlignment.Top,
+		Parent = panel.Body,
+	})
 	_ = intro
-	local scroll = Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -56), Position = UDim2.fromOffset(4, 52) })
+	local scroll =
+		Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -56), Position = UDim2.fromOffset(4, 52) })
 	Widgets.padding(scroll, 6)
 	Ui.list(scroll, 6)
 	local cards = {}
@@ -32,14 +42,54 @@ function RebirthPanel.init(gui: ScreenGui)
 	for _, sp in ipairs(SpeciesData.List) do
 		if sp.Tier ~= "Standard" then
 			order += 1
-			local card = Ui.card({ Name = sp.Id, BackgroundColor3 = Theme.BgCard, BackgroundTransparency = 0, Size = UDim2.new(1, -4, 0, 120), LayoutOrder = order, Parent = scroll })
+			local card = Ui.card({
+				Name = sp.Id,
+				BackgroundColor3 = Theme.BgCard,
+				BackgroundTransparency = 0,
+				Size = UDim2.new(1, -4, 0, 120),
+				LayoutOrder = order,
+				Parent = scroll,
+			})
 			Widgets.stroke(card, TIER_COLOR[sp.Tier] or Theme.Gold, 2)
 			Ui.icon(sp.Id, 64, { Position = UDim2.fromOffset(8, 8), Parent = card })
-			Ui.text({ Text = L.kn(sp.Name), Font = Theme.Font, TextSize = 19, Size = UDim2.new(1, -220, 0, 24), Position = UDim2.fromOffset(80, 6), Parent = card })
-			Ui.text({ Text = L.k("tier." .. sp.Tier), Font = Theme.Font, TextSize = 15, TextColor3 = TIER_COLOR[sp.Tier] or Theme.Gold, Size = UDim2.fromOffset(130, 20), Position = UDim2.fromOffset(80, 30), Parent = card })
-			Ui.text({ Text = L.kn(sp.Desc), TextSize = 15, TextColor3 = Theme.TextDim, Size = UDim2.new(1, -220, 0, 20), Position = UDim2.fromOffset(80, 50), Parent = card })
-			local reqHolder = New("Frame", { Name = "Req", BackgroundTransparency = 1, Size = UDim2.new(1, -90, 0, 40), Position = UDim2.fromOffset(80, 74), Parent = card })
-			local grid = New("UIGridLayout", { CellSize = UDim2.fromOffset(150, 20), CellPadding = UDim2.fromOffset(4, 2), SortOrder = Enum.SortOrder.LayoutOrder, Parent = reqHolder })
+			Ui.text({
+				Text = L.kn(sp.Name),
+				Font = Theme.Font,
+				TextSize = 19,
+				Size = UDim2.new(1, -220, 0, 24),
+				Position = UDim2.fromOffset(80, 6),
+				Parent = card,
+			})
+			Ui.text({
+				Text = L.k("tier." .. sp.Tier),
+				Font = Theme.Font,
+				TextSize = 15,
+				TextColor3 = TIER_COLOR[sp.Tier] or Theme.Gold,
+				Size = UDim2.fromOffset(130, 20),
+				Position = UDim2.fromOffset(80, 30),
+				Parent = card,
+			})
+			Ui.text({
+				Text = L.kn(sp.Desc),
+				TextSize = 15,
+				TextColor3 = Theme.TextDim,
+				Size = UDim2.new(1, -220, 0, 20),
+				Position = UDim2.fromOffset(80, 50),
+				Parent = card,
+			})
+			local reqHolder = New("Frame", {
+				Name = "Req",
+				BackgroundTransparency = 1,
+				Size = UDim2.new(1, -90, 0, 40),
+				Position = UDim2.fromOffset(80, 74),
+				Parent = card,
+			})
+			local grid = New("UIGridLayout", {
+				CellSize = UDim2.fromOffset(150, 20),
+				CellPadding = UDim2.fromOffset(4, 2),
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Parent = reqHolder,
+			})
 			_ = grid
 			local soon = Widgets.button({
 				Name = "Soon",

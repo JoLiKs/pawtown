@@ -38,9 +38,8 @@ TECH_LINE = re.compile(
 LIT = re.compile(r'"((?:[^"\\\n]|\\.)*)"')
 # Данные (имена/описания переводятся через Names и проверяются тестом), ключи Locale и эмулятор тестов не сканируем
 SKIP_FILES = {"LocaleEn.lua", "LocaleRu.lua", "Locale.lua"}
-DATA_FILES = {"PetData.lua", "Abilities.lua", "AchievementData.lua", "BattlePassData.lua", "EnemyData.lua", "EventData.lua",
-              "QuestData.lua", "RecipeData.lua", "ResourceData.lua", "ShopData.lua", "TalentData.lua", "UpgradeData.lua",
-              "ZoneData.lua", "Config.lua"}
+DATA_FILES = {"SpeciesData.lua", "Progression.lua", "TrickData.lua", "ShopData.lua", "FamilyData.lua",
+              "QuestData.lua", "WorldData.lua", "Config.lua"}
 ALLOW = {"VIP", "R$", "OK", "Q", "E", "X", "ON", "OFF"}
 
 

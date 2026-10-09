@@ -53,8 +53,13 @@ function Interact.dispatch(player: Player, prompt: ProximityPrompt): (boolean, a
 end
 
 -- Создаёт подсказку на детали
-function Interact.prompt(part: BasePart, action: string, textKey: string, opts: { [string]: any }?): ProximityPrompt
-	local o = opts or {}
+function Interact.prompt(
+	part: BasePart,
+	action: string,
+	textKey: string,
+	opts: { [string]: any }?
+): ProximityPrompt
+	local o: any = opts or {}
 	local p = Instance.new("ProximityPrompt")
 	p.Name = "Prompt_" .. action
 	p.MaxActivationDistance = o.Distance or 9

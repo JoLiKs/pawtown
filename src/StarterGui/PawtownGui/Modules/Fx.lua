@@ -20,9 +20,32 @@ local Fx = {}
 function Fx.init(gui: ScreenGui, openUi: (string) -> ())
 	-- таймер полосы препятствий
 	local layer = Ui.root(gui, "FxLayer", 3)
-	local agility = Ui.card({ Name = "AgilityTimer", Size = UDim2.fromOffset(240, 60), AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 110), Visible = false, Parent = layer })
-	local agTime = Ui.text({ Name = "Time", Font = Theme.Font, TextSize = 28, TextXAlignment = Enum.TextXAlignment.Center, Size = UDim2.new(1, 0, 0, 32), Position = UDim2.fromOffset(0, 2), Parent = agility })
-	local agCp = Ui.text({ Name = "Gate", TextSize = 16, TextColor3 = Theme.TextDim, TextXAlignment = Enum.TextXAlignment.Center, Size = UDim2.new(1, 0, 0, 20), Position = UDim2.fromOffset(0, 36), Parent = agility })
+	local agility = Ui.card({
+		Name = "AgilityTimer",
+		Size = UDim2.fromOffset(240, 60),
+		AnchorPoint = Vector2.new(0.5, 0),
+		Position = UDim2.new(0.5, 0, 0, 110),
+		Visible = false,
+		Parent = layer,
+	})
+	local agTime = Ui.text({
+		Name = "Time",
+		Font = Theme.Font,
+		TextSize = 28,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		Size = UDim2.new(1, 0, 0, 32),
+		Position = UDim2.fromOffset(0, 2),
+		Parent = agility,
+	})
+	local agCp = Ui.text({
+		Name = "Gate",
+		TextSize = 16,
+		TextColor3 = Theme.TextDim,
+		TextXAlignment = Enum.TextXAlignment.Center,
+		Size = UDim2.new(1, 0, 0, 20),
+		Position = UDim2.fromOffset(0, 36),
+		Parent = agility,
+	})
 	local agStart, agNext = 0, 1
 	RunService.Heartbeat:Connect(function()
 		if agility.Visible then
@@ -40,7 +63,12 @@ function Fx.init(gui: ScreenGui, openUi: (string) -> ())
 			Toasts.banner("fx.daily_done", "daily." .. tostring(a), Theme.Blue, 3)
 		elseif kind == "Gift" then
 			local item = ShopData.ById[b]
-			Toasts.banner(L.m("fx.gift", { who = "npc." .. tostring(a) }), if item then item.Name else L.m("fx.treats", { n = c or 0 }), Theme.Pink, 4)
+			Toasts.banner(
+				L.m("fx.gift", { who = "npc." .. tostring(a) }),
+				if item then item.Name else L.m("fx.treats", { n = c or 0 }),
+				Theme.Pink,
+				4
+			)
 		elseif kind == "Shard" then
 			Toasts.banner("fx.shard", "fx.shard_sub", Color3.fromRGB(150, 200, 255), 3.5)
 		elseif kind == "Sniff" then

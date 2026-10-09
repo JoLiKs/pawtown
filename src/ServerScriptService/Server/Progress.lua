@@ -40,7 +40,11 @@ function Progress.xp(player: Player, amount: number): number
 			Progress.onLevel(player, level)
 		end
 		if Progression.age(level) ~= oldAge and Progress.onAgeChanged then
-			Notify.send(player, Locale.m("toast.age_up", { age = "age." .. Progression.age(level) }), "reward")
+			Notify.send(
+				player,
+				Locale.m("toast.age_up", { age = "age." .. Progression.age(level) }),
+				"reward"
+			)
 			task.spawn(Progress.onAgeChanged, player)
 		end
 	end

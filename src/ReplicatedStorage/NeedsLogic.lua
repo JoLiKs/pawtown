@@ -62,7 +62,7 @@ end
 
 -- Пересчёт за dt секунд. mods: { Sleeping = bool, Activity = 1 (множитель убывания) , Floor = минимум (офлайн) }
 function NeedsLogic.step(n: Needs, dt: number, mods: { [string]: any }?): Needs
-	local m = mods or {}
+	local m: any = mods or {}
 	local activity: number = m.Activity or 1
 	local floor: number = m.Floor or 0
 	for _, k in ipairs(NeedsLogic.DECAYING) do

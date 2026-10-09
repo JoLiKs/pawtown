@@ -58,6 +58,13 @@ function State.build(player: Player): any?
 		Carrying = s and s.Carrying or "",
 		Sleeping = s ~= nil and s.SleepUntil > os.clock(),
 		Lang = data.Settings.Lang,
+		FriendsCount = (function()
+			local n = 0
+			for _ in pairs(data.Friends or {}) do
+				n += 1
+			end
+			return n
+		end)(),
 		DailyIds = QuestData.pickDaily(QuestData.dayNumber(os.time()), player.UserId),
 	}
 	for key, fn in pairs(State.providers) do
@@ -80,7 +87,9 @@ function State.init()
 			task.wait(0.25)
 			for player in pairs(dirty) do
 				if player.Parent then
-					local ok, err = pcall(State.push, player)
+					local ok, err = pcall(function()
+						State.push(player)
+					end)
 					if not ok then
 						warn("[State] push failed:", err)
 					end

@@ -20,7 +20,8 @@ local SpeciesPanel = {}
 
 function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 	local panel = Widgets.panel(gui, "Species", nil, { MinH = 540 })
-	local scroll = Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -4), Position = UDim2.fromOffset(4, 0) })
+	local scroll =
+		Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -4), Position = UDim2.fromOffset(4, 0) })
 	Widgets.padding(scroll, 8)
 	local grid = New("UIGridLayout", {
 		CellSize = UDim2.new(0.5, -6, 0, 236),
@@ -32,7 +33,13 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 	local chooseButtons = {}
 	for i, sp in ipairs(SpeciesData.Standard) do
 		local id = sp.Id
-		local card = Ui.card({ Name = id, BackgroundColor3 = Theme.BgCard, BackgroundTransparency = 0, LayoutOrder = i, Parent = scroll })
+		local card = Ui.card({
+			Name = id,
+			BackgroundColor3 = Theme.BgCard,
+			BackgroundTransparency = 0,
+			LayoutOrder = i,
+			Parent = scroll,
+		})
 		local iconBack = New("Frame", {
 			BackgroundColor3 = sp.Look.Body,
 			BackgroundTransparency = 0.6,
@@ -41,8 +48,20 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 			Parent = card,
 		})
 		Widgets.corner(iconBack, 32)
-		Ui.icon(id, 56, { AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = iconBack })
-		Ui.text({ Name = "Title", Text = L.kn(sp.Name), Font = Theme.Font, TextSize = 22, Size = UDim2.new(1, -84, 0, 26), Position = UDim2.fromOffset(80, 8), Parent = card })
+		Ui.icon(
+			id,
+			56,
+			{ AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Parent = iconBack }
+		)
+		Ui.text({
+			Name = "Title",
+			Text = L.kn(sp.Name),
+			Font = Theme.Font,
+			TextSize = 22,
+			Size = UDim2.new(1, -84, 0, 26),
+			Position = UDim2.fromOffset(80, 8),
+			Parent = card,
+		})
 		Ui.text({
 			Name = "Desc",
 			Text = L.kn(sp.Desc),
@@ -57,14 +76,31 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 		for _, abId in ipairs(sp.Abilities) do
 			local ab = SpeciesData.Abilities[abId]
 			if ab then
-				Ui.icon(Ui.ABILITY_ICON[abId] or "Paw", 22, { Position = UDim2.fromOffset(10, y), Parent = card })
-				Ui.text({ Text = L.kn(ab.Name), TextSize = 15, Size = UDim2.new(1, -44, 0, 22), Position = UDim2.fromOffset(38, y), Parent = card })
+				Ui.icon(
+					Ui.ABILITY_ICON[abId] or "Paw",
+					22,
+					{ Position = UDim2.fromOffset(10, y), Parent = card }
+				)
+				Ui.text({
+					Text = L.kn(ab.Name),
+					TextSize = 15,
+					Size = UDim2.new(1, -44, 0, 22),
+					Position = UDim2.fromOffset(38, y),
+					Parent = card,
+				})
 				y += 24
 			end
 		end
 		-- скорость и прыжок
 		local function stat(label: string, v: number, yy: number, color: Color3)
-			Ui.text({ Text = L.k(label), TextSize = 15, TextColor3 = Theme.TextDim, Size = UDim2.fromOffset(70, 18), Position = UDim2.fromOffset(10, yy), Parent = card })
+			Ui.text({
+				Text = L.k(label),
+				TextSize = 15,
+				TextColor3 = Theme.TextDim,
+				Size = UDim2.fromOffset(70, 18),
+				Position = UDim2.fromOffset(10, yy),
+				Parent = card,
+			})
 			local _, set = Ui.bar(card, UDim2.fromOffset(84, yy + 4), UDim2.new(1, -96, 0, 10), color)
 			set(v)
 		end
@@ -85,9 +121,22 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 			end,
 		})
 	end
-	local rare = Ui.card({ Name = "Rare", BackgroundColor3 = Color3.fromRGB(60, 40, 90), BackgroundTransparency = 0, LayoutOrder = 10, Parent = scroll })
+	local rare = Ui.card({
+		Name = "Rare",
+		BackgroundColor3 = Color3.fromRGB(60, 40, 90),
+		BackgroundTransparency = 0,
+		LayoutOrder = 10,
+		Parent = scroll,
+	})
 	Ui.icon("Spark", 48, { Position = UDim2.fromOffset(10, 12), Parent = rare })
-	Ui.text({ Text = L.k("species.rare_title"), Font = Theme.Font, TextSize = 20, Size = UDim2.new(1, -70, 0, 26), Position = UDim2.fromOffset(66, 10), Parent = rare })
+	Ui.text({
+		Text = L.k("species.rare_title"),
+		Font = Theme.Font,
+		TextSize = 20,
+		Size = UDim2.new(1, -70, 0, 26),
+		Position = UDim2.fromOffset(66, 10),
+		Parent = rare,
+	})
 	Ui.text({
 		Text = L.k("species.rare_desc"),
 		TextSize = 15,

@@ -20,17 +20,53 @@ local Cutscene = {}
 
 Cutscene.SCENES = {
 	Adoption = { { "Home", "cut.adopt.1" }, { "Love", "cut.adopt.2" }, { "Spark", "cut.adopt.3" } },
-	Dream = { { "Spark", "cut.dream.1" }, { "MidnightCat", "cut.dream.2" }, { "MidnightCat", "cut.dream.3" }, { "Shard", "cut.dream.4" } },
+	Dream = {
+		{ "Spark", "cut.dream.1" },
+		{ "MidnightCat", "cut.dream.2" },
+		{ "MidnightCat", "cut.dream.3" },
+		{ "Shard", "cut.dream.4" },
+	},
 }
 Cutscene.SLIDE = 2.6
 
 function Cutscene.init(gui: ScreenGui)
-	local layer = New("Frame", { Name = "Cutscene", BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), Visible = false, ZIndex = 80, Parent = gui })
-	local top = New("Frame", { Name = "BarTop", BackgroundColor3 = Color3.new(0, 0, 0), BorderSizePixel = 0, Size = UDim2.fromScale(1, 0.13), ZIndex = 80, Parent = layer })
-	local bottom = New("Frame", { Name = "BarBottom", BackgroundColor3 = Color3.new(0, 0, 0), BorderSizePixel = 0, AnchorPoint = Vector2.new(0, 1), Position = UDim2.fromScale(0, 1), Size = UDim2.fromScale(1, 0.2), ZIndex = 80, Parent = layer })
+	local layer = New("Frame", {
+		Name = "Cutscene",
+		BackgroundTransparency = 1,
+		Size = UDim2.fromScale(1, 1),
+		Visible = false,
+		ZIndex = 80,
+		Parent = gui,
+	})
+	local top = New("Frame", {
+		Name = "BarTop",
+		BackgroundColor3 = Color3.new(0, 0, 0),
+		BorderSizePixel = 0,
+		Size = UDim2.fromScale(1, 0.13),
+		ZIndex = 80,
+		Parent = layer,
+	})
+	local bottom = New("Frame", {
+		Name = "BarBottom",
+		BackgroundColor3 = Color3.new(0, 0, 0),
+		BorderSizePixel = 0,
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.fromScale(0, 1),
+		Size = UDim2.fromScale(1, 0.2),
+		ZIndex = 80,
+		Parent = layer,
+	})
 	_ = top
 	local inner, _k = Ui.root(layer, "Inner", 81)
-	local iconHolder = New("Frame", { Name = "Icon", BackgroundTransparency = 1, Size = UDim2.fromOffset(90, 90), AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 30, 1, -18), ZIndex = 82, Parent = inner })
+	local iconHolder = New("Frame", {
+		Name = "Icon",
+		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(90, 90),
+		AnchorPoint = Vector2.new(0, 1),
+		Position = UDim2.new(0, 30, 1, -18),
+		ZIndex = 82,
+		Parent = inner,
+	})
 	local text = Ui.text({
 		Name = "Text",
 		Font = Theme.Font,

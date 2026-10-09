@@ -26,14 +26,43 @@ local EMOTES = {
 
 function EmotesPanel.init(gui: ScreenGui)
 	local panel = Widgets.panel(gui, "Emotes")
-	local holder = New("Frame", { BackgroundTransparency = 1, Size = UDim2.new(1, -16, 1, -8), Position = UDim2.fromOffset(8, 4), Parent = panel.Body })
-	New("UIGridLayout", { CellSize = UDim2.new(1 / 3, -6, 0, 96), CellPadding = UDim2.fromOffset(6, 6), SortOrder = Enum.SortOrder.LayoutOrder, Parent = holder })
+	local holder = New("Frame", {
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1, -16, 1, -8),
+		Position = UDim2.fromOffset(8, 4),
+		Parent = panel.Body,
+	})
+	New("UIGridLayout", {
+		CellSize = UDim2.new(1 / 3, -6, 0, 96),
+		CellPadding = UDim2.fromOffset(6, 6),
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Parent = holder,
+	})
 	local mimic
 	for i, e in ipairs(EMOTES) do
-		local b = New("TextButton", { Name = e[1], Text = "", AutoButtonColor = true, BackgroundColor3 = Theme.BgCard, LayoutOrder = i, Parent = holder })
+		local b = New("TextButton", {
+			Name = e[1],
+			Text = "",
+			AutoButtonColor = true,
+			BackgroundColor3 = Theme.BgCard,
+			LayoutOrder = i,
+			Parent = holder,
+		})
 		Widgets.corner(b, 12)
-		Ui.icon(e[2], 46, { AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 8), Parent = b })
-		Ui.text({ Text = L.k("emote." .. e[1]), Font = Theme.Font, TextSize = 16, TextXAlignment = Enum.TextXAlignment.Center, Size = UDim2.new(1, -6, 0, 30), Position = UDim2.new(0, 3, 1, -36), Parent = b })
+		Ui.icon(
+			e[2],
+			46,
+			{ AnchorPoint = Vector2.new(0.5, 0), Position = UDim2.new(0.5, 0, 0, 8), Parent = b }
+		)
+		Ui.text({
+			Text = L.k("emote." .. e[1]),
+			Font = Theme.Font,
+			TextSize = 16,
+			TextXAlignment = Enum.TextXAlignment.Center,
+			Size = UDim2.new(1, -6, 0, 30),
+			Position = UDim2.new(0, 3, 1, -36),
+			Parent = b,
+		})
 		b.Activated:Connect(function()
 			if Actions.call("Emote", e[1]) then
 				panel.Close()

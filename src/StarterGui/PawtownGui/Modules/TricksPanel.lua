@@ -26,7 +26,8 @@ local TARGET_X = 80
 
 function TricksPanel.init(gui: ScreenGui)
 	local panel = Widgets.panel(gui, "Tricks", nil, { MinH = 460 })
-	local scroll = Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -4), Position = UDim2.fromOffset(4, 0) })
+	local scroll =
+		Widgets.scroller(panel.Body, { Size = UDim2.new(1, -8, 1, -4), Position = UDim2.fromOffset(4, 0) })
 	Widgets.padding(scroll, 8)
 	Ui.list(scroll, 6)
 
@@ -42,8 +43,26 @@ function TricksPanel.init(gui: ScreenGui)
 		ZIndex = 30,
 		Parent = layer,
 	})
-	local gTitle = Ui.text({ Name = "Title", Font = Theme.Font, TextSize = 24, TextColor3 = Theme.Gold, Size = UDim2.new(1, -20, 0, 30), Position = UDim2.fromOffset(14, 8), ZIndex = 31, Parent = box })
-	local hint = Ui.text({ Name = "Hint", Text = L.k("trick.hint"), TextSize = 17, TextColor3 = Theme.TextDim, Size = UDim2.new(1, -20, 0, 22), Position = UDim2.fromOffset(14, 38), ZIndex = 31, Parent = box })
+	local gTitle = Ui.text({
+		Name = "Title",
+		Font = Theme.Font,
+		TextSize = 24,
+		TextColor3 = Theme.Gold,
+		Size = UDim2.new(1, -20, 0, 30),
+		Position = UDim2.fromOffset(14, 8),
+		ZIndex = 31,
+		Parent = box,
+	})
+	local hint = Ui.text({
+		Name = "Hint",
+		Text = L.k("trick.hint"),
+		TextSize = 17,
+		TextColor3 = Theme.TextDim,
+		Size = UDim2.new(1, -20, 0, 22),
+		Position = UDim2.fromOffset(14, 38),
+		ZIndex = 31,
+		Parent = box,
+	})
 	local lane = New("Frame", {
 		Name = "Lane",
 		BackgroundColor3 = Color3.fromRGB(30, 22, 36),
@@ -97,11 +116,52 @@ function TricksPanel.init(gui: ScreenGui)
 		ZIndex = 34,
 		Parent = layer,
 	})
-	local medalHolder = New("Frame", { Name = "Medal", BackgroundTransparency = 1, Size = UDim2.fromOffset(110, 110), Position = UDim2.fromOffset(20, 30), ZIndex = 35, Parent = result })
-	local rTitle = Ui.text({ Name = "Title", Font = Theme.Font, TextSize = 28, Size = UDim2.new(1, -160, 0, 36), Position = UDim2.fromOffset(148, 30), ZIndex = 35, Parent = result })
-	local rScore = Ui.text({ Name = "Score", TextSize = 20, TextColor3 = Theme.TextDim, Size = UDim2.new(1, -160, 0, 28), Position = UDim2.fromOffset(148, 72), ZIndex = 35, Parent = result })
-	local again = Widgets.button({ Name = "Again", Text = L.k("btn.again"), Color = Theme.Green, MaxTextSize = 20, Size = UDim2.fromOffset(160, 44), Position = UDim2.fromOffset(148, 160), ZIndex = 35, Parent = result })
-	local closeR = Widgets.button({ Name = "CloseResult", Text = L.k("btn.close"), Color = Theme.BgLight, MaxTextSize = 20, Size = UDim2.fromOffset(160, 44), Position = UDim2.fromOffset(320, 160), ZIndex = 35, Parent = result })
+	local medalHolder = New("Frame", {
+		Name = "Medal",
+		BackgroundTransparency = 1,
+		Size = UDim2.fromOffset(110, 110),
+		Position = UDim2.fromOffset(20, 30),
+		ZIndex = 35,
+		Parent = result,
+	})
+	local rTitle = Ui.text({
+		Name = "Title",
+		Font = Theme.Font,
+		TextSize = 28,
+		Size = UDim2.new(1, -160, 0, 36),
+		Position = UDim2.fromOffset(148, 30),
+		ZIndex = 35,
+		Parent = result,
+	})
+	local rScore = Ui.text({
+		Name = "Score",
+		TextSize = 20,
+		TextColor3 = Theme.TextDim,
+		Size = UDim2.new(1, -160, 0, 28),
+		Position = UDim2.fromOffset(148, 72),
+		ZIndex = 35,
+		Parent = result,
+	})
+	local again = Widgets.button({
+		Name = "Again",
+		Text = L.k("btn.again"),
+		Color = Theme.Green,
+		MaxTextSize = 20,
+		Size = UDim2.fromOffset(160, 44),
+		Position = UDim2.fromOffset(148, 160),
+		ZIndex = 35,
+		Parent = result,
+	})
+	local closeR = Widgets.button({
+		Name = "CloseResult",
+		Text = L.k("btn.close"),
+		Color = Theme.BgLight,
+		MaxTextSize = 20,
+		Size = UDim2.fromOffset(160, 44),
+		Position = UDim2.fromOffset(320, 160),
+		ZIndex = 35,
+		Parent = result,
+	})
 
 	local running = nil :: any
 	local lastId = nil
@@ -213,7 +273,8 @@ function TricksPanel.init(gui: ScreenGui)
 			Ui.icon("Paw", 56, { ZIndex = 35, Parent = n })
 			notes[i] = n
 		end
-		running = { Id = id, Times = times, Errors = {}, Notes = notes, Start = os.clock(), Mult = data.Mult or 1 }
+		running =
+			{ Id = id, Times = times, Errors = {}, Notes = notes, Start = os.clock(), Mult = data.Mult or 1 }
 		stopLoop()
 		hbConn = RunService.Heartbeat:Connect(function()
 			local run = running
@@ -263,11 +324,40 @@ function TricksPanel.init(gui: ScreenGui)
 	------------------------------------------------------------------ список
 	local rows = {}
 	for i, t in ipairs(TrickData.List) do
-		local card = Ui.card({ Name = t.Id, BackgroundColor3 = Theme.BgCard, BackgroundTransparency = 0, Size = UDim2.new(1, -4, 0, 70), LayoutOrder = i, Parent = scroll })
+		local card = Ui.card({
+			Name = t.Id,
+			BackgroundColor3 = Theme.BgCard,
+			BackgroundTransparency = 0,
+			Size = UDim2.new(1, -4, 0, 70),
+			LayoutOrder = i,
+			Parent = scroll,
+		})
 		Ui.icon("Trick", 50, { Position = UDim2.fromOffset(10, 10), Parent = card })
-		Ui.text({ Name = "Title", Text = L.kn(t.Name), Font = Theme.Font, TextSize = 20, Size = UDim2.new(1, -250, 0, 26), Position = UDim2.fromOffset(70, 8), Parent = card })
-		local info = Ui.text({ Name = "Info", TextSize = 15, TextColor3 = Theme.TextDim, Size = UDim2.new(1, -250, 0, 22), Position = UDim2.fromOffset(70, 38), Parent = card })
-		local medal = New("Frame", { Name = "Medal", BackgroundTransparency = 1, Size = UDim2.fromOffset(44, 44), AnchorPoint = Vector2.new(1, 0.5), Position = UDim2.new(1, -140, 0.5, 0), Parent = card })
+		Ui.text({
+			Name = "Title",
+			Text = L.kn(t.Name),
+			Font = Theme.Font,
+			TextSize = 20,
+			Size = UDim2.new(1, -250, 0, 26),
+			Position = UDim2.fromOffset(70, 8),
+			Parent = card,
+		})
+		local info = Ui.text({
+			Name = "Info",
+			TextSize = 15,
+			TextColor3 = Theme.TextDim,
+			Size = UDim2.new(1, -250, 0, 22),
+			Position = UDim2.fromOffset(70, 38),
+			Parent = card,
+		})
+		local medal = New("Frame", {
+			Name = "Medal",
+			BackgroundTransparency = 1,
+			Size = UDim2.fromOffset(44, 44),
+			AnchorPoint = Vector2.new(1, 0.5),
+			Position = UDim2.new(1, -140, 0.5, 0),
+			Parent = card,
+		})
 		local play = Widgets.button({
 			Name = "Play",
 			Text = L.k("btn.play"),
@@ -297,7 +387,11 @@ function TricksPanel.init(gui: ScreenGui)
 			if r.Best ~= key then
 				r.Best = key
 				Widgets.clear(r.Medal)
-				Ui.icon(if best > 0 then Ui.MEDAL_ICON[best] else if unlocked then "Paw" else "Lock", 44, { Parent = r.Medal })
+				Ui.icon(
+					if best > 0 then Ui.MEDAL_ICON[best] else if unlocked then "Paw" else "Lock",
+					44,
+					{ Parent = r.Medal }
+				)
 			end
 		end
 	end)

@@ -88,14 +88,26 @@ local function startFetch(player: Player, where: string): (boolean, any)
 	local a = rng:NextNumber(0, math.pi * 2)
 	local r = rng:NextNumber(radius * 0.5, radius)
 	local pos = center + Vector3.new(math.cos(a) * r, 0.7, math.sin(a) * r)
-	local ball = WorldBuilder.part(WorldBuilder.folder("Dynamic"), "Ball_" .. player.UserId, Vector3.new(1.4, 1.4, 1.4), pos, Color3.fromRGB(250, 230, 70), {
-		Shape = Enum.PartType.Ball,
-		CanCollide = false,
-	})
+	local ball = WorldBuilder.part(
+		WorldBuilder.folder("Dynamic"),
+		"Ball_" .. player.UserId,
+		Vector3.new(1.4, 1.4, 1.4),
+		pos,
+		Color3.fromRGB(250, 230, 70),
+		{
+			Shape = Enum.PartType.Ball,
+			CanCollide = false,
+		}
+	)
 	ball:SetAttribute("Owner", player.UserId)
 	ball:SetAttribute("FetchBall", true)
-	Interact.prompt(ball, "GrabBall", "prompt.grab_ball", { Arg = tostring(player.UserId), Object = "obj.ball", Distance = 8 })
-	s.Fetch = { Start = os.clock(), Where = where, Ball = ball }
+	Interact.prompt(
+		ball,
+		"GrabBall",
+		"prompt.grab_ball",
+		{ Arg = tostring(player.UserId), Object = "obj.ball", Distance = 8 }
+	)
+	s.Fetch = { Start = os.clock(), Where = where, Ball = ball } :: any
 	local token = s.Fetch
 	if where == "Home" then
 		FamilyService.say("Kid", "speech.kid_throw")
@@ -137,7 +149,11 @@ local function agilityTick(player: Player)
 		if ag.Next > #A.Checkpoints then
 			s.Agility = nil
 			local t = math.floor(elapsed * 10 + 0.5) / 10
-			local medal = if t <= A.Medals.Gold then 3 elseif t <= A.Medals.Silver then 2 elseif t <= A.Medals.Bronze then 1 else 0
+			local medal = if t <= A.Medals.Gold
+				then 3
+				elseif t <= A.Medals.Silver then 2
+				elseif t <= A.Medals.Bronze then 1
+				else 0
 			local data = DataService.get(player)
 			local best = data and data.Best.Agility or 0
 			if data and (best == 0 or t < best) then

@@ -30,13 +30,28 @@ function Movement.baseSpeed(data: any): number
 	return Config.BASE_WALKSPEED * mult
 end
 
+-- Питомец «занят» (сон, мини-игра трюка или ванны) — стоит на месте
+function Movement.busy(s: any): boolean
+	local now = os.clock()
+	if s.SleepUntil > now then
+		return true
+	end
+	if s.Trick and now - s.Trick.Start < 30 then
+		return true
+	end
+	if s.Bath and now - s.Bath.Start < 60 then
+		return true
+	end
+	return false
+end
+
 function Movement.walkSpeed(player: Player): number
 	local data = DataService.get(player)
 	local s = Session.get(player)
 	if not data or not s then
 		return Config.BASE_WALKSPEED
 	end
-	if s.SleepUntil > os.clock() then
+	if Movement.busy(s) then
 		return 0
 	end
 	local v = Movement.baseSpeed(data)
@@ -62,8 +77,14 @@ function Movement.jumpPower(player: Player): number
 	if not data then
 		return Config.BASE_JUMPPOWER
 	end
+	local s = Session.get(player)
+	if s and Movement.busy(s) then
+		return 0
+	end
 	local sp = SpeciesData.ById[data.Species]
-	return Config.BASE_JUMPPOWER * (if sp then sp.Jump else 1) * (1 + Progression.bonus(data.Talents, "SpringLegs"))
+	return Config.BASE_JUMPPOWER
+		* (if sp then sp.Jump else 1)
+		* (1 + Progression.bonus(data.Talents, "SpringLegs"))
 end
 
 -- На крыше соседского дома? (по координатам: проще и надёжнее рейкаста)

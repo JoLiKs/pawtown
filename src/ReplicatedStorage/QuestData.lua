@@ -6,7 +6,15 @@
 ]]
 local QuestData = {}
 
-export type Step = { Id: string, Kind: string, Need: number, Distinct: boolean?, Treats: number, Xp: number, Target: string? }
+export type Step = {
+	Id: string,
+	Kind: string,
+	Need: number,
+	Distinct: boolean?,
+	Treats: number,
+	Xp: number,
+	Target: string?,
+}
 
 QuestData.CHAPTER1 = {
 	{ Id = "c1_species", Kind = "species", Need = 1, Treats = 0, Xp = 0, Target = "Shelter" },
@@ -24,7 +32,15 @@ for _, s in ipairs(QuestData.CHAPTER1) do
 end
 
 -- Ежедневные задания: каждый день 5 из пула (детерминированно по дню и игроку)
-export type Daily = { Id: string, Kind: string, Need: number, Treats: number, Xp: number, Rep: string?, RepPts: number? }
+export type Daily = {
+	Id: string,
+	Kind: string,
+	Need: number,
+	Treats: number,
+	Xp: number,
+	Rep: string?,
+	RepPts: number?,
+}
 QuestData.DAILY_POOL = {
 	{ Id = "d_newspaper", Kind = "newspaper", Need = 1, Treats = 25, Xp = 40, Rep = "Street", RepPts = 10 },
 	{ Id = "d_lost_toy", Kind = "lost_toy", Need = 1, Treats = 30, Xp = 45, Rep = "Street", RepPts = 10 },
