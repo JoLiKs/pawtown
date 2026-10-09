@@ -329,7 +329,8 @@ function Hud.init(gui: ScreenGui, openPanel: (string) -> ())
 				area = { X = 8, Y = top, W = lay.W - 16 - 66 * k, H = lay.H - top - 150 }
 			else
 				local left = 248 * k
-				area = { X = left, Y = 8, W = lay.W - left - 8, H = lay.H - 8 - 74 * k }
+				-- справа внизу — кнопка прыжка Roblox (~110 px): окно её не перекрывает
+				area = { X = left, Y = 8, W = lay.W - left - 120, H = lay.H - 8 - 74 * k }
 			end
 			Layout.setPanelArea(area)
 		else

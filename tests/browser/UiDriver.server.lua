@@ -18,7 +18,14 @@ local State = require(Server.State)
 local Remotes = require(ReplicatedStorage.Shared.Remotes)
 
 local player = Players:GetPlayers()[1] or Players.PlayerAdded:Wait()
-while not (Session.get(player) and Session.get(player).Ready and player.Character and player.Character:FindFirstChild("HumanoidRootPart")) do
+while
+	not (
+		Session.get(player)
+		and Session.get(player).Ready
+		and player.Character
+		and player.Character:FindFirstChild("HumanoidRootPart")
+	)
+do
 	task.wait(0.2)
 end
 
