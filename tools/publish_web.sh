@@ -17,5 +17,5 @@ touch "$OUT/.nojekyll"
 cp "$G/docs/DEMO_README.md" "$OUT/README.md"
 mkdir -p "$OUT/roblox-source"
 (cd "$G" && tar --exclude=.git --exclude=tools_dl --exclude=build --exclude=dist --exclude=node_modules --exclude=sourcemap.json --exclude='*.zip' --exclude=__pycache__ -cf - .) | (cd "$OUT/roblox-source" && tar xf -)
-for f in /workspace/Pawtown_v0.1.rbxl /workspace/Pawtown_v0.1.rbxlx; do [ -f "$f" ] && cp "$f" "$OUT/"; done
+for f in /workspace/Pawtown_v0.2.rbxl /workspace/Pawtown_v0.2.rbxlx; do [ -f "$f" ] && cp "$f" "$OUT/"; done
 echo "web build: $OUT"
