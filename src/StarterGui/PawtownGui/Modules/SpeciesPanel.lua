@@ -30,8 +30,8 @@ function SpeciesPanel.init(gui: ScreenGui, openRebirth: () -> ())
 	})
 	_ = grid
 	local chooseButtons = {}
-	for i, id in ipairs(SpeciesData.Standard) do
-		local sp = SpeciesData.ById[id]
+	for i, sp in ipairs(SpeciesData.Standard) do
+		local id = sp.Id
 		local card = Ui.card({ Name = id, BackgroundColor3 = Theme.BgCard, BackgroundTransparency = 0, LayoutOrder = i, Parent = scroll })
 		local iconBack = New("Frame", {
 			BackgroundColor3 = sp.Look.Body,
