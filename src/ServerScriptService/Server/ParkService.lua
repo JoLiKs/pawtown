@@ -220,6 +220,12 @@ function ParkService.init()
 				if s and s.Agility then
 					pcall(agilityTick, player)
 				end
+				-- апорт в парке: принёс мяч к мячомёту — засчитано без лишнего нажатия
+				if s and s.Fetch and s.Carrying == "Ball" and s.Fetch.Where == "Park" then
+					if AntiExploit.near(player, WorldData.Fetch.Park, 7) then
+						pcall(finishFetch, player)
+					end
+				end
 			end
 		end
 	end)

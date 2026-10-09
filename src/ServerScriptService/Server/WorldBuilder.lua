@@ -601,14 +601,7 @@ local function buildShelter()
 	-- коробки с питомцами (декор), миски, лежанки
 	for i = 0, 3 do
 		local x = -146 + i * 6
-		part(
-			s,
-			"Box",
-			V(4.5, 2.5, 4),
-			V(x, 1.25, 56),
-			c3(210, 170, 120),
-			{ Material = Enum.Material.Cardboard }
-		)
+		part(s, "Box", V(4.5, 2.5, 4), V(x, 1.25, 56), c3(210, 170, 120), { Material = Enum.Material.Fabric })
 		part(
 			s,
 			"BoxBlanket",

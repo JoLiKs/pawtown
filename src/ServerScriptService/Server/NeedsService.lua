@@ -48,14 +48,14 @@ local function setSleeping(player: Player, on: boolean)
 	end
 end
 
-local function allAsleep(): boolean
+local function allAsleep(grace: number?): boolean
 	local any = false
 	for _, p in ipairs(Players:GetPlayers()) do
 		local s = Session.get(p)
 		local data = DataService.get(p)
 		if s and s.Ready and data and data.Species ~= "" then
 			any = true
-			if s.SleepUntil <= os.clock() then
+			if s.SleepUntil <= os.clock() - (grace or 0) then
 				return false
 			end
 		end
@@ -86,7 +86,7 @@ function NeedsService.sleep(player: Player): (boolean, any)
 			return
 		end
 		-- ночью: если спят все — утро
-		if night and allAsleep() then
+		if night and allAsleep(0.5) then
 			DayNightService.skipToMorning()
 			Notify.send(player, "msg.morning", "info")
 		end
@@ -163,7 +163,7 @@ function NeedsService.init()
 		if not s then
 			return false, nil
 		end
-		if not Session.cooldown(player, "bath", 8) then
+		if not Session.cooldown(player, "bath", 2) then
 			return false, nil
 		end
 		s.Bath = { Start = os.clock() }
