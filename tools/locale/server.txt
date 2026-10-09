@@ -221,9 +221,9 @@ toast.chapter_done_n | Chapter {n} complete! | Глава {n} пройдена!
 quest.c2_meet | Meet the neighbours on Maple Street | Познакомься с соседями на Кленовой улице
 quest.c2_mail | Say hi to Pete the mailman | Поздоровайся с почтальоном Петей
 quest.c2_parcel | Find Pete's lost parcel | Найди потерянную посылку Пети
-quest.c2_choice | Decide what to do with the parcel (talk to Pete) | Реши, что делать с посылкой (поговори с Петей)
-quest.c2_glasses | Find Mrs. Elm's glasses in her flowerbed | Найди очки миссис Вязовой в её клумбе
-quest.c2_cheer | Cheer up grumpy Mr. Buttercup with an emote | Развесели ворчуна мистера Лютикова эмоцией
+quest.c2_choice | Decide what to do with the parcel | Реши, что делать с посылкой
+quest.c2_glasses | Find Mrs. Elm's glasses in her flowerbed | Найди очки миссис Вязовой
+quest.c2_cheer | Cheer up Mr. Buttercup with an emote | Развесели мистера Лютикова эмоцией
 quest.c2_party | Join the Maple Street party | Приходи на праздник Кленовой улицы
 npc.Elm | Mrs. Elm | Миссис Вязова
 npc.Buttercup | Mr. Buttercup | Мистер Лютиков
