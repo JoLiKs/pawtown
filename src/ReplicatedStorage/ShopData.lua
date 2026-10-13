@@ -3,6 +3,8 @@
 	ShopData — косметика за лакомства (Treats). Без Robux, без случайных наград (шансы показывать не нужно),
 	на характеристики не влияет (никакого pay-to-win). Slot: Collar | Neck | Hat.
 ]]
+local QuestData = require(script.Parent.QuestData)
+
 local c3 = Color3.fromRGB
 
 export type Item = {
@@ -107,8 +109,9 @@ ShopData.List = {
 
 -- Цена с учётом скидки за репутацию улицы (уровень DISCOUNT_LEVEL+: -DISCOUNT_PCT%)
 function ShopData.price(item: Item, streetRepLevel: number): number
-	if streetRepLevel >= 2 then
-		return math.max(1, math.floor(item.Price * 0.85 + 0.5))
+	if streetRepLevel >= QuestData.DISCOUNT_LEVEL then
+		local mult = (100 - QuestData.DISCOUNT_PCT) / 100
+		return math.max(1, math.floor(item.Price * mult + 0.5))
 	end
 	return item.Price
 end
